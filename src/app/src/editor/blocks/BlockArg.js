@@ -237,7 +237,6 @@ export default class BlockArg {
             // Expand the parent div to incorporate the size of the button,
             // else on Android 4.2 the bottom part of the button
             // will not be clickable.
-            }
             this.button.parentNode.height += this.button.height / 2;
             setCanvasSize(this.button.parentNode, this.button.parentNode.width, this.button.parentNode.height);
         }
