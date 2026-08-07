@@ -14,6 +14,42 @@ export const isAndroid = (typeof AndroidInterface != 'undefined');
 export function libInit () {
     frame = document.getElementById('frame');
 }
+function evaluatePreprocessExpression (expression) {
+    var trimmed = expression.trim();
+    if (!trimmed) {
+        return '';
+    }
+    if (!/^[\w\s()+\-*/.,]+$/.test(trimmed)) {
+        return '${' + expression + '}';
+    }
+    var allowedNames = {
+        css_vh: true,
+        css_vw: true,
+        scaleMultiplier: true,
+        Math: true,
+        max: true,
+        min: true,
+        ceil: true,
+        floor: true,
+        round: true,
+        abs: true
+    };
+    var identifiers = trimmed.match(/[A-Za-z_][A-Za-z0-9_]*/g) || [];
+    for (var i = 0; i < identifiers.length; i++) {
+        if (!allowedNames[identifiers[i]]) {
+            return '${' + expression + '}';
+        }
+    }
+
+    try {
+        var value = Function('css_vh', 'css_vw', 'scaleMultiplier', 'Math',
+            '\'use strict\'; return (' + trimmed + ');')(css_vh, css_vw, scaleMultiplier, Math);
+        return (value === undefined || value === null) ? '' : String(value);
+    } catch (e) {
+        return '${' + expression + '}';
+    }
+}
+
 /**
  * Takes a string and evaluates all ${} as JavaScript and returns the resulting string.
  */
@@ -30,12 +66,7 @@ export function preprocess (s) {
             var end = s.indexOf('}', start);
             if (end != -1) {
                 var expression = s.substring(start, end);
-                var exprMatch = expression.match(/^(css_vh|css_vw)\(([\d.]+)\)$/);
-                if (exprMatch) {
-                    result += (exprMatch[1] === 'css_vh' ? css_vh(parseFloat(exprMatch[2])) : css_vw(parseFloat(exprMatch[2])));
-                } else {
-                    result += expression;
-                }
+                result += evaluatePreprocessExpression(expression);
                 i = end + 1;
             } else {
                 result += '$';
