@@ -67,36 +67,94 @@ export default class UI {
         var library = gn('library');
         var pages = gn('pages');
         var stage = gn('stage');
+        var topsection = gn('topsection');
+        var pagecc = gn('pagecc');
+        var scripts = gn('scripts');
         if (!library || !pages || !stage) {
             return;
         }
 
+        var leftPanel = library.parentNode;
+        var rightPanel = pages.parentNode;
+        var stageframe = gn('stageframe');
+
         library.style.transform = '';
         pages.style.transform = '';
+        if (topsection) {
+            topsection.style.height = '';
+        }
+        if (leftPanel) {
+            leftPanel.style.height = '';
+        }
+        if (rightPanel) {
+            rightPanel.style.height = '';
+        }
+        if (stageframe) {
+            stageframe.style.height = '';
+        }
+        if (pagecc) {
+            pagecc.style.height = '';
+        }
+        if (scripts) {
+            scripts.style.height = '';
+        }
 
-        var aspect = getDocumentWidth() / getDocumentHeight();
+        var docWidth = getDocumentWidth();
+        var docHeight = getDocumentHeight();
+        var aspect = docWidth / docHeight;
         if (aspect <= 1.45) {
             return;
         }
 
+        // Horizontal balancing around the stage
         var stageBox = stage.getBoundingClientRect();
         var libraryBox = library.getBoundingClientRect();
         var pagesBox = pages.getBoundingClientRect();
         var leftGap = stageBox.left - (libraryBox.left + libraryBox.width);
         var rightGap = pagesBox.left - (stageBox.left + stageBox.width);
-        var desiredGap = Math.min(140, Math.round(getDocumentWidth() * 0.08));
+        var desiredGap = Math.min(140, Math.round(docWidth * 0.08));
 
         var libraryShift = Math.max(0, Math.round(leftGap - desiredGap));
         var pagesShift = Math.max(0, Math.round(rightGap - desiredGap));
 
-        libraryShift = Math.min(libraryShift, Math.round(getDocumentWidth() * 0.18));
-        pagesShift = Math.min(pagesShift, Math.round(getDocumentWidth() * 0.25));
+        libraryShift = Math.min(libraryShift, Math.round(docWidth * 0.18));
+        pagesShift = Math.min(pagesShift, Math.round(docWidth * 0.25));
 
         if (libraryShift > 0) {
             library.style.transform = 'translateX(' + libraryShift + 'px)';
         }
         if (pagesShift > 0) {
             pages.style.transform = 'translateX(-' + pagesShift + 'px)';
+        }
+
+        // Vertical balance: reserve more room for scripts workspace on wide screens.
+        var targetTopHeight = Math.round(docHeight * 0.585);
+        targetTopHeight = Math.max(540, Math.min(targetTopHeight, Math.round(docHeight * 0.61)));
+        if (topsection) {
+            topsection.style.height = targetTopHeight + 'px';
+        }
+        if (leftPanel) {
+            leftPanel.style.height = targetTopHeight + 'px';
+        }
+        if (rightPanel) {
+            rightPanel.style.height = targetTopHeight + 'px';
+        }
+        if (stageframe) {
+            stageframe.style.height = targetTopHeight + 'px';
+        }
+        if (pagecc) {
+            var pagesVisibleHeight = Math.max(0, pages.offsetHeight - pagecc.offsetTop - Math.round(12 * scaleMultiplier));
+            pagecc.style.height = pagesVisibleHeight + 'px';
+        }
+        if (scripts) {
+            var scriptsHeight = Math.max(220, docHeight - scripts.offsetTop);
+            scripts.style.height = scriptsHeight + 'px';
+            if (ScriptsPane.scroll) {
+                ScriptsPane.scroll.repositionArrows(scriptsHeight);
+                if (ScratchJr.stage && ScratchJr.stage.currentPage) {
+                    ScriptsPane.scroll.update();
+                }
+            }
         }
     }
 
