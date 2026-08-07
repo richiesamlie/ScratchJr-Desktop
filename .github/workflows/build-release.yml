@@ -1,0 +1,91 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    name: "Build for ${{ matrix.release_suffix }}"
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            release_suffix: ubuntu
+            artifact_name: ScratchJr-linux-x64.zip
+          - os: macos-latest
+            release_suffix: mac
+            artifact_name: ScratchJr-darwin-x64.zip
+          - os: windows-latest
+            release_suffix: windows
+            artifact_name: ScratchJr-win32-x64.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and package
+        run: npm run make:zip
+
+      - name: Rename artifact
+        shell: bash
+        run: |
+          cd out
+          # Find the zip file and rename it to a consistent name
+          ZIP_FILE=$(find . -name "*.zip" -maxdepth 3 | head -1)
+          if [ -n "$ZIP_FILE" ]; then
+            cp "$ZIP_FILE" "../${{ matrix.artifact_name }}"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.release_suffix }}-build
+          path: ${{ matrix.artifact_name }}
+          retention-days: 5
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: artifacts/**/*.zip
+          body: |
+            ## ScratchJr Desktop ${{ github.ref_name }}
+
+            Fork of [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop) — credit to the original authors and [LLK/ScratchJr](https://github.com/LLK/scratchjr) by MIT.
+
+            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/master/README.md#changes-in-this-fork) for full details.
+
+            ### Downloads
+
+            | File | Platform |
+            |------|----------|
+            | `ScratchJr-win32-x64.zip` | Windows x64 |
+            | `ScratchJr-darwin-x64.zip` | macOS x64 |
+            | `ScratchJr-linux-x64.zip` | Linux x64 |
