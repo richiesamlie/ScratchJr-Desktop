@@ -64,11 +64,39 @@ export default class UI {
 
     /** Tweak some elements depending on aspect ratio */
     static aspectRatioAdjustment () {
+        var library = gn('library');
+        var pages = gn('pages');
+        var stage = gn('stage');
+        if (!library || !pages || !stage) {
+            return;
+        }
+
+        library.style.transform = '';
+        pages.style.transform = '';
+
         var aspect = getDocumentWidth() / getDocumentHeight();
-        if (aspect > 1.45) {
-            // Nudge sprite list right a bit and the pages list left a bit
-            gn('library').style.left = '3vw';
-            gn('pages').style.right = '1vw';
+        if (aspect <= 1.45) {
+            return;
+        }
+
+        var stageBox = stage.getBoundingClientRect();
+        var libraryBox = library.getBoundingClientRect();
+        var pagesBox = pages.getBoundingClientRect();
+        var leftGap = stageBox.left - (libraryBox.left + libraryBox.width);
+        var rightGap = pagesBox.left - (stageBox.left + stageBox.width);
+        var desiredGap = Math.min(140, Math.round(getDocumentWidth() * 0.08));
+
+        var libraryShift = Math.max(0, Math.round(leftGap - desiredGap));
+        var pagesShift = Math.max(0, Math.round(rightGap - desiredGap));
+
+        libraryShift = Math.min(libraryShift, Math.round(getDocumentWidth() * 0.18));
+        pagesShift = Math.min(pagesShift, Math.round(getDocumentWidth() * 0.25));
+
+        if (libraryShift > 0) {
+            library.style.transform = 'translateX(' + libraryShift + 'px)';
+        }
+        if (pagesShift > 0) {
+            pages.style.transform = 'translateX(-' + pagesShift + 'px)';
         }
     }
 
