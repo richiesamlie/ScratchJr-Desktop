@@ -14,7 +14,7 @@ import Rectangle from '../../geom/Rectangle.js';
 import DrawPath from '../../utils/DrawPath.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';
 import Record from './Record.js';
-import {frame, gn, localx, newHTML, scaleMultiplier, isTablet, newDiv,
+import {frame, gn, localx, newHTML, scaleMultiplier, isTouch, newDiv,
     setProps, globalx, localy, globaly, drawScaled, newCanvas,
     setCanvasSize, hitRect, writeText, getStringSize} from '../../utils/lib.js';
 
@@ -68,7 +68,7 @@ export default class Palette {
     }
 
     static paletteMouseDown (e) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         if (ScratchJr.onHold) {
@@ -468,7 +468,7 @@ export default class Palette {
                 drawScaled(BlockSpecs.mic, cnv);
             };
         }
-        if (isTablet) {
+        if (isTouch) {
             div.onmousedown = Palette.recordSound;
         }
     }

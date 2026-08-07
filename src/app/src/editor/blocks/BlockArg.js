@@ -3,7 +3,7 @@ import BlockSpecs from './BlockSpecs.js';
 import Menu from './Menu.js';
 import Undo from '../ui/Undo.js';
 import {setCanvasSize, setProps, writeText, scaleMultiplier,
-    newHTML, newDiv, newCanvas, getStringSize, isTablet,
+    newHTML, newDiv, newCanvas, getStringSize, isTouch,
     newP, globalx, globaly} from '../../utils/lib.js';
 import Localization from '../../utils/Localization.js';
 
@@ -231,12 +231,7 @@ export default class BlockArg {
         this.button = this.addPressButton();
         if (!this.daddy.inpalette) {
             var ba = this;
-            if (isTablet) {
-                ba.button.onmousedown = function (evt) {
-                    ba.pressDropDown(evt, fcn);
-                };
-            } else {
-                ba.button.onmousedown = function (evt) {
+            ba.button.onmousedown = function (evt) {
                     ba.pressDropDown(evt, fcn);
                 };
             // Expand the parent div to incorporate the size of the button,
@@ -298,7 +293,7 @@ export default class BlockArg {
     }
 
     pressDropDown (e, fcn) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         if (ScratchJr.onHold) {

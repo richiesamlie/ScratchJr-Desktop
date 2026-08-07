@@ -963,4 +963,29 @@ class CameraPickerDialog {
 
 
 
+ipcRenderer.on('keyboard-shortcut', function(event, action) {
+  switch (action) {
+    case 'save':
+      if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) {
+        ScratchJr.saveProject(null, function() {});
+      }
+      break;
+    case 'undo':
+      if (typeof Undo !== 'undefined' && Undo.undo) {
+        Undo.undo();
+      }
+      break;
+    case 'redo':
+      if (typeof Undo !== 'undefined' && Undo.redo) {
+        Undo.redo();
+      }
+      break;
+    case 'new':
+      if (typeof Home !== 'undefined' && Home.createNewProject) {
+        Home.createNewProject();
+      }
+      break;
+  }
+});
+
 window.tablet = new ElectronDesktopInterface();

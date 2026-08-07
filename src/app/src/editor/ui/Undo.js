@@ -8,7 +8,7 @@ import Project from './Project.js';
 import Palette from './Palette.js';
 import UI from './UI.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';
-import {newHTML, isTablet, gn} from '../../utils/lib.js';
+import {newHTML, isTouch, gn} from '../../utils/lib.js';
 
 let buffer = [];
 let index = 0;
@@ -35,15 +35,9 @@ export default class Undo {
         div.setAttribute('type', 'toggleclicky');
         div.setAttribute('id', prefix + key);
         if (fcn) {
-            if (isTablet) {
-                div.onmousedown = function (evt) {
+            div.onmousedown = function (evt) {
                     fcn(evt);
                 };
-            } else {
-                div.onmousedown = function (evt) {
-                    fcn(evt);
-                };
-            }
         }
         return div;
     }
@@ -75,7 +69,7 @@ export default class Undo {
     ////////////////////////////////
 
     static prevStep (e) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         e.preventDefault();
@@ -96,7 +90,7 @@ export default class Undo {
     }
 
     static nextStep (e) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         e.preventDefault();

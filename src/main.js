@@ -35,7 +35,7 @@ isDev = (isDev) || process.env.DEBUG_SCRATCHJR;
 /* eslint-disable import/no-extraneous-dependencies */  // --> OFF
 /* eslint-disable import/no-unresolved  */  // --> OFF
 
-const { app, dialog, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, dialog, BrowserWindow, ipcMain, Menu, globalShortcut } = require('electron');
 
 /* eslint-enable import/extensions */  // --> ON
 /* eslint-enable import/no-extraneous-dependencies */  // --> ON
@@ -83,14 +83,30 @@ process.on('unhandledRejection', (reason, p) => {
 let win;
 let dataStore;
 
+const windowStateFile = path.join(app.getPath('userData'), 'window-state.json');
+function getWindowState() {
+  try {
+    return JSON.parse(fs.readFileSync(windowStateFile, 'utf8'));
+  } catch (e) {
+    return { width: 1020, height: 800 };
+  }
+}
+function saveWindowState() {
+  if (!win || win.isDestroyed()) return;
+  const bounds = win.getBounds();
+  try { fs.writeFileSync(windowStateFile, JSON.stringify(bounds)); } catch (e) {}
+}
+
 function createWindow() {
   // Create the browser window.
-
+  const state = getWindowState();
 
   win = new BrowserWindow(
     {
-      width: 1020,
-      height: 800,
+      width: state.width,
+      height: state.height,
+      x: state.x,
+      y: state.y,
       customVar: 'elephants',
       webPreferences: {
         nodeIntegration: true,
@@ -115,8 +131,12 @@ function createWindow() {
     win.webContents.openDevTools();
   }
 
+  win.on('resize', saveWindowState);
+  win.on('move', saveWindowState);
+
   win.on('close', (e) => {
     e.preventDefault();
+    saveWindowState();
     //tell editor to flush the data
     win.webContents.send('app-close');
     // Fallback: force-quit after 5 seconds if renderer doesn't ack
@@ -128,6 +148,30 @@ function createWindow() {
   });
 
   win.webContents.on('did-finish-load', () => {
+    // Ctrl+S = save
+    globalShortcut.register('CommandOrControl+S', () => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send('keyboard-shortcut', 'save');
+      }
+    });
+    // Ctrl+Z = undo
+    globalShortcut.register('CommandOrControl+Z', () => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send('keyboard-shortcut', 'undo');
+      }
+    });
+    // Ctrl+N = new project
+    globalShortcut.register('CommandOrControl+N', () => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send('keyboard-shortcut', 'new');
+      }
+    });
+    // Ctrl+Shift+Z = redo
+    globalShortcut.register('CommandOrControl+Shift+Z', () => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send('keyboard-shortcut', 'redo');
+      }
+    });
   });
 }
 
@@ -136,6 +180,8 @@ ipcMain.on('app-closed-acked',(event) => {
   if (dataStore.databaseManager) {
     dataStore.databaseManager.save();
   }
+
+  saveWindowState();
 
   // Dereference the window object, usually you would store windows
   // in an array if your app supports multi windows, this is the time
@@ -215,6 +261,10 @@ app.on('activate', () => {
   if (win === null) {
     createWindow();
   }
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 

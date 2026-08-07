@@ -2,7 +2,7 @@
 the caller should define the window event and call startDrag with the appropiate values
 */
 
-import {gn, scaleMultiplier, isTablet} from './lib.js';
+import {gn, scaleMultiplier, isTouch} from './lib.js';
 
 let dragged = false;
 let dragthumbnail;
@@ -123,7 +123,7 @@ export default class Events {
             Events.holdit(c, athold);
         }
         updatefcn = atdrag;
-        if (isTablet) { // startDrag event setting
+        if (isTouch) { // startDrag event setting
             delta = 10 * scaleMultiplier;
             window.onmousemove = function (evt) {
                 Events.mouseMove(evt);
@@ -226,7 +226,7 @@ export default class Events {
     }
 
     static clearEvents () {
-        if (isTablet) { // clearEvents
+        if (isTouch) { // clearEvents
             window.onmousemove = undefined;
             window.onmouseup = undefined;
         } else {
@@ -285,7 +285,7 @@ export default class Events {
     */
 
     static getTargetPoint (e) {
-        if (isTablet) {
+        if (isTouch) {
             if (e.touches && (e.touches.length > 0)) {
                 return {
                     x: e.touches[0].pageX,

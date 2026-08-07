@@ -11,7 +11,7 @@ import UI from './UI.js';
 import Events from '../../utils/Events.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';
 import {frame, gn, localx, newHTML, scaleMultiplier, getIdFor,
-    isTablet, newImage, localy, setProps} from '../../utils/lib.js';
+    isTouch, newImage, localy, setProps} from '../../utils/lib.js';
 
 let caret = undefined;
 
@@ -68,7 +68,7 @@ export default class Thumbs {
     }
 
     static pageMouseDown (e) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         if (ScratchJr.onHold) {
@@ -353,20 +353,14 @@ export default class Thumbs {
         }
         img.setAttribute('class', 'unselectable');
         tb.setAttribute('id', 'emptypage');
-        if (isTablet) {
-            tb.onmousedown = function (evt) {
+        tb.onmousedown = function (evt) {
                 Thumbs.clickOnEmptyPage(evt);
             };
-        } else {
-            tb.onmousedown = function (evt) {
-                Thumbs.clickOnEmptyPage(evt);
-            };
-        }
         return tb;
     }
 
     static clickOnEmptyPage (e) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         ScratchAudio.sndFX('tap.wav');

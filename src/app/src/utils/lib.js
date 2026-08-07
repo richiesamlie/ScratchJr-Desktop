@@ -2,6 +2,7 @@ export var frame;  // eslint-disable-line import/no-mutable-exports
 // XXX: isTablet is legacy code that can be used to detect if we're running on a desktop browser
 // There are references to it throughout the codebase, should possibly be removed at some point
 export const isTablet = (typeof window.orientation !== 'undefined');
+export const isTouch = ('ontouchstart' in window || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0));
 export const DEGTOR = Math.PI / 180;
 //export const WINDOW_INNER_HEIGHT = window.innerHeight;
 //export const WINDOW_INNER_WIDTH = window.innerWidth;
@@ -29,7 +30,12 @@ export function preprocess (s) {
             var end = s.indexOf('}', start);
             if (end != -1) {
                 var expression = s.substring(start, end);
-                result += eval(expression);  // eslint-disable-line no-eval
+                var exprMatch = expression.match(/^(css_vh|css_vw)\(([\d.]+)\)$/);
+                if (exprMatch) {
+                    result += (exprMatch[1] === 'css_vh' ? css_vh(parseFloat(exprMatch[2])) : css_vw(parseFloat(exprMatch[2])));
+                } else {
+                    result += expression;
+                }
                 i = end + 1;
             } else {
                 result += '$';

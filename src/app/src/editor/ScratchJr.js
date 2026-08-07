@@ -18,7 +18,7 @@ import BlockSpecs from './blocks/BlockSpecs.js';
 import Runtime from './engine/Runtime.js';
 import Localization from '../utils/Localization.js';
 import {libInit, gn, scaleMultiplier, newHTML,
-    isAndroid, isTablet, getUrlVars, CSSTransition3D, frame} from '../utils/lib.js';
+    isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib.js';
 
 const { ipcRenderer } = require('electron');
 
@@ -232,11 +232,7 @@ export default class ScratchJr {
             e.preventDefault();
         };
         window.onmousedown = ScratchJr.unfocus;
-        if (isTablet) {
-            window.onmouseup = undefined;
-        } else {
-            window.onmouseup = undefined;
-        }
+        window.onmouseup = undefined;
     }
 
     static unfocus (evt) {

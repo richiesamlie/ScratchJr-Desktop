@@ -1,5 +1,5 @@
 import BlockSpecs from './BlockSpecs.js';
-import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTablet,
+import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTouch,
     newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly} from '../../utils/lib.js';
 
 let openMenu;
@@ -69,7 +69,7 @@ export default class Menu {
         } else {
             drawThumbnail(img, micon);
         }
-        if (isTablet) {
+        if (isTouch) {
             cs.onmousedown = function (evt) {
                 handleTouchStart(evt);
             };
@@ -85,7 +85,7 @@ export default class Menu {
             };
         }
         function handleTouchStart (e) {
-            if (isTablet && e.touches && (e.touches.length > 1)) {
+            if (isTouch && e.touches && (e.touches.length > 1)) {
                 return;
             }
             e.preventDefault();

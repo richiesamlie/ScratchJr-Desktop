@@ -8,7 +8,7 @@ import Events from '../../utils/Events.js';
 import Scroll from './Scroll.js';
 import Menu from '../blocks/Menu.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';
-import {gn, localx, localy, newHTML, isTablet,
+import {gn, localx, localy, newHTML, isTouch,
     globalx, globaly, setCanvasSize, getDocumentHeight, frame} from '../../utils/lib.js';
 
 let scroll = undefined;
@@ -251,7 +251,7 @@ export default class ScriptsPane {
         if (Menu.openMenu) {
             return;
         }
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         e.preventDefault();
@@ -267,21 +267,12 @@ export default class ScriptsPane {
     }
 
     static setDragBackgroundEvents (fcnmove, fcnup) {
-        if (isTablet) { // setDragBackgroundEvents
-            window.onmousemove = function (evt) {
+        window.onmousemove = function (evt) {
                 fcnmove(evt);
             };
             window.onmouseup = function (evt) {
                 fcnup(evt);
             };
-        } else {
-            window.onmousemove = function (evt) {
-                fcnmove(evt);
-            };
-            window.onmouseup = function (evt) {
-                fcnup(evt);
-            };
-        }
     }
 
     static dragMove (e) {

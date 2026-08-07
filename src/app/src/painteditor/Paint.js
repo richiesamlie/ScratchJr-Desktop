@@ -16,7 +16,7 @@ import Camera from './Camera.js';
 import Events from '../utils/Events.js';
 import Transform from './Transform.js';
 import Vector from '../geom/Vector.js';
-import {gn, newHTML, setCanvasSize, isTablet, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib.js';
+import {gn, newHTML, setCanvasSize, isTouch, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib.js';
 
 // Originally several files (Paint.js, PaintIO.js, PaintLayout.js)
 // were all contributing utility functions to the Paint object.
@@ -325,7 +325,7 @@ export default class Paint {
     }
 
     static mouseDown (e) {
-        if ((isTablet && e.target.onmousedown) || e.target.onmousedown) {
+        if (e.target.onmousedown) {
             return;
         }
         var pt = Events.getTargetPoint(e);
@@ -588,11 +588,7 @@ export default class Paint {
     static checkMark (pt) {
         var clicky = newHTML('div', 'paintdone', pt);
         clicky.id = 'donecheck';
-        if (isTablet) {
-            clicky.onmousedown = Paint.backToProject;
-        } else {
-            clicky.onmousedown = Paint.backToProject;
-        }
+        clicky.onmousedown = Paint.backToProject;
     }
 
     static nameOfcostume (p) {
@@ -693,11 +689,7 @@ export default class Paint {
             var but = newHTML('div', 'element off', section);
             var icon = newHTML('div', 'tool ' + list[i] + ' off', but);
             icon.setAttribute('key', list[i]);
-            if (isTablet) {
-                icon.onmousedown = Paint.setMode;
-            } else {
-                icon.onmousedown = Paint.setMode;
-            }
+            icon.onmousedown = Paint.setMode;
         }
     }
 

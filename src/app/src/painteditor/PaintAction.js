@@ -13,7 +13,7 @@ import SVGImage from './SVGImage.js';
 import Camera from './Camera.js';
 import Events from '../utils/Events.js';
 import Rectangle from '../geom/Rectangle.js';
-import {gn, isTablet, getIdFor} from '../utils/lib.js';
+import {gn, isTouch, getIdFor} from '../utils/lib.js';
 /*
 Type of objects:
 - fixed: Only exists on Assets Backgrounds and can it only be fill (color or camera) or removed
@@ -754,7 +754,7 @@ export default class PaintAction {
     }
 
     static cameraMouseUp (evt) {
-        if (isTablet) {
+        if (isTouch) {
             PaintAction.fingerUp(evt);
         }
         if (currentShape == undefined) {

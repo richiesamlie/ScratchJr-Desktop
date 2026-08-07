@@ -9,7 +9,7 @@ import Project from '../editor/ui/Project.js';
 import Localization from '../utils/Localization.js';
 import ScratchAudio from '../utils/ScratchAudio.js';
 import Vector from '../geom/Vector.js';
-import {gn, newHTML, isTablet} from '../utils/lib.js';
+import {gn, newHTML, isTouch} from '../utils/lib.js';
 
 let frame;
 let scrollvalue;
@@ -104,11 +104,7 @@ export default class Home {
         if (e.touches && (e.touches.length > 1)) {
             return;
         }
-        if (isTablet) {
-            frame.onmousemove = undefined;
-        } else {
-            frame.onmousemove = undefined;
-        }
+        frame.onmousemove = undefined;
         if (timeoutEvent) {
             clearTimeout(timeoutEvent);
         }
@@ -308,7 +304,7 @@ export default class Home {
 
 class Events {
     static getTargetPoint (e) {
-        if (isTablet) {
+        if (isTouch) {
             if (e.touches && (e.touches.length > 0)) {
                 return {
                     x: e.touches[0].pageX,

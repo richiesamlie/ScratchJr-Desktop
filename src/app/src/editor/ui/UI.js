@@ -20,7 +20,7 @@ import Paint from '../../painteditor/Paint.js';
 import Events from '../../utils/Events.js';
 import Localization from '../../utils/Localization.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';
-import {frame, gn, CSSTransition, localx, newHTML, scaleMultiplier, getIdFor, isTablet, newDiv,
+import {frame, gn, CSSTransition, localx, newHTML, scaleMultiplier, getIdFor, isTouch, newDiv,
     newTextInput, isAndroid, getDocumentWidth, getDocumentHeight, setProps, globalx} from '../../utils/lib.js';
 
 let projectNameTextInput = null;
@@ -570,7 +570,7 @@ export default class UI {
     //////////////////////////////////
 
     static spriteThumbsActions (e) {
-        if (isTablet && e.touches && (e.touches.length > 1)) {
+        if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         if (ScratchJr.onHold) {
@@ -750,16 +750,8 @@ export default class UI {
     static fullscreenControls () {
         UI.nextpage = newHTML('div', 'nextpage off', frame);
         UI.prevpage = newHTML('div', 'nextpage off', frame);
-        if (isTablet) {
-            UI.nextpage.onmousedown = UI.nextPage;
-        } else {
-            UI.nextpage.onmousedown = UI.nextPage;
-        }
-        if (isTablet) {
-            UI.prevpage.onmousedown = UI.prevPage;
-        } else {
-            UI.prevpage.onmousedown = UI.prevPage;
-        }
+        UI.nextpage.onmousedown = UI.nextPage;
+        UI.prevpage.onmousedown = UI.prevPage;
     }
 
     static updatePageControls () {
