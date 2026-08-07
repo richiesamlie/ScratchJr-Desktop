@@ -78,26 +78,16 @@ export default class UI {
         var rightPanel = pages.parentNode;
         var stageframe = gn('stageframe');
 
+        // Clear previous adjustments
         library.style.transform = '';
         pages.style.transform = '';
-        if (topsection) {
-            topsection.style.height = '';
-        }
-        if (leftPanel) {
-            leftPanel.style.height = '';
-        }
-        if (rightPanel) {
-            rightPanel.style.height = '';
-        }
-        if (stageframe) {
-            stageframe.style.height = '';
-        }
-        if (pagecc) {
-            pagecc.style.height = '';
-        }
-        if (scripts) {
-            scripts.style.height = '';
-        }
+        if (topsection) { topsection.style.height = ''; }
+        if (leftPanel) { leftPanel.style.height = ''; }
+        if (rightPanel) { rightPanel.style.height = ''; rightPanel.style.width = ''; rightPanel.style.top = ''; }
+        if (stageframe) { stageframe.style.height = ''; }
+        if (pagecc) { pagecc.style.height = ''; pagecc.style.width = ''; }
+        if (pages) { pages.style.width = ''; }
+        if (scripts) { scripts.style.height = ''; }
 
         var docWidth = getDocumentWidth();
         var docHeight = getDocumentHeight();
@@ -106,19 +96,29 @@ export default class UI {
             return;
         }
 
-        // Horizontal balancing around the stage
+        // Make storyboard wider but keep clear from stage controls.
+        var newRightWidth = Math.round(docHeight * 0.225);
+        if (rightPanel) {
+            rightPanel.style.width = newRightWidth + 'px';
+        }
+        pages.style.width = newRightWidth + 'px';
+        if (pagecc) {
+            pagecc.style.width = newRightWidth + 'px';
+        }
+
+        // --- Horizontal balancing ---
         var stageBox = stage.getBoundingClientRect();
         var libraryBox = library.getBoundingClientRect();
         var pagesBox = pages.getBoundingClientRect();
         var leftGap = stageBox.left - (libraryBox.left + libraryBox.width);
         var rightGap = pagesBox.left - (stageBox.left + stageBox.width);
-        var desiredGap = Math.min(140, Math.round(docWidth * 0.08));
+        var desiredGap = Math.min(130, Math.round(docWidth * 0.07));
 
         var libraryShift = Math.max(0, Math.round(leftGap - desiredGap));
         var pagesShift = Math.max(0, Math.round(rightGap - desiredGap));
 
-        libraryShift = Math.min(libraryShift, Math.round(docWidth * 0.18));
-        pagesShift = Math.min(pagesShift, Math.round(docWidth * 0.25));
+        libraryShift = Math.min(libraryShift, Math.round(docWidth * 0.16));
+        pagesShift = Math.min(pagesShift, Math.round(docWidth * 0.10));
 
         if (libraryShift > 0) {
             library.style.transform = 'translateX(' + libraryShift + 'px)';
@@ -127,21 +127,17 @@ export default class UI {
             pages.style.transform = 'translateX(-' + pagesShift + 'px)';
         }
 
-        // Vertical balance: reserve more room for scripts workspace on wide screens.
-        var targetTopHeight = Math.round(docHeight * 0.585);
-        targetTopHeight = Math.max(540, Math.min(targetTopHeight, Math.round(docHeight * 0.61)));
-        if (topsection) {
-            topsection.style.height = targetTopHeight + 'px';
-        }
-        if (leftPanel) {
-            leftPanel.style.height = targetTopHeight + 'px';
-        }
+        // --- Vertical balance ---
+        var targetTopHeight = Math.round(docHeight * 0.57);
+        targetTopHeight = Math.max(520, Math.min(targetTopHeight, Math.round(docHeight * 0.60)));
+        if (topsection) { topsection.style.height = targetTopHeight + 'px'; }
+        if (leftPanel) { leftPanel.style.height = targetTopHeight + 'px'; }
+        var rightPanelTop = Math.round(12 * scaleMultiplier);
         if (rightPanel) {
-            rightPanel.style.height = targetTopHeight + 'px';
+            rightPanel.style.top = rightPanelTop + 'px';
+            rightPanel.style.height = Math.max(200, targetTopHeight - rightPanelTop) + 'px';
         }
-        if (stageframe) {
-            stageframe.style.height = targetTopHeight + 'px';
-        }
+        if (stageframe) { stageframe.style.height = targetTopHeight + 'px'; }
         if (pagecc) {
             var pagesVisibleHeight = Math.max(0, pages.offsetHeight - pagecc.offsetTop - Math.round(12 * scaleMultiplier));
             pagecc.style.height = pagesVisibleHeight + 'px';

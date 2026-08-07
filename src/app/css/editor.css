@@ -84,8 +84,8 @@ div.frame {
     display: inline-block;
     margin: ${css_vh(0)} ${css_vh(0)} ${css_vh(0.13)};
     padding: ${css_vh(0)};
-    width: ${145 * scaleMultiplier}px;
-    height: ${109 * scaleMultiplier}px;
+    width: ${160 * scaleMultiplier}px;
+    height: ${120 * scaleMultiplier}px;
 }
 
 .pagethumb.on {
@@ -119,12 +119,12 @@ div.frame {
 
 .pagethumb .empty {
     margin: ${css_vh(0)} ${css_vh(0)} ${css_vh(0.13)};
-    width: ${145 * scaleMultiplier}px;
-    height: ${109 * scaleMultiplier}px;
+    width: ${160 * scaleMultiplier}px;
+    height: ${120 * scaleMultiplier}px;
 }
 
 .pagethumb .empty img {
-    height: ${109 * scaleMultiplier}px;
+    height: ${120 * scaleMultiplier}px;
 }
 
 .pagethumb .pagenum {
