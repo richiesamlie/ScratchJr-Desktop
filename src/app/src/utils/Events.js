@@ -103,6 +103,11 @@ export default class Events {
         dragDiv.style.zIndex = 7001; // slightly higher than ScratchJr.dragginLayer
         var frameDiv = gn('frame');
         frameDiv.appendChild(dragDiv);
+        window.addEventListener('blur', function () {
+            if (dragged || dragthumbnail) {
+                Events.cancelAll();
+            }
+        });
     }
     static startDrag (e, c, atstart, atend, atdrag, atclick, athold) {
         dragged = false;
@@ -174,7 +179,13 @@ export default class Events {
         }
         timeoutEvent = undefined;
         if (!dragged) {
-            fcnstart(e);
+            try {
+                fcnstart(e);
+            } catch (err) {
+                console.error('Events.mouseMove: fcnstart failed', err);
+                Events.clearDragAndDrop();
+                return;
+            }
         }
         dragged = true;
         if (updatefcn) {
@@ -194,10 +205,14 @@ export default class Events {
         }
         timeoutEvent = undefined;
         Events.clearEvents();
-        if (!dragged) {
-            Events.itIsAClick(e);
-        } else {
-            Events.performMouseUpAction(e);
+        try {
+            if (!dragged) {
+                Events.itIsAClick(e);
+            } else {
+                Events.performMouseUpAction(e);
+            }
+        } catch (err) {
+            console.error('Events.mouseUp: handler failed', err);
         }
         Events.clearDragAndDrop();
     }

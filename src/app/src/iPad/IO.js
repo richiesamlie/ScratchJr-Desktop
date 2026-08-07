@@ -263,7 +263,8 @@ export default class IO {
         var keylist = ['version = ?', 'deleted = ?', 'name = ?', 'json = ?', 'thumbnail = ?', 'mtime = ?'];
         json.values = [obj.version, obj.deleted, obj.name, JSON.stringify(obj.json),
             JSON.stringify(obj.thumbnail), (new Date()).getTime().toString()];
-        json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ' + obj.id;
+        json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
+        json.values.push(obj.id);
         iOS.stmt(json, fcn);
     }
 
@@ -273,7 +274,8 @@ export default class IO {
         var json = {};
         var keylist = ['isgift = ?'];
         json.values = [obj.isgift];
-        json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ' + obj.id;
+        json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
+        json.values.push(obj.id);
         iOS.stmt(json, fcn);
     }
 

@@ -1,7 +1,7 @@
 export var frame;  // eslint-disable-line import/no-mutable-exports
 // XXX: isTablet is legacy code that can be used to detect if we're running on a desktop browser
 // There are references to it throughout the codebase, should possibly be removed at some point
-export const isTablet = (window.orientation != 'undefined');
+export const isTablet = (typeof window.orientation !== 'undefined');
 export const DEGTOR = Math.PI / 180;
 //export const WINDOW_INNER_HEIGHT = window.innerHeight;
 //export const WINDOW_INNER_WIDTH = window.innerWidth;

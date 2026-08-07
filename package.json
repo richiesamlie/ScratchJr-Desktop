@@ -12,7 +12,9 @@
         "make64": "electron-forge make --arch=x64",
         "make32": "electron-forge make --arch=ia32",
         "makeAll": "electron-forge make --arch=ia32,x64",
-        "lint": "eslint src --color"
+        "make:zip": "node scripts/package-and-zip.js",
+        "lint": "eslint src --color",
+        "postinstall": "node scripts/patch-for-node26.js"
     },
     "keywords": [],
     "author": "ScratchJr - Open Source Community Port",
@@ -126,7 +128,6 @@
     "dependencies": {
         "@hapi/hoek": "^11.0.2",
         "electron-is-dev": "^2.0.0",
-        "electron-squirrel-startup": "^1.0.0",
         "intl": "^1.2.5",
         "intl-messageformat": "^10.2.5",
         "jszip": "^3.10.1",
@@ -137,16 +138,19 @@
         "@babel/plugin-transform-async-to-generator": "^7.20.7",
         "@babel/preset-env": "^7.20.2",
         "@babel/preset-react": "^7.18.6",
-        "@electron-forge/cli": "^6.0.4",
-        "@electron-forge/maker-deb": "^6.0.4",
-        "@electron-forge/maker-rpm": "^6.0.4",
-        "@electron-forge/maker-squirrel": "^6.0.4",
-        "@electron-forge/maker-wix": "^6.0.4",
-        "@electron-forge/maker-zip": "^6.0.4",
-        "@reforged/maker-appimage": "^3.1.5",
-        "electron": "^22.0.0",
+        "@electron-forge/cli": "^7.8.3",
+        "@electron-forge/maker-deb": "^7.8.3",
+        "@electron-forge/maker-rpm": "^7.8.3",
+        "@electron-forge/maker-wix": "^7.8.3",
+        "@electron-forge/maker-zip": "^7.8.3",
+        "@electron/packager": "^20.2.0",
+        "@reforged/maker-appimage": "^5.0.0",
+        "electron": "^42.4.0",
         "eslint": "^8.31.0",
         "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-react": "^7.31.11"
+    },
+    "overrides": {
+        "@electron/packager": "^20.2.0"
     }
 }

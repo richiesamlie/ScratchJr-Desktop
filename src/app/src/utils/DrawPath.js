@@ -7,7 +7,7 @@ export default class DrawPath {
     static render (ctx, path) {
         pathx = 0;
         pathy = 0; // start top left
-        for (var i in path) {
+        for (var i = 0; i < path.length; i++) {
             DrawPath.drawSection(path[i], ctx);
         }
     }

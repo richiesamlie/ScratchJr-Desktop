@@ -83,7 +83,7 @@ export default class Lobby {
             }
         };
         gn('blockstab').onmousedown = function () {
-            if (gn('booktab').className != 'tab2 on') {
+            if (gn('blockstab').className != 'tab2 on') {
                 Lobby.setSubMenu('blocks');
             }
         };

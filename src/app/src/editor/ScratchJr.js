@@ -996,8 +996,8 @@ export default class ScratchJr {
 }
 
 ipcRenderer.on('app-close', function(event) {
-    // save the project
-    ScratchJr.saveProject(null, function () {});
-    // tell electron that it can exit now
-    event.sender.send('app-closed-acked');
+    // save the project, then tell electron that it can exit
+    ScratchJr.saveProject(null, function () {
+        event.sender.send('app-closed-acked');
+    });
 });

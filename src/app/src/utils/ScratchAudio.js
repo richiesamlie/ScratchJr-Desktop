@@ -93,6 +93,7 @@ export default class ScratchAudio {
 
     static loadFromLocal (dir, md5, fcn) {
         if (projectSounds[md5] != undefined) {
+            if (fcn) fcn(md5);
             return;
         }
         ScratchAudio.addSound(dir, md5, projectSounds, fcn);

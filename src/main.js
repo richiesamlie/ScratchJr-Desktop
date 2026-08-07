@@ -35,7 +35,7 @@ isDev = (isDev) || process.env.DEBUG_SCRATCHJR;
 /* eslint-disable import/no-extraneous-dependencies */  // --> OFF
 /* eslint-disable import/no-unresolved  */  // --> OFF
 
-const { app, dialog, BrowserWindow, BrowserView, ipcMain, Menu } = require('electron');
+const { app, dialog, BrowserWindow, ipcMain, Menu } = require('electron');
 
 /* eslint-enable import/extensions */  // --> ON
 /* eslint-enable import/no-extraneous-dependencies */  // --> ON
@@ -78,8 +78,6 @@ process.on('unhandledRejection', (reason, p) => {
 
 
 
-if (require('electron-squirrel-startup')) app.quit(); // eslint-disable-line global-require
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
@@ -96,22 +94,12 @@ function createWindow() {
       customVar: 'elephants',
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true,
         contextIsolation: false
       },
       isDebug: DEBUG
     });
 
-  const view = new BrowserView({
-    title: 'Scratch Jr',
-    icon: `${__dirname}app/assets/icon/icon.png`,
-    webPreferences: {
-      nodeIntegration: false
-    },
-  });
-
-  dataStore = new ScratchJRDataStore(win);
-  win.setBrowserView(view);
+  dataStore.electronBrowserWindow = win;
 
 
   // and load the index.html of the app.
@@ -128,9 +116,15 @@ function createWindow() {
   }
 
   win.on('close', (e) => {
-    e.preventDefault();  
+    e.preventDefault();
     //tell editor to flush the data
-    win.webContents.send('app-close');    
+    win.webContents.send('app-close');
+    // Fallback: force-quit after 5 seconds if renderer doesn't ack
+    setTimeout(() => {
+        if (win && !win.isDestroyed()) {
+            win.destroy();
+        }
+    }, 5000);
   });
 
   win.webContents.on('did-finish-load', () => {
@@ -155,6 +149,12 @@ ipcMain.on('app-closed-acked',(event) => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
 
+  // Create dataStore and eagerly initialize the database before creating the window,
+  // so synchronous database IPC handlers can use dataStore.databaseManager directly
+  dataStore = new ScratchJRDataStore(null);
+  await dataStore.getDatabaseManager();
+  if (DEBUG_DATABASE) debugLog('Database eagerly initialized');
+
   createWindow();
 
   let template;
@@ -169,7 +169,7 @@ app.on('ready', async () => {
             click: () => { win.setFullScreen(!win.isFullScreen()); },
             accelerator: 'CmdOrCtrl+f'
           },
-          { label: 'Restore projects', click: await dataStore.restoreProjects.bind(dataStore) },
+          { label: 'Restore projects', click: dataStore.restoreProjects.bind(dataStore) },
           { type: 'separator' },
           { role: 'quit' },
         ],
@@ -255,6 +255,8 @@ ipcMain.on('io_cleanassets', (event, fileType) => {
     if (db) {
       db.cleanProjectFiles(fileType);
     }
+  }).catch((err) => {
+    if (DEBUG_NYI) debugLog('cleanAssets error:', err);
   });
 
   event.returnValue = true;
@@ -263,19 +265,19 @@ ipcMain.on('io_cleanassets', (event, fileType) => {
 /** Sets the file with the given name to the given contents
     java version writes byte array using Base64.decode
  */
-ipcMain.on('io_setfile', async (event, arg) => {
+ipcMain.on('io_setfile', (event, arg) => {
   if (DEBUG_FILEIO) debugLog('io_setfile', arg);
 
-  event.returnValue = await dataStore.writeProjectFile(arg.name, arg.contents, { encoding: 'utf8' });
+  event.returnValue = dataStore.writeProjectFile(arg.name, arg.contents, { encoding: 'utf8' });
 });
 
 /** Gets a base64-encoded view of the contents of the given file
     java version returns Base64.encodeToString
 */
-ipcMain.on('io_getfile', async (event, arg) => {
+ipcMain.on('io_getfile', (event, arg) => {
   if (DEBUG_FILEIO) debugLog('io_getfile', arg);
 
-  event.returnValue = await dataStore.readProjectFileAsBase64EncodedString(arg);
+  event.returnValue = dataStore.readProjectFileAsBase64EncodedString(arg);
 });
 
 
@@ -283,11 +285,11 @@ ipcMain.on('io_getfile', async (event, arg) => {
  * Returns the media data associated with the given filename and return the result base64-encoded.
  * NOTE: appears to be the same as getfile??
  */
-ipcMain.on('io_getmedia',async (event, filename) => {
+ipcMain.on('io_getmedia', (event, filename) => {
   if (DEBUG_FILEIO) debugLog('io_getmedia', filename);
 
 
-  event.returnValue = await dataStore.readProjectFileAsBase64EncodedString(filename);
+  event.returnValue = dataStore.readProjectFileAsBase64EncodedString(filename);
 });
 
 
@@ -323,10 +325,10 @@ ipcMain.on('io_getmediadone', (event, key) => {
   event.returnValue = true;
 });
 
-ipcMain.on('io_getmedialen', async (event, file, key) => {
+ipcMain.on('io_getmedialen', (event, file, key) => {
   if (DEBUG_FILEIO) debugLog('io_getmedialen', file, key);
 
-  const encodedStr = await dataStore.readProjectFileAsBase64EncodedString(file);
+  const encodedStr = dataStore.readProjectFileAsBase64EncodedString(file);
   dataStore.cacheMedia(key, encodedStr);
 
   event.returnValue = (encodedStr) ? encodedStr.length : 0;
@@ -340,11 +342,11 @@ ipcMain.on('io_getmedialen', async (event, file, key) => {
  * @param extension The extension of the filename to store to
  * @return The filename of the file that was saved.
  */
-ipcMain.on('io_setmedia', async (event, base64ContentStr, ext) => {
+ipcMain.on('io_setmedia', (event, base64ContentStr, ext) => {
   if (DEBUG_FILEIO) debugLog('io_setmedia - write file', ext);
 
   const filename = `${dataStore.getMD5(base64ContentStr)}.${ext}`;
-  await dataStore.writeProjectFile(filename, base64ContentStr, { encoding: 'base64' });
+  dataStore.writeProjectFile(filename, base64ContentStr, { encoding: 'base64' });
 
   event.returnValue = filename;
 });
@@ -354,11 +356,11 @@ ipcMain.on('io_setmedia', async (event, base64ContentStr, ext) => {
  * Writes the given base64-encoded content to a filename with the name key.ext.
  */
 
-ipcMain.on('io_setmedianame',async (event, encodedData, key, ext) => {
+ipcMain.on('io_setmedianame', (event, encodedData, key, ext) => {
   if (DEBUG_FILEIO) debugLog('io_setmedianame', key, ext);
 
   const filename = `${key}.${ext}`;
-  await dataStore.writeProjectFile(filename, encodedData, { encoding: 'base64' });
+  dataStore.writeProjectFile(filename, encodedData, { encoding: 'base64' });
   event.returnValue = filename;
 });
 
@@ -431,7 +433,7 @@ ipcMain.on('io_gettextresource', (event, filename) => {
   then look for  app/src/sounds
   then look in db for the audio name
 */
-ipcMain.on('io_getAudioData', async (event, audioName) => {
+ipcMain.on('io_getAudioData', (event, audioName) => {
   if (DEBUG_FILEIO) debugLog('io_getAudioData - looking for', audioName);
 
 
@@ -448,7 +450,7 @@ ipcMain.on('io_getAudioData', async (event, audioName) => {
     if (DEBUG_FILEIO) debugLog('...trying to look in the PROJECTFILE table', audioName);
 
     // this is already stored as a string, we do not need to convert it
-    let projectDBFile = await dataStore.readProjectFileAsBase64EncodedString(audioName);
+    let projectDBFile = dataStore.readProjectFileAsBase64EncodedString(audioName);
     if (DEBUG_FILEIO && !projectDBFile) debugLog('...WARNING: unable to find: ', audioName);
     event.returnValue = projectDBFile;
     return;
@@ -464,31 +466,35 @@ ipcMain.on('io_getAudioData', async (event, audioName) => {
     return;
   }
 
-  const dataStr = new Buffer(data).toString('base64');
+  const dataStr = Buffer.from(data).toString('base64');
   const extension = path.extname(filePath);
   if (extension === '.mp3') {
     event.returnValue = `data:audio/mp3;base64,${dataStr}`;
+    return;
   } else if (extension === '.wav') {
     event.returnValue = `data:audio/wav;base64,${dataStr}`;
+    return;
   } else {
     event.returnValue = null;
+    return;
   }
 });
 
-ipcMain.on('database_stmt',async (event, json) => {
+ipcMain.on('database_stmt', (event, json) => {
   // {"stmt":"select name,thumbnail,id,isgift from projects where deleted = ? AND version = ? AND gallery IS NULL order by ctime desc","values":["NO","iOSv01"]}
   if (DEBUG_DATABASE) debugLog('database_stmt', json);
 
-  const db = await dataStore.getDatabaseManager();
+  const db = dataStore.databaseManager;
   event.returnValue = db.stmt(json);
 
+  if (DEBUG_DATABASE) debugLog('database_stmt result:', result);
 
-  if (DEBUG_DATABASE) debugLog('database_stmt result:', event.returnValue);
+
 });
-ipcMain.on('database_query', async (event, json) => {
+ipcMain.on('database_query', (event, json) => {
   if (DEBUG_DATABASE) debugLog('database_query', json);
 
-  const db = await dataStore.getDatabaseManager();
+  const db = dataStore.databaseManager;
 
   event.returnValue = JSON.stringify(db.query(json));
 });
@@ -511,12 +517,14 @@ class ScratchJRDataStore {
 
   async getDatabaseManager() {
     if (!this.databaseManager) {
-      const scratchFolder = ScratchJRDataStore.getScratchJRFolder();
-      const scratchDBPath = path.join(scratchFolder, 'scratchjr.sqllite');
-      this.databaseManager = await DatabaseManager.initialize(scratchDBPath);
+      if (!this._dbInitPromise) {
+        const scratchFolder = ScratchJRDataStore.getScratchJRFolder();
+        const scratchDBPath = path.join(scratchFolder, 'scratchjr.sqllite');
+        this._dbInitPromise = DatabaseManager.initialize(scratchDBPath);
+      }
+      this.databaseManager = await this._dbInitPromise;
       if (DEBUG_DATABASE) debugLog('DatabaseManager created');
     }
-
     return this.databaseManager;
   }
 
@@ -618,23 +626,23 @@ class ScratchJRDataStore {
   /** remove from media cache */
   removeFromMediaCache(key) {
     if (this.mediaStrings[key]) {
-      delete this.mediaStrings.key;
+      delete this.mediaStrings[key];
     }
   }
 
   /** looks for a file inside the database, returns as a base64 encoded string
       @param {string} filename inside of PROJECTFILES table
   */
-  async readProjectFileAsBase64EncodedString(filename) {
-    const db = await this.getDatabaseManager();
+  readProjectFileAsBase64EncodedString(filename) {
+    const db = this.databaseManager;
     return db.readProjectFile(filename);
   }
 
   /** removes a file from the PROJECTFILES table
       @param {string} filename inside of PROJECTFILES table
   */
-  async removeProjectFile(filename) {
-    const db = await this.getDatabaseManager();
+  removeProjectFile(filename) {
+    const db = this.databaseManager;
     db.removeProjectFile(filename);
   }
 
@@ -644,8 +652,8 @@ class ScratchJRDataStore {
       @param {string} encoding
 
   */
-  async writeProjectFile(file, contents, encoding) {
-    const db = await this.getDatabaseManager();
+  writeProjectFile(file, contents, encoding) {
+    const db = this.databaseManager;
     if (db.saveToProjectFiles(file, contents, encoding)) {
       return file;
     }
@@ -753,7 +761,7 @@ class DatabaseManager {
   /** saves the database to the file specified in this.databaseFilename */
   save() {
     const data = this.db.export();
-    const buffer = new Buffer(data);
+    const buffer = Buffer.from(data);
     fs.writeFileSync(this.databaseFilename, buffer);
   }
 
@@ -783,7 +791,8 @@ class DatabaseManager {
 
 
       const queryFindFileInProjects = {
-        stmt: `select ID from PROJECTS where json like "%${currentFileToCheck}%"`,
+        stmt: 'select ID from PROJECTS where json like ?',
+        values: [`%${currentFileToCheck}%`],
       };
 
       // search in the JSON field of the PROJECTS table 
@@ -796,7 +805,8 @@ class DatabaseManager {
 
       // search in the usershapes table
       const queryFindFileInUsershapes = {
-        stmt: `select MD5 from USERSHAPES where MD5 = "${currentFileToCheck}"`,
+        stmt: 'select MD5 from USERSHAPES where MD5 = ?',
+        values: [currentFileToCheck],
       };
 
 
@@ -809,7 +819,8 @@ class DatabaseManager {
 
       // search in the userbackgrounds table
       const queryFindFileInUserbkgs = {
-        stmt: `select MD5 from USERBKGS where MD5 = "${currentFileToCheck}"`,
+        stmt: 'select MD5 from USERBKGS where MD5 = ?',
+        values: [currentFileToCheck],
       };
       const bkgFiles = this.query(queryFindFileInUserbkgs);
       if (bkgFiles.length > 0) {
@@ -863,7 +874,8 @@ class DatabaseManager {
     if (rows.length > 0) {
       return rows[0].CONTENTS;
     }
-    return null;
+    event.returnValue = null;
+    return;
   }
 
   saveToProjectFiles(fileMD5, content) {
@@ -939,14 +951,18 @@ class DatabaseManager {
 
       const statement = this.db.prepare(stmt, values);
 
-      while (statement.step()) statement.get();
-      // return JSON.stringify(statement.getAsObject());
+      try {
+        while (statement.step()) statement.get();
+        // return JSON.stringify(statement.getAsObject());
 
-      const result = this.db.exec('select last_insert_rowid();');
+        const result = this.db.exec('select last_insert_rowid();');
 
-      const lastRowId = result[0].values[0][0];
+        const lastRowId = result[0].values[0][0];
 
-      return lastRowId;
+        return lastRowId;
+      } finally {
+        statement.free();
+      }
     } catch (e) {
       if (DEBUG_DATABASE) debugLog('stmt failed', jsonStrOrJsonObj, e);
 
@@ -971,13 +987,16 @@ class DatabaseManager {
 
       const statement = this.db.prepare(stmt, values);
 
+      try {
+        const rows = [];
+        while (statement.step()) {
+          rows.push(statement.getAsObject());
+        }
 
-      const rows = [];
-      while (statement.step()) {
-        rows.push(statement.getAsObject());
+        return rows;
+      } finally {
+        statement.free();
       }
-
-      return rows;
     } catch (e) {
       if (DEBUG_DATABASE) debugLog('query failed', jsonStrOrJsonObj, e);
 

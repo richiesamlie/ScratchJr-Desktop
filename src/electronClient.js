@@ -8,7 +8,7 @@
 /* eslint-disable import/no-extraneous-dependencies */  // --> OFF
 /* eslint-disable import/no-unresolved  */  // --> OFF
 
-const {ipcRenderer, webFrame, remote} = require('electron');
+const {ipcRenderer, webFrame} = require('electron');
 
 
 // disable zooming inside of the browser.  This just messes up scratch jr
@@ -163,7 +163,6 @@ class ElectronDesktopInterface {
 
         }
 
-
     }
 
     loadSoundFromDataURI(name, dataUri) {
@@ -186,7 +185,6 @@ class ElectronDesktopInterface {
 
         // returns a file from the scratch jr documents folder
         return ipcRenderer.sendSync('io_getfile', str);
-
 
     }
 
@@ -861,7 +859,7 @@ class CameraPickerDialog {
     show() {
         if (!this.cameraPickerDiv) {
             this.cameraPickerDiv = document.createElement('div');
-            this.cameraPickerDiv.setAttribute('style', 'z-index:90000; position:absolute; top:0px, left:0px, width: 1000px; height: 1000px;');
+            this.cameraPickerDiv.setAttribute('style', 'z-index:90000; position:absolute; top:0px; left:0px; width: 1000px; height: 1000px;');
 
 
 
@@ -875,10 +873,18 @@ class CameraPickerDialog {
             if (this.isMirrored) {
                 videoStyle = `style='-moz-transform: scale(-1, 1); -webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1); transform: scale(-1, 1); filter: FlipH;'`;
             }
-            this.cameraPickerDiv.innerHTML = `
-               <video id='CameraPickerDialog-cameraFeed'` + videoStyle + ` autoplay></video>
-               <img id='CameraPickerDialog-maskImg' src='` + this.shapeData.image + `'></img>
-                                              `;
+            this.cameraPickerDiv.innerHTML = '';
+            var video = document.createElement('video');
+            video.id = 'CameraPickerDialog-cameraFeed';
+            if (videoStyle) {
+                video.setAttribute('style', videoStyle.replace(/style='([^']+)'/, '$1'));
+            }
+            video.autoplay = true;
+            this.cameraPickerDiv.appendChild(video);
+            var img = document.createElement('img');
+            img.id = 'CameraPickerDialog-maskImg';
+            img.src = this.shapeData.image;
+            this.cameraPickerDiv.appendChild(img);
 
             document.getElementById('backdrop').appendChild(this.cameraPickerDiv);
 

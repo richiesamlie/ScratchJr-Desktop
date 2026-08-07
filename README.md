@@ -2,13 +2,11 @@
 Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, which does not sponsor, endorse, or authorize this content. See scratchjr.org for more information.
 
 ## Downloads 
-[Download ScratchJr for Desktop](https://github.com/JustSch/ScratchJr-Desktop/releases/latest)
+[Download ScratchJr for Desktop](https://github.com/richiesamlie/ScratchJr-Desktop/releases/latest)
 
 Note: 
 
-    MacOS Version is named ScratchJr-darwin-x64-x.x.x.zip 
-    
-    Windows Installer is named ScratchJr.msi
+    Windows: npm run make:zip produces out/ScratchJr-win32-x64.zip
 
 ## The geeky stuff
 
@@ -116,6 +114,40 @@ This repository has the following directory structure:
 * <tt>out/</tt> - Build scripts and other executables
 * <tt>docs/</tt> - Developer Documentation
 
+
+## Credits
+
+This is a fork of [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop), originally created by the ScratchJr open source community. All credit for the original Electron desktop port goes to the contributors of that repository and the official [LLK/ScratchJr](https://github.com/LLK/scratchjr) project by MIT.
+
+### Changes in this fork
+
+**Electron upgrade:** Electron 22 → 42.8.1, Forge 6 → 7.11.2, Node 26 compatibility
+
+**Bug fixes (19 items):**
+- Fixed `isTablet` always returning `true` on desktop (broke mouse interaction)
+- Fixed async IPC `event.returnValue` returning `undefined` (eager DB init)
+- Fixed save-on-close data loss (ack sent before save completes)
+- Fixed `delete this.mediaStrings.key` → `[key]` (memory leak)
+- Parameterized5 SQL injection vulnerabilities
+- Fixed `for...in` on arrays in Runtime (4 locations) and DrawPath
+- Replaced deprecated `new Buffer()` with `Buffer.from()`
+- Fixed sql.js prepared statements never freed (memory leak)
+- Fixed HTML injection via `innerHTML` in camera picker
+- Fixed CSS syntax error in camera picker (commas → semicolons)
+- Added5s window close timeout fallback
+- Fixed DB init race condition with promise guard
+- Fixed `blockstab` handler checking wrong element (copy-paste bug)
+- Fixed ScratchAudio callback silently skipped
+- Added drag lifecycle safety (try/catch + window blur handler) for stuck blocks
+- Removed leaked BrowserView, dead `enableRemoteModule`, dead `remote` import
+- Fixed HTML meta tags outside `<html>`, missing `</div>` in about.html
+- Removed `electron-squirrel-startup` (dead dependency)
+- Added `statement.free()` in finally blocks for database queries
+
+**Build:**
+- Added `npm run make:zip` for reliable builds on Node 26
+- Added `scripts/patch-for-node26.js` (auto-applied via postinstall)
+- Added `scripts/package-and-zip.js`
 
 ## Acknowledgments
 

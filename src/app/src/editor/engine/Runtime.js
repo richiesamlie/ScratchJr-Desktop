@@ -91,14 +91,14 @@ export default class Runtime {
     }
 
     stopThreads () {
-        for (var i in this.threadsRunning) {
+        for (var i = 0; i < this.threadsRunning.length; i++) {
             this.threadsRunning[i].stop();
         }
         this.threadsRunning = [];
     }
 
     stopThreadBlock (b) {
-        for (var i in this.threadsRunning) {
+        for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].firstBlock == b) {
                 this.threadsRunning[i].stop();
             }
@@ -106,7 +106,7 @@ export default class Runtime {
     }
 
     stopThreadSprite (spr) {
-        for (var i in this.threadsRunning) {
+        for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].spr == spr) {
                 this.threadsRunning[i].stop();
             }
@@ -115,7 +115,7 @@ export default class Runtime {
 
     removeRunScript (spr) {
         var res = [];
-        for (var i in this.threadsRunning) {
+        for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].spr == spr) {
                 if (this.threadsRunning[i].isRunning) {
                     if (this.threadsRunning[i].thisblock != null) {
