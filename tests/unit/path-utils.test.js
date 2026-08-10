@@ -4,6 +4,8 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { isParentFolder, validateFilePath } = require('../../src/lib/path-utils.js');
 
+const isWindows = process.platform === 'win32';
+
 describe('isParentFolder', () => {
     it('returns true for a child path', () => {
         expect(isParentFolder('/app', '/app/css/style.css')).toBe(true);
@@ -35,12 +37,14 @@ describe('isParentFolder', () => {
 
     it('handles Windows-style paths', () => {
         // On Windows, path.relative handles backslashes
+        if (!isWindows) return; // Skip on non-Windows
         const parent = 'C:\\Users\\app';
         const child = 'C:\\Users\\app\\file.txt';
         expect(isParentFolder(parent, child)).toBe(true);
     });
 
     it('blocks Windows path traversal', () => {
+        if (!isWindows) return; // Skip on non-Windows
         const parent = 'C:\\Users\\app';
         const escape = 'C:\\Users\\other\\file.txt';
         expect(isParentFolder(parent, escape)).toBe(false);
@@ -72,12 +76,14 @@ describe('validateFilePath', () => {
     });
 
     it('throws for Windows root-relative escape', () => {
+        if (!isWindows) return; // Backslash is not a path separator on Unix
         // path.join normalizes \etc\passwd as root-relative on Windows
         // After the fix, validateFilePath uses path.resolve to catch this
         expect(() => validateFilePath(appRoot, '\\etc\\passwd')).toThrow();
     });
 
     it('throws for absolute path outside parent', () => {
+        if (!isWindows) return; // Windows drive paths are relative on Unix
         // Use a Windows-native absolute path that path.join won't collapse
         const escape = 'C:\\Windows\\System32\\config\\SAM';
         expect(() => validateFilePath(appRoot, escape)).toThrow();
