@@ -14,7 +14,7 @@ const { execSync } = require('child_process');
 
 const pkg = require('../package.json');
 
-const options = {
+    const options = {
     dir: process.cwd(),
     name: pkg.productName || pkg.name,
     platform: process.platform,
@@ -26,7 +26,7 @@ const options = {
         : process.platform === 'darwin'
             ? 'src/icons/mac/icon.icns'
             : 'src/icons/png/512x512.png'),
-    asar: false,
+    asar: true,
     ignore: [/^\/out\//],
     appCopyright: pkg['app-copyright'] || '',
     appVersion: pkg.version,

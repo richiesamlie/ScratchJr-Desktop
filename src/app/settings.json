@@ -1,6 +1,6 @@
 {
     "edition": "free",
-    "scratchJrVersion": "iOSv01",
+    "scratchJrVersion": "desktop-v1.3.11",
     "useStoryStarters": false,
     "shareEnabled": false,
     "defaultSprite": "Blue.svg",

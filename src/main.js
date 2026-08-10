@@ -26,20 +26,15 @@ const util = require('util');
 
 const crypto = require('crypto');
 
-let isDev = require('electron-is-dev');
-
-isDev = (isDev) || process.env.DEBUG_SCRATCHJR;
-
-
-/* eslint-disable import/extensions */  // --> OFF
-/* eslint-disable import/no-extraneous-dependencies */  // --> OFF
-/* eslint-disable import/no-unresolved  */  // --> OFF
-
 const { app, dialog, BrowserWindow, ipcMain, Menu, globalShortcut } = require('electron');
+
+const isDev = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
 
 /* eslint-enable import/extensions */  // --> ON
 /* eslint-enable import/no-extraneous-dependencies */  // --> ON
 /* eslint-enable import/no-unresolved  */  // --> ON
+
+const isDev = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
 
 
 
@@ -192,6 +187,7 @@ ipcMain.on('app-closed-acked',(event) => {
   // save the database if it has been opened.
   if (dataStore.databaseManager) {
     dataStore.databaseManager.save();
+    dataStore.databaseManager.close();
   }
 
   saveWindowState();
