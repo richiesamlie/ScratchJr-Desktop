@@ -39,10 +39,10 @@ const isDev = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
 
 const DEBUG = isDev;
 const DEBUG_DATABASE = DEBUG && false;
-const DEBUG_FILEIO = DEBUG && true;
+const DEBUG_FILEIO = DEBUG && false;
 const DEBUG_RESOURCEIO = DEBUG && false;
 const DEBUG_CLEANASSETS = DEBUG && false;
-const DEBUG_NYI = DEBUG && true;
+const DEBUG_NYI = DEBUG && false;
 const DEBUG_LOAD_DEVTOOLS = DEBUG && true;
 
 
