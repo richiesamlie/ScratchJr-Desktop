@@ -20,7 +20,7 @@ import Localization from '../utils/Localization.js';
 import {libInit, gn, scaleMultiplier, newHTML,
     isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib.js';
 
-const { ipcRenderer } = require('electron');
+const bridge = window.scratchjr;
 
 let workingCanvas = document.createElement('canvas');
 let workingCanvas2 = document.createElement('canvas');
@@ -991,9 +991,9 @@ export default class ScratchJr {
     }
 }
 
-ipcRenderer.on('app-close', function(event) {
+bridge.onAppClose(function() {
     // save the project, then tell electron that it can exit
     ScratchJr.saveProject(null, function () {
-        event.sender.send('app-closed-acked');
+        bridge.sendAppClosedAcked();
     });
 });

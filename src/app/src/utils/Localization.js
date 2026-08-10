@@ -1,11 +1,7 @@
-const IntlMessageFormat = require('intl-messageformat').IntlMessageFormat;
+import { IntlMessageFormat } from 'intl-messageformat';
 
 import Cookie from './Cookie.js';
 import IO from '../iPad/IO.js';
-
-// the subsquent requires need IntlMessageFormat defined -
-// so pop it in the global namespace.
-global.IntlMessageFormat = IntlMessageFormat;
 
 let currentLocale;
 let localizationMessages = {};
@@ -79,9 +75,9 @@ export default class Localization {
     // Translate a particular message given the message key and info
     static localize (key, formatting) {
         var message;
-        if (window.IntlMessageFormat) {
+        if (IntlMessageFormat) {
             if (key in localizationMessages) {
-                message = new window.IntlMessageFormat(localizationMessages[key], currentLocale);
+                message = new IntlMessageFormat(localizationMessages[key], currentLocale);
                 return message.format(formatting);
             }
         } else {

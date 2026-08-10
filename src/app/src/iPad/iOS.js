@@ -70,15 +70,15 @@ export default class iOS {
     }
 
     // Database functions
-    static stmt (json, fcn) {
-        var result = tabletInterface.database_stmt(JSON.stringify(json));
+    static async stmt(json, fcn) {
+        var result = await tabletInterface.database_stmt(JSON.stringify(json));
         if (typeof (fcn) !== 'undefined') {
             fcn(result);
         }
     }
 
-    static query (json, fcn) {
-        var result = tabletInterface.database_query(JSON.stringify(json));
+    static async query(json, fcn) {
+        var result = await tabletInterface.database_query(JSON.stringify(json));
         if (typeof (fcn) !== 'undefined') {
             fcn(result);
         }
@@ -94,27 +94,27 @@ export default class iOS {
 
     // IO functions
 
-    static cleanassets (ft, fcn) {
-        tabletInterface.io_cleanassets(ft); fcn();
+    static async cleanassets(ft, fcn) {
+        await tabletInterface.io_cleanassets(ft); fcn();
     }
 
-    static getmedia (file, fcn) {
+    static async getmedia(file, fcn) {
         mediacounter++;
-        var nextStep = function (file, key, whenDone) {
-            var result = tabletInterface.io_getmedialen(file, key);
+        var nextStep = async function (file, key, whenDone) {
+            var result = await tabletInterface.io_getmedialen(file, key);
             iOS.processdata(key, 0, result, '', whenDone);
         };
         nextStep(file, mediacounter, fcn);
     }
 
-    static getmediadata (key, offset, len, fcn) {
-        var result = tabletInterface.io_getmediadata(key, offset, len);
+    static async getmediadata(key, offset, len, fcn) {
+        var result = await tabletInterface.io_getmediadata(key, offset, len);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static processdata (key, off, len, oldstr, fcn) {
+    static async processdata(key, off, len, oldstr, fcn) {
         if (len == 0) {
             iOS.getmediadone(key);
             fcn(oldstr);
@@ -126,16 +126,16 @@ export default class iOS {
         });
     }
 
-    static getsettings (fcn) {
-        var result = tabletInterface.io_getsettings();
+    static async getsettings(fcn) {
+        var result = await tabletInterface.io_getsettings();
         if (fcn) {
             fcn(result);
         }
     }
 
 	
-    static getmediadone (file, fcn) {
-        var result = tabletInterface.io_getmediadone(file);
+    static async getmediadone(file, fcn) {
+        var result = await tabletInterface.io_getmediadone(file);
         if (fcn) {
             fcn(result);
         }
@@ -143,51 +143,51 @@ export default class iOS {
 
 	
 
-    static setmedia (str, ext, fcn) {
-        var result = tabletInterface.io_setmedia(str, ext);
+    static async setmedia(str, ext, fcn) {
+        var result = await tabletInterface.io_setmedia(str, ext);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static setmedianame (str, name, ext, fcn) {
-        var result = tabletInterface.io_setmedianame(str, name, ext);
+    static async setmedianame(str, name, ext, fcn) {
+        var result = await tabletInterface.io_setmedianame(str, name, ext);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static getmd5 (str, fcn) {
-        var result = tabletInterface.io_getmd5(str);
+    static async getmd5(str, fcn) {
+        var result = await tabletInterface.io_getmd5(str);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static remove (str, fcn) {
-        var result = tabletInterface.io_remove(str);
+    static async remove(str, fcn) {
+        var result = await tabletInterface.io_remove(str);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static getfile (str, fcn) {
-        var result = tabletInterface.io_getfile(str);
+    static async getfile(str, fcn) {
+        var result = await tabletInterface.io_getfile(str);
         if (fcn) {
             fcn(result);
         }
     }
 
 		
-	static gettextresource (filename, fcn) {
-        var result = tabletInterface.io_gettextresource(filename);
+	static async gettextresource(filename, fcn) {
+        var result = await tabletInterface.io_gettextresource(filename);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static setfile (name, str, fcn) {
-        var result = tabletInterface.io_setfile(name, btoa(str));
+    static async setfile(name, str, fcn) {
+        var result = await tabletInterface.io_setfile(name, btoa(str));
         if (fcn) {
             fcn(result);
         }

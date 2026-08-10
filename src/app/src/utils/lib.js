@@ -82,15 +82,15 @@ export function preprocess (s) {
 }
 
 /**
- * Load the URL synchronously (fine because it's file://), preprocess the result and return the string.
+ * Load the URL, preprocess the result and return the string.
  */
-export function preprocessAndLoad (url) {
-  
+export async function preprocessAndLoad (url) {
+
     var responseText = null;
     if (window.tablet) {
-    	responseText = window.tablet.io_gettextresource(url);
+    	responseText = await window.tablet.io_gettextresource(url);
     } else {  // hopefully unused
-  
+
     	var xmlhttp = new XMLHttpRequest();
     	xmlhttp.open('GET', url, false);
     	xmlhttp.send();
@@ -103,7 +103,7 @@ export function preprocessAndLoad (url) {
  * Load a CSS file, preprocess it using preprocessAndLoad() and then returns it as a style tag.
  * Also rewrites all instances of url() with a different base
  */
-export function preprocessAndLoadCss (baseUrl, url) {
+export async function preprocessAndLoadCss (baseUrl, url) {
 
 	// write the url into the tag so we don't keep loading styles <style id='url'>
 	// into the head tag
@@ -112,7 +112,7 @@ export function preprocessAndLoadCss (baseUrl, url) {
 		return;
 	}
 
-    var cssData = preprocessAndLoad(url);
+    var cssData = await preprocessAndLoad(url);
     cssData = cssData.replace(/url\('/g, 'url(\'' + baseUrl + '/');
     cssData = cssData.replace(/url\(([^'])/g, 'url(' + baseUrl + '/$1');
 
@@ -120,7 +120,7 @@ export function preprocessAndLoadCss (baseUrl, url) {
     let style = document.createElement('style');
     style.id = url;
     style.type = 'text/css';
-    
+
     if (style.styleSheet){
         style.styleSheet.cssText = cssData;
     } else {
@@ -399,14 +399,14 @@ export function CSSTransition3D (el, obj) {
             style[key] = obj.style[key];
         }
     }
-    var items = '-webkit-transform ' + duration + 's ' + transition;
+    var items = 'transform ' + duration + 's ' + transition;
     var translate = 'translate3d(' + style.left + ',' + style.top + ',0px)';
-    el.addEventListener('webkitTransitionEnd', transitionDone, true);
-    el.style.webkitTransition = items;
-    el.style.webkitTransform = translate;
+    el.addEventListener('transitionend', transitionDone, true);
+    el.style.transition = items;
+    el.style.transform = translate;
     function transitionDone () {
-        el.style.webkitTransition = '';
-        var mtx = new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform);
+        el.style.transition = '';
+        var mtx = new DOMMatrix(window.getComputedStyle(el).transform);
         el.left = mtx.m41;
         el.top = mtx.m42;
         if (obj.onComplete) {

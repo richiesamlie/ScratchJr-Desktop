@@ -10,7 +10,7 @@ html {
     color: #4c4d4f;
     direction: ltr;
     font: 81.25% Roboto, arial, sans-serif;
-    -webkit-user-select: none;
+    user-select: none;
     height: 100%;
 }
 

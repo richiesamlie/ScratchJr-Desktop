@@ -1,23 +1,9 @@
 // This file lives in the client side and has access to the dom
-// if it needs to talk to node.js or files, it needs to use the ipcRenderer to
-// chat to the electron process.  this will then hop over to main.js.
+// It communicates with the main process through the preload bridge (window.scratchjr).
+// Direct require('electron') is no longer allowed — nodeIntegration is off.
 
+const bridge = window.scratchjr;
 
-
-/* eslint-disable import/extensions */  // --> OFF
-/* eslint-disable import/no-extraneous-dependencies */  // --> OFF
-/* eslint-disable import/no-unresolved  */  // --> OFF
-
-const {ipcRenderer, webFrame} = require('electron');
-
-
-// disable zooming inside of the browser.  This just messes up scratch jr
-webFrame.setVisualZoomLevelLimits(1, 1);
-//webFrame.setLayoutZoomLevelLimits(0, 0);
-
-/* eslint-enable import/extensions */  // --> ON
-/* eslint-enable import/no-extraneous-dependencies */  // --> ON
-/* eslint-enable import/no-unresolved  */  // --> ON
 
 const DEBUG = false;
 //const DEBUG =   remote.getCurrentWebContents().browserWindowOptions.isDebug;  // grab the DEBUG variable from main. This is passed through the BrowserWindow creation
@@ -48,10 +34,10 @@ function debugLog(...args) {
     		
     		// install an error event handler to capture unhandled messages
     		window.addEventListener('error', function (e) {
-			  	ipcRenderer.send('debugWriteLog', e);
+			  	bridge.debugWriteLog(e);
 			});
     	}
-    	return ipcRenderer.send('debugWriteLog', args);
+    	return bridge.debugWriteLog(args);
     }
     return true;
 }
@@ -59,7 +45,7 @@ debugLog('electronClient debugLog enabled =======================');
 
 
 // reload the projects if the database has been reloaded off disk.
-ipcRenderer.on('databaseRestored', function() {
+bridge.onDatabaseRestored(function() {
     // same as homeGoBack - reload the projects
     window.location.href = 'index.html?back=yes';
 });
@@ -74,91 +60,90 @@ class ElectronDesktopInterface {
         this.currentAudio = {};
     }
 
-    database_stmt(json) {
-        return ipcRenderer.sendSync('database_stmt', json);
+    async database_stmt(json) {
+        return await bridge.database_stmt(json);
 
     }
-    database_query(json) {
+    async database_query(json) {
         if (DEBUG_DATABASE) debugLog('beginning database_query', json);
-        let res = ipcRenderer.sendSync('database_query', json);
+        let res = await bridge.database_query(json);
         if (DEBUG_DATABASE) debugLog('end database_query', res);
         return res;
 
     }
 
-    io_getsettings(){
+    async io_getsettings(){
 
         if (DEBUG_RESOURCEIO) debugLog('io_getsettings');
-        let settings = ipcRenderer.sendSync('io_getsettings', null);
+        let settings = await bridge.io_getsettings();
         return settings;
 
 
     }
 
-    io_getmedia(file){
+    async io_getmedia(file){
 
         if (DEBUG_FILEIO) debugLog('io_getmedia', file);
-        return ipcRenderer.sendSync('io_getmedia', file);
+        return await bridge.io_getmedia(file);
 
     }
 
-    io_getmediadata(key, offset, length){
+    async io_getmediadata(key, offset, length){
 
         if (DEBUG_FILEIO) debugLog('io_getmediadata', key, offset, length);
-        return ipcRenderer.sendSync('io_getmediadata', key, offset, length);
+        return await bridge.io_getmediadata(key, offset, length);
 
     }
 
-    io_getmediadone(key){
+    async io_getmediadone(key){
 
         if (DEBUG_FILEIO) debugLog('io_getmediadone', key);
-        return ipcRenderer.sendSync('io_getmediadone', key);
+        return await bridge.io_getmediadone(key);
 
     }
-    io_getmedialen(file, key){
+    async io_getmedialen(file, key){
 
         if (DEBUG_FILEIO) debugLog('io_getmedialen', file, key);
-        return ipcRenderer.sendSync('io_getmedialen', file, key);
+        return await bridge.io_getmedialen(file, key);
 
     }
 
-    io_setmedia(str,  ext){
+    async io_setmedia(str,  ext){
         if (DEBUG_FILEIO)  debugLog('io_setmedia', str, ext);
-        return ipcRenderer.sendSync('io_setmedia', str,  ext);
+        return await bridge.io_setmedia(str, ext);
 
     }
 
-    io_setmedianame(str, name, ext){
+    async io_setmedianame(str, name, ext){
         if (DEBUG_FILEIO) debugLog('io_setmedianame', name, ext);
 
-        return ipcRenderer.sendSync('io_setmedianame', str, name, ext);
+        return await bridge.io_setmedianame(str, name, ext);
     }
 
-    io_getmd5(str){
+    async io_getmd5(str){
         if (DEBUG_FILEIO) debugLog('io_getmd5', str);
-        return (str) ? ipcRenderer.sendSync('io_getmd5', str) : null;
+        return (str) ? await bridge.io_getmd5(str) : null;
     }
 
 
-    io_remove(str){
+    async io_remove(str){
         if (DEBUG_NYI)  debugLog('io_remove - NYI', str);
-        return ipcRenderer.sendSync('io_remove', str);
+        return await bridge.io_remove(str);
 
     }
 
-    io_cleanassets(str){
+    async io_cleanassets(str){
         if (DEBUG_NYI) {
             debugLog('io_cleanassets - NYI', str);
         }
-        return ipcRenderer.sendSync('io_cleanassets', str);
+        return await bridge.io_cleanassets(str);
 
     }
 
 
-    io_registersound(dir, name){
-
+    async io_registersound(dir, name) {
         if (!this.currentAudio[name]) {
-            let dataUri = ipcRenderer.sendSync('io_getAudioData', name);
+            let dataUri = await bridge.io_getAudioData(name);
             this.loadSoundFromDataURI(name, dataUri);
 
         }
@@ -180,30 +165,28 @@ class ElectronDesktopInterface {
         }
     }
 
-    io_getfile(str){
+    async io_getfile(str){
         if (DEBUG_FILEIO) debugLog('io_getfile', str);
 
         // returns a file from the scratch jr documents folder
-        return ipcRenderer.sendSync('io_getfile', str);
+        return await bridge.io_getfile(str);
 
     }
 
-    io_gettextresource(filename){
+    async io_gettextresource(filename){
         if (DEBUG_RESOURCEIO) debugLog('io_gettextresource', filename);
 
         // returns a file from the app resource folder
-        return ipcRenderer.sendSync('io_gettextresource', filename);
-
-
+        return await bridge.io_gettextresource(filename);
     }
 
 
 
 
-    io_setfile(name, btoa_str){
+    async io_setfile(name, btoa_str){
         if (DEBUG_FILEIO)  debugLog('io_setfile', name, btoa_str);
 
-        return ipcRenderer.sendSync('io_setfile', {name: name, contents: btoa_str});
+        return await bridge.io_setfile(name, btoa_str);
     }
 
 
@@ -966,7 +949,7 @@ class CameraPickerDialog {
 
 
 
-ipcRenderer.on('keyboard-shortcut', function(event, action) {
+bridge.onKeyboardShortcut(function(action) {
   switch (action) {
     case 'save':
       if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) {

@@ -1,7 +1,7 @@
 @import url('../../css/font.css');
 
 html {
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 #inappBlocksGuide {

@@ -4,10 +4,6 @@ div.frame {
     min-width: 766px;
     min-height: 745px;
     position: relative;
-    -webkit-overflow-scrolling: none;
-    -moz-user-select: -moz-none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
     user-select: none;
 }
 
@@ -171,7 +167,7 @@ div.frame {
     background-size: 100.5%; /* webview pixelates the image unless we do this */
     visibility: hidden;
     z-index: 5;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .deletethumb.on {visibility: visible; }
@@ -184,7 +180,7 @@ div.frame {
     height: ${css_vh(2.6)};
     background: #515050;
     -moz-border-radius: 12px;
-    -webkit-border-radius: 12px;
+    border-radius: 12px;
 }
 
 /*Editor UI*/
@@ -209,7 +205,7 @@ div.frame {
     z-index: 50;
     width: 100%;
     height: ${3 * scaleMultiplier}px;
-    -webkit-box-shadow: 0px ${2 * scaleMultiplier}px ${6 * scaleMultiplier}px #333;
+    box-shadow: 0px ${2 * scaleMultiplier}px ${6 * scaleMultiplier}px #333;
 }
 
 #blockspalette .papercut .withstyle{
@@ -303,7 +299,7 @@ div.frame {
     background: url('../assets/ui/closeit.svg');
     background-size: 100.5%; /* webview pixelates the image unless we do this */
     z-index: 5;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Palette animations */
@@ -317,7 +313,7 @@ div.frame {
     background-size: 100.5%; /* webview pixelates the image unless we do this */
     z-index: 5;
     zoom: 75%;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .deletesprite {
@@ -328,7 +324,7 @@ div.frame {
     background: url('../assets/ui/closeit.svg');
     background-size: 100.5%; /* webview pixelates the image unless we do this */
     z-index: 5;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .deletetext {
@@ -339,45 +335,45 @@ div.frame {
     background: url('../assets/ui/closeit.svg');
     background-size: 100.5%; /* webview pixelates the image unless we do this */
 z-index: 5;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .shakeme{
-    -webkit-animation:swing 0.3s infinite ease-in-out;
-    -webkit-transform-origin: center;
+    animation:swing 0.3s infinite ease-in-out;
+    transform-origin: center;
 }
 
 .shakeflip{
-    -webkit-animation:swingflip 0.3s infinite ease-in-out;
-    -webkit-transform-origin: center;
+    animation:swingflip 0.3s infinite ease-in-out;
+    transform-origin: center;
 }
 
-@-webkit-keyframes swingflip{
-    0%{-webkit-transform:rotate(-3deg) scale(-1,1);}
-    50%{-webkit-transform:rotate(6deg) scale(-1,1);}
-    100%{-webkit-transform:rotate(-3deg) scale(-1,1);}
+@keyframes swingflip{
+    0%{transform:rotate(-3deg) scale(-1,1);}
+    50%{transform:rotate(6deg) scale(-1,1);}
+    100%{transform:rotate(-3deg) scale(-1,1);}
 }
 
 .shakeyou{
-    -webkit-animation:swing 0.3s infinite ease-in-out 0.15s;
-    -webkit-transform-origin: center;
+    animation:swing 0.3s infinite ease-in-out 0.15s;
+    transform-origin: center;
 }
 
-@-webkit-keyframes swing{
-    0%{-webkit-transform:rotate(-3deg)}
-    50%{-webkit-transform:rotate(6deg)}
-    100%{-webkit-transform:rotate(-3deg)}
+@keyframes swing{
+    0%{transform:rotate(-3deg)}
+    50%{transform:rotate(6deg)}
+    100%{transform:rotate(-3deg)}
 }
 
 .shakethumb{
-    -webkit-animation:swingthumb 0.3s infinite ease-in-out;
-    -webkit-transform-origin: center;
+    animation:swingthumb 0.3s infinite ease-in-out;
+    transform-origin: center;
 }
 
-@-webkit-keyframes swingthumb{
-    0%{-webkit-transform:rotate(0.8deg)}
-    50%{-webkit-transform:rotate(-1.6deg)}
-    100%{-webkit-transform:rotate(0.8deg)}
+@keyframes swingthumb{
+    0%{transform:rotate(0.8deg)}
+    50%{transform:rotate(-1.6deg)}
+    100%{transform:rotate(0.8deg)}
 }
 
 
@@ -404,7 +400,7 @@ z-index: 5;
     height: ${css_vh(6.51)};
     background: url('../assets/undo/undo.png');
     background-size: 101%;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .redobutton {
@@ -416,7 +412,7 @@ z-index: 5;
     height: ${css_vh(6.51)};
     background: url('../assets/undo/redo.png');
     background-size: 101%;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .undobutton.enable {opacity: 1; background: url('../assets/undo/undo.svg'); background-size: 101%;}
@@ -442,7 +438,7 @@ z-index: 5;
 #scriptscontainer .look {
     position: absolute;
     display: visible;
-    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
 }
 
 #scriptscontainer .script {
@@ -543,7 +539,7 @@ z-index: 5;
     border: 0px solid #ccc;
     background-color: #F9CF37;
     z-index: 12000;
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255, 255, 255, 0.2)), color-stop(35%,rgba(255, 255, 255, 0)), color-stop(100%,rgba(255, 255, 255, 0)));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0) 100%);
 }
 
 .parentalgateproblem {
@@ -592,7 +588,7 @@ z-index: 5;
     border: 0px solid #ccc;
     background-color: #F9CF37;
     z-index: 11000;
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255, 255, 255, 0.2)), color-stop(35%,rgba(255, 255, 255, 0)), color-stop(100%,rgba(255, 255, 255, 0)));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0) 100%);
 }
 
 div.infoboxShareButtons {
@@ -628,7 +624,7 @@ div#infoboxShareButtonEmail::before {
    background-repeat: no-repeat;
    width: ${css_vw(4.88)};
    height:  ${css_vh(6.51)};
-   -webkit-transform: rotate(-10deg);
+   transform: rotate(-10deg);
    margin-left: 10%;
    margin-top: -4%;
 }
@@ -642,7 +638,7 @@ div#infoboxShareButtonAirdrop::before {
    background-repeat: no-repeat;
    width: ${css_vw(4.88)};
    height:  ${css_vh(6.81)};
-   -webkit-transform: rotate(-10deg);
+   transform: rotate(-10deg);
    margin-left: 10%;
    margin-top: -5%;
 }
@@ -651,23 +647,23 @@ img.infoboxShareLoading {
     margin-top:3%;
     margin-left:45%;
     visibility: hidden;
-    -webkit-animation: 3s rotate linear infinite;
+    animation: 3s rotate linear infinite;
 }
 
-@-webkit-keyframes rotate {
-    0% {-webkit-transform: rotate(0deg);}
-    100% {-webkit-transform: rotate(360deg);}
+@keyframes rotate {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
 }
 
 .infobox.fade {
-    /*  -webkit-transition: top .2s linear, left .2s ease-out;*/
+    /*  transition: top .2s linear, left .2s ease-out;*/
   /*  top: ${css_vh(-100)};
     left: ${css_vh(133.33)};*/
     display:none;
 }
 
 .infobox.fade.in {
-    /*  -webkit-transition: top .2s linear, left .2s ease-out;*/
+    /*  transition: top .2s linear, left .2s ease-out;*/
     left: 0px;
     top: 0px;
     right: unset;
@@ -683,12 +679,12 @@ form.projectname {
     top: ${css_vh(18.88)};
     background: #D6AF36;
     border: 2px solid #D6AF36;
-    -webkit-box-shadow: inset 0 ${2 * scaleMultiplier}px 0 rgba(255, 255, 255, 1), 0 ${scaleMultiplier}px ${2 * scaleMultiplier}px rgba(255, 255, 255,0);
-    -webkit-border-radius: ${32 * scaleMultiplier}px;
-    -webkit-box-shadow: 0px ${scaleMultiplier}px 0px #ffffff;
+    box-shadow: inset 0 ${2 * scaleMultiplier}px 0 rgba(255, 255, 255, 1), 0 ${scaleMultiplier}px ${2 * scaleMultiplier}px rgba(255, 255, 255,0);
+    border-radius: ${32 * scaleMultiplier}px;
+    box-shadow: 0px ${scaleMultiplier}px 0px #ffffff;
     margin-left: auto;
     margin-right: auto;
-    /*	-webkit-user-select: none !important;*/
+    /*	user-select: none !important;*/
 }
 
 *.pnamefield{
@@ -700,7 +696,7 @@ form.projectname {
     font-weight: normal;
     font-size: ${css_vh(3.13)};
     line-height: ${css_vh(4.17)};
-    -webkit-border-radius: ${36 * scaleMultiplier}px;
+    border-radius: ${36 * scaleMultiplier}px;
     cursor: default;
     background: white;
     width: ${css_vh(46.88)};
@@ -767,11 +763,11 @@ form.projectname {
 /* Programming */
 
 *.menustyle {
-  -webkit-border-radius: 12px;
+  border-radius: 12px;
   border-radius: 12px;
   display: inline-block;
   overflow: visible;
-  -webkit-box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 1px 2px rgba(0, 0, 0,0);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 1px 2px rgba(0, 0, 0,0);
   box-shadow: inset 0 2px 0 rgba(255, 255,255, 0.5), 0 1px 2px rgba(0, 0, 0, 0);
   cursor: pointer;
   margin: 0px;
@@ -786,7 +782,7 @@ form.projectname {
 }
 
 *.menustyle.yellow {
-  -webkit-box-shadow: inset 0 2px 0 rgba(255, 255, 0, 1), 0 1px 2px rgba(0, 0, 0,0);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 0, 1), 0 1px 2px rgba(0, 0, 0,0);
   box-shadow: inset 0 2px 0 rgba(255, 255, 0,1), 0 1px 2px rgba(0, 0, 0, 0);
 	background-color: #FFEA00;
 	border: 2px solid #D6BD05;
@@ -797,14 +793,14 @@ form.projectname {
   width: 42px;
   height: 42px;
   margin: 2px;
-  -webkit-border-radius: 8px;
+  border-radius: 8px;
   display: inline-block;
   cursor: pointer;
   overflow: hidden;
 }
 
 *.menustyle.yellow > *.ddchoice{
-	-webkit-box-shadow: inset 0 2px 0 rgba(255, 255, 0, 1), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
+	box-shadow: inset 0 2px 0 rgba(255, 255, 0, 1), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 2px 0 rgba(255, 255, 0, 1), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
 	background-color: #FCDD03;
 	border: 2px solid #D6BD05;
@@ -812,7 +808,7 @@ form.projectname {
 }
 
 *.menustyle.orange > *.ddchoice{
-  -webkit-box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
 	background-color: #FFA10B;
 	border: 2px solid #C67100;
@@ -820,7 +816,7 @@ form.projectname {
 }
 
 *.menustyle.yellow > *.ddchoice:active{
-	-webkit-box-shadow: inset 0 2px 0 #B59B00;
+	box-shadow: inset 0 2px 0 #B59B00;
   box-shadow: inset 0 2px 0 #B59B00;
 	background-color: #E2C705;
 	border: 2px solid #B59B00;
@@ -828,7 +824,7 @@ form.projectname {
 }
 
 *.menustyle.orange > *.ddchoice{
-  -webkit-box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 2px 0 rgba(255, 255, 0, 0.5), 0 -1px 0px -1px  rgba(0, 0, 0, 0.2);
 	background-color: #FFA10B;
 	border: 2px solid #F7931E;
@@ -853,8 +849,8 @@ p.soundname{
     font-size: 12px;
     padding: ${css_vh(0.00)};
     cursor: default;
-    -webkit-text-size-adjust: auto;
-    -webkit-transform: translateZ(0);
+    text-size-adjust: auto;
+    transform: translateZ(0);
 }
 
 /* zoom is already applied so no need to multiply by scaleMultiplier */
@@ -864,10 +860,10 @@ p.soundname{
     left: 37px;
     width: 20px;
     height: 20px;
-    -webkit-border-radius: 20px;
+    border-radius: 20px;
     border: 2px solid #64A01F;
     background: white;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 /* zoom is already applied so no need to multiply by scaleMultiplier */
@@ -887,7 +883,7 @@ p.soundname{
     line-height: 16px;
     padding: 0px;
     cursor: default;
-    -webkit-text-size-adjust: auto;
+    text-size-adjust: auto;
 }
 
 p.balloon{
@@ -900,7 +896,7 @@ p.balloon{
     font-weight: bold;
     overflow: hidden;
     z-index:  4;
-    -webkit-text-size-adjust: auto;
+    text-size-adjust: auto;
 }
 
 /*
@@ -916,11 +912,11 @@ Blocks text fields and input fields
     top: ${css_vh(7.16)};
     left: ${css_vh(0.78)};
     color: #77787b;
-    -webkit-border-radius: ${6 * scaleMultiplier}px;
+    border-radius: ${6 * scaleMultiplier}px;
     border: ${2 * scaleMultiplier}px solid #c0c2c3;
     background: #ffffff;
     pointer-events: all;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .textfield h3 {
@@ -960,7 +956,7 @@ Blocks text fields and input fields
     float: left;
     background: #ffffff;
     -moz-border-radius: ${5 * scaleMultiplier}px;
-    -webkit-border-radius: ${5 * scaleMultiplier}px;
+    border-radius: ${5 * scaleMultiplier}px;
     outline: 0px solid;
     text-align: center;
     color: #77787b;
@@ -975,7 +971,7 @@ Blocks text fields and input fields
 .textinput:focus{
     border: 2px solid  #28A5DA;
     -moz-border-radius: ${5 * scaleMultiplier}px;
-    -webkit-border-radius: ${5 * scaleMultiplier}px;
+    border-radius: ${5 * scaleMultiplier}px;
     outline-color: rgba(0, 0, 0, 0);
     width: ${css_vh(62.51)};
     height: ${css_vh(6.25)};
@@ -994,9 +990,9 @@ Blocks text fields and input fields
     top: ${css_vh(71.61)};
     right: ${css_vh(1)};
     border: ${scaleMultiplier}px solid #B9C0C6;
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0%,#ffffff), color-stop(1%,#ffffff),  color-stop(100%,#F9F9F9));
-    -webkit-border-radius: ${6 * scaleMultiplier}px;
-    -webkit-box-shadow: ${2 * scaleMultiplier}px ${2 * scaleMultiplier}px ${css_vh(0)} #aaa;
+    background-image: linear-gradient(to bottom, #ffffff, #ffffff, #F9F9F9);
+    border-radius: ${6 * scaleMultiplier}px;
+    box-shadow: ${2 * scaleMultiplier}px ${2 * scaleMultiplier}px ${css_vh(0)} #aaa;
     z-index: 1000;
 }
 
@@ -1010,7 +1006,7 @@ Blocks text fields and input fields
     padding: ${css_vh(0.00)};
     width: ${css_vh(23.18)};
     height: ${css_vh(27.08)};
-    -webkit-border-radius: ${6 * scaleMultiplier}px;
+    border-radius: ${6 * scaleMultiplier}px;
 }
 
 *.onekey {
@@ -1073,11 +1069,11 @@ Blocks text fields and input fields
     left: ${css_vh(1.30)};
     color: #77787b;
     -moz-border-radius: ${12 * scaleMultiplier}px;
-    -webkit-border-radius: ${12 * scaleMultiplier}px;
+    border-radius: ${12 * scaleMultiplier}px;
     border: ${2 * scaleMultiplier}px solid #c0c2c3;
     background: #ffffff;
     pointer-events: all;
-    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .numfield h3 {
@@ -1096,7 +1092,7 @@ Blocks text fields and input fields
 }
 
 .numfield.on {
-    -webkit-box-shadow: 0px ${scaleMultiplier}px ${scaleMultiplier}px rgba(40, 165, 218, 0.5);
+    box-shadow: 0px ${scaleMultiplier}px ${scaleMultiplier}px rgba(40, 165, 218, 0.5);
     border: ${2 * scaleMultiplier}px solid  #9dc7d5;
     background: #28A5DA;
     color: #ffffff;
@@ -1113,5 +1109,5 @@ p.textsprite {
     font-family: Helvetica;
     font-weight: bold;
     width: auto;
-    -webkit-text-size-adjust: auto;
+    text-size-adjust: auto;
 }

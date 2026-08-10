@@ -95,8 +95,8 @@
     margin: 0 auto;
     width: 84.8%;
     height: 78%;
-    -webkit-transform-style: preserve-3d;
-    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
         -webkit-tap-highlight-color: transparent;
 }
 
@@ -134,14 +134,14 @@
 .samplethumb#sample-6 { left: ${css_vw(46.4)}; top:  ${css_vh(28)}; }
 .samplethumb#sample-7 { left: ${css_vw(68.6)}; top:  ${css_vh(28)}; }
 
-.samplethumb .thumb.pos0 { -webkit-transform: rotateZ(-1deg);}
-.samplethumb .thumb.pos1 { -webkit-transform: rotateZ(0.5deg);}
-.samplethumb .thumb.pos2 { -webkit-transform: rotateZ(-0.7deg);}
-.samplethumb .thumb.pos3 { -webkit-transform: rotateZ(0.2deg);}
-.samplethumb .thumb.pos4 { -webkit-transform: rotateZ(-1deg);}
-.samplethumb .thumb.pos5 { -webkit-transform: rotateZ(0.6deg);}
-.samplethumb .thumb.pos6 { -webkit-transform: rotateZ(-0.3deg);}
-.samplethumb .thumb.pos7 { -webkit-transform: rotateZ(1deg);}
+.samplethumb .thumb.pos0 { transform: rotateZ(-1deg);}
+.samplethumb .thumb.pos1 { transform: rotateZ(0.5deg);}
+.samplethumb .thumb.pos2 { transform: rotateZ(-0.7deg);}
+.samplethumb .thumb.pos3 { transform: rotateZ(0.2deg);}
+.samplethumb .thumb.pos4 { transform: rotateZ(-1deg);}
+.samplethumb .thumb.pos5 { transform: rotateZ(0.6deg);}
+.samplethumb .thumb.pos6 { transform: rotateZ(-0.3deg);}
+.samplethumb .thumb.pos7 { transform: rotateZ(1deg);}
 
 .closex {
     position: relative;

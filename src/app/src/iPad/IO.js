@@ -1,4 +1,4 @@
-const JSZip = require('jszip');
+import JSZip from 'jszip';
 
 import iOS from './iOS.js';
 import MediaLib from './MediaLib.js';

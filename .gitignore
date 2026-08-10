@@ -1,6 +1,10 @@
 node_modules
 out
+src/app/dist
 .DS_Store
 buglist.txt
 src/debug.log
 *.log
+# CI build artifacts (zip + checksum files generated during release)
+ScratchJr-*.zip
+ScratchJr-*.zip.sha256

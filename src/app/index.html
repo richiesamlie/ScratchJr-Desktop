@@ -7,14 +7,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta http-equiv="cache-control" content="no-cache">
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:; connect-src 'self'; font-src 'self'">
 <title>ScratchJr</title>
-<script>
-    window.scratchJrPage = 'index';
-</script>
 <script src='../electronClient.js'></script>
-<script type="module" src="./appEntry.js"></script>
+<script type="module" src="./dist/app.bundle.js"></script>
 </head>
-<body style="margin:0px; background: black;">
+<body data-scratchjr-page="index" style="margin:0px; background: black;">
     <div class="frame" id="frame">
         <div class="topbar" id="topbar">
             <div class="topbar-button" id="topbar-info"></div>

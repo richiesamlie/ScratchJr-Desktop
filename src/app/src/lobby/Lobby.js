@@ -211,7 +211,7 @@ export default class Lobby {
         }
     }
 
-    static setSubMenu (page) {
+    static async setSubMenu (page) {
         if (busy) {
             return;
         }
@@ -229,25 +229,25 @@ export default class Lobby {
         switch (page) {
         case 'about':
             url = host + 'about.html';
-            Lobby.loadLink(div, url, 'contentwrap scroll', 'htmlsubpagecontents scrolled');
+            await Lobby.loadLink(div, url, 'contentwrap scroll', 'htmlsubpagecontents scrolled');
             break;
         case 'interface':
             document.onmousemove = function (e) {
                 e.preventDefault();
             };
             url = host + 'interface.html';
-            Lobby.loadLink(div, url, 'contentwrap noscroll', 'htmlsubpagecontents fixed');
+            await Lobby.loadLink(div, url, 'contentwrap noscroll', 'htmlsubpagecontents fixed');
             break;
         case 'paint':
             document.onmousemove = function (e) {
                 e.preventDefault();
             };
             url = host + 'paint.html';
-            Lobby.loadLink(div, url, 'contentwrap noscroll', 'htmlsubpagecontents fixed');
+            await Lobby.loadLink(div, url, 'contentwrap noscroll', 'htmlsubpagecontents fixed');
             break;
         case 'blocks':
             url = host + 'blocks.html';
-            Lobby.loadLink(div, url, 'contentwrap scroll', 'htmlsubpagecontents scrolled');
+            await Lobby.loadLink(div, url, 'contentwrap scroll', 'htmlsubpagecontents scrolled');
             break;
         default:
             Lobby.missing(page, div);
@@ -281,7 +281,7 @@ export default class Lobby {
 	// when we use iframes in electron it doesn't 
 	// preprocess the ES6 syntax correctly.  Manually
 	// loading the help pages into a div instead.
-	static loadLink (p, url, css, css2) {
+	static async loadLink (p, url, css, css2) {
         document.documentElement.scrollTop = 0;
         gn('wrapc').scrollTop = 0;
         gn('wrapc').className = css;
@@ -293,7 +293,7 @@ export default class Lobby {
         
         // use the id of the element with class=inappSubpage
         // to call the load function
-        var innerHTML = preprocessAndLoad(url);
+        var innerHTML = await preprocessAndLoad(url);
         div.innerHTML = innerHTML;
         
         var loadedSubpage = div.querySelector('.inappSubpage');

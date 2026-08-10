@@ -2,7 +2,7 @@ html {
     color: #4c4d4f;
     direction: ltr;
     font: 81.25% Roboto, arial, sans-serif;
-    -webkit-user-select: none;
+    user-select: none;
     height: 100%;
 }
 
@@ -12,8 +12,8 @@ html {
     height:  100%;
     overflow: hidden;
     background-color: #333;
-    -webkit-overflow-scrolling: none;
-    -webkit-user-select: none;
+    
+    user-select: none;
     user-select: none;
 }
 
@@ -22,8 +22,8 @@ html {
     top: ${css_vh(10.9)};
     width: ${css_vh(104.17)};
     height: ${css_vh(78.125)};
-    -webkit-overflow-scrolling: none;
-    -webkit-user-select: none;
+    
+    user-select: none;
 }
 
 .introvideocontainer {

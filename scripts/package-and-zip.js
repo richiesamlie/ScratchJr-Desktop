@@ -30,6 +30,10 @@ const pkg = require('../package.json');
     ignore: [/^\/out\//],
     appCopyright: pkg['app-copyright'] || '',
     appVersion: pkg.version,
+    // Code signing: set these env vars in CI when certificates are available
+    // CSC_LINK: path to certificate file (.p12/.pfx on Windows, .p12 on macOS)
+    // CSC_KEY_PASSWORD: certificate password
+    // APPLE_ID / APPLE_ID_PASSWORD / APPLE_TEAM_ID: for notarization (macOS)
 };
 
 console.log(`Packaging ${pkg.productName || pkg.name} v${pkg.version} for ${options.platform}/${options.arch}...`);

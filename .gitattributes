@@ -1,0 +1,19 @@
+# Normalize all text files to LF on checkout
+* text=auto eol=lf
+
+# Explicitly mark binary formats
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.sketch binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.mp3 binary
+*.wav binary
+*.pem binary

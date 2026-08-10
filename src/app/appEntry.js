@@ -20,11 +20,11 @@ function loadSettings (settingsRoot, whenDone) {
 
 
 // App-wide entry-point
-window.onload = () => loadPage(window.scratchJrPage);
+window.onload = () => loadPage(document.body.dataset.scratchjrPage || window.scratchJrPage).catch((err) => console.error('loadPage failed:', err));
 
 
 
-export function loadPage(page) {
+export async function loadPage(page) {
 	// Function to be called after settings, locale strings, and Media Lib
 	// are asynchronously loaded. This is overwritten per HTML page below.
 	let entryFunction = () => {};
@@ -38,62 +38,62 @@ export function loadPage(page) {
 	default:
 	case 'index':
 		// Index page (splash screen)
-		preprocessAndLoadCss('css', 'css/font.css');
-		preprocessAndLoadCss('css', 'css/base.css');
-		preprocessAndLoadCss('css', 'css/start.css');
-		preprocessAndLoadCss('css', 'css/thumbs.css');
+		await preprocessAndLoadCss('css', 'css/font.css');
+		await preprocessAndLoadCss('css', 'css/base.css');
+		await preprocessAndLoadCss('css', 'css/start.css');
+		await preprocessAndLoadCss('css', 'css/thumbs.css');
 		/* For parental gate. These CSS properties should be refactored */
-		preprocessAndLoadCss('css', 'css/editor.css');
+		await preprocessAndLoadCss('css', 'css/editor.css');
 		entryFunction = () => iOS.waitForInterface(indexMain);
 		break;
 	case 'home':
 		// Lobby pages
-		preprocessAndLoadCss('css', 'css/font.css');
-		preprocessAndLoadCss('css', 'css/base.css');
-		preprocessAndLoadCss('css', 'css/lobby.css');
-		preprocessAndLoadCss('css', 'css/thumbs.css');
+		await preprocessAndLoadCss('css', 'css/font.css');
+		await preprocessAndLoadCss('css', 'css/base.css');
+		await preprocessAndLoadCss('css', 'css/lobby.css');
+		await preprocessAndLoadCss('css', 'css/thumbs.css');
 		entryFunction = () => iOS.waitForInterface(homeMain);
 		break;
 	case 'editor':
 		// Editor pages
-		preprocessAndLoadCss('css', 'css/font.css');
-		preprocessAndLoadCss('css', 'css/base.css');
-		preprocessAndLoadCss('css', 'css/editor.css');
-		preprocessAndLoadCss('css', 'css/editorleftpanel.css');
-		preprocessAndLoadCss('css', 'css/editorstage.css');
-		preprocessAndLoadCss('css', 'css/editormodal.css');
-		preprocessAndLoadCss('css', 'css/librarymodal.css');
-		preprocessAndLoadCss('css', 'css/paintlook.css');
+		await preprocessAndLoadCss('css', 'css/font.css');
+		await preprocessAndLoadCss('css', 'css/base.css');
+		await preprocessAndLoadCss('css', 'css/editor.css');
+		await preprocessAndLoadCss('css', 'css/editorleftpanel.css');
+		await preprocessAndLoadCss('css', 'css/editorstage.css');
+		await preprocessAndLoadCss('css', 'css/editormodal.css');
+		await preprocessAndLoadCss('css', 'css/librarymodal.css');
+		await preprocessAndLoadCss('css', 'css/paintlook.css');
 		entryFunction = () => iOS.waitForInterface(editorMain);
 		break;
 	case 'gettingStarted':
 		// Getting started video page
-		preprocessAndLoadCss('css', 'css/font.css');
-		preprocessAndLoadCss('css', 'css/base.css');
-		preprocessAndLoadCss('css', 'css/gs.css');
+		await preprocessAndLoadCss('css', 'css/font.css');
+		await preprocessAndLoadCss('css', 'css/base.css');
+		await preprocessAndLoadCss('css', 'css/gs.css');
 		entryFunction = () => iOS.waitForInterface(gettingStartedMain);
 		break;
 	case 'inappAbout':
 		// About ScratchJr in-app help frame
-		preprocessAndLoadCss('style', 'inapp/style/about.css');
+		await preprocessAndLoadCss('style', 'inapp/style/about.css');
 		entryFunction = () => inappAbout();
 		//root = '../';
 		break;
 	case 'inappInterfaceGuide':
 		// Interface guide in-app help frame
-		preprocessAndLoadCss('style', 'inapp/style/interface.css');
+		await preprocessAndLoadCss('style', 'inapp/style/interface.css');
 		entryFunction = () => inappInterfaceGuide();
 	//	  root = '../';
 		break;
 	case 'inappPaintEditorGuide':
 		// Paint editor guide in-app help frame
-		preprocessAndLoadCss('style', 'inapp/style/paint.css');
+		await preprocessAndLoadCss('style', 'inapp/style/paint.css');
 		entryFunction = () => inappPaintEditorGuide();
 	//  root = '../';
 		break;
 	case 'inappBlocksGuide':
 		// Blocks guide in-app help frame
-		preprocessAndLoadCss('style', 'inapp/style/blocks.css');
+		await preprocessAndLoadCss('style', 'inapp/style/blocks.css');
 		entryFunction = () => inappBlocksGuide();
     //	  root = '../';
 		break;

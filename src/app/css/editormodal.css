@@ -91,7 +91,7 @@
 ///////////////////
 
 .record-backdrop.fade.out {
-    -webkit-transition: opacity 1s linear;
+    transition: opacity 1s linear;
     opacity: 0;
 }
 
@@ -105,15 +105,15 @@
     margin: 1px 1px 0px;
     background-color: #f9f9f9;
     border: 1px solid #999;
-    -webkit-border-radius: ${6 * scaleMultiplier}px;
+    border-radius: ${6 * scaleMultiplier}px;
     -moz-border-radius: ${6 * scaleMultiplier}px;
     border-radius: ${6 * scaleMultiplier}px;
-    -webkit-box-shadow: 0 ${3 * scaleMultiplier}px ${7 * scaleMultiplier}px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 ${3 * scaleMultiplier}px ${7 * scaleMultiplier}px rgba(0, 0, 0, 0.3);
     opacity: 1;
 }
 
 .record.fade {
-    -webkit-transition: opacity .3s linear, top .3s ease-out;
+    transition: opacity .3s linear, top .3s ease-out;
     top: -100%;
     opacity: 0;
 }
@@ -149,10 +149,10 @@
     z-index: 11000;
     border: 1px solid #4682B5;
     border-bottom-color: #355D7C;
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0%,#67afe5), color-stop(2%,#4682b5),  color-stop(100%,#4682b5));
-    -webkit-box-shadow: 0px 1px 0px #fff;
-    -webkit-border-top-left-radius: ${6 * scaleMultiplier}px;
-    -webkit-border-top-right-radius: ${6 * scaleMultiplier}px;
+    background-image: linear-gradient(to bottom, #67afe5, #4682b5, #4682b5);
+    box-shadow: 0px 1px 0px #fff;
+    border-top-left-radius: ${6 * scaleMultiplier}px;
+    border-top-right-radius: ${6 * scaleMultiplier}px;
 }
 
 .toolbar .actions {
@@ -256,8 +256,8 @@
     display: inline-block;
     width: ${13 * scaleMultiplier}px;
     height: ${44 * scaleMultiplier}px;
-    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-    -webkit-border-radius: ${5 * scaleMultiplier}px;
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+    border-radius: ${5 * scaleMultiplier}px;
     -moz-border-radius: ${5 * scaleMultiplier}px;
     border-radius: ${3 * scaleMultiplier}px;
 }
@@ -268,7 +268,7 @@
     display: inline-block;
     width: ${11 * scaleMultiplier}px;
     height: ${42 * scaleMultiplier}px;
-    -webkit-border-radius: ${3 * scaleMultiplier}px;
+    border-radius: ${3 * scaleMultiplier}px;
     -moz-border-radius: ${3 * scaleMultiplier}px;
     border-radius: ${3 * scaleMultiplier}px;
     background: #B3B3B3;

@@ -140,7 +140,7 @@
     background: url('../assets/ui/closeit.svg');
     background-size: 100.5%; /* webview pixelates the image unless we do this */
     z-index: 5;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .spritethumb.off .deletespritethumb {
@@ -152,7 +152,7 @@
     background: url('../assets/ui/closeit.svg');
     background-size: 100.5%; /* webview pixelates the image unless we do this */
     z-index: 5;
-    -webkit-user-select: none;
+    user-select: none;
 }
 
 .spritethumb .icon{

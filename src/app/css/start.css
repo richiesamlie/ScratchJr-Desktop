@@ -3,7 +3,7 @@ html, body, {
     direction: ltr;
     background: #35A8E0;
     font: 81.25% Roboto, arial, sans-serif;
-    -webkit-user-select: none;
+    user-select: none;
     height: 100%;
     overflow-y: hidden;
     overflow-x: hidden;
@@ -18,7 +18,7 @@ div.frame {
     position: relative;
     background: #35A8E0;
     overflow: hidden;
-    -webkit-overflow-scrolling: none;
+    
 }
 
 *.catlogo {
@@ -206,13 +206,13 @@ div.frame {
 }
 
 .rays.spinme{
-    -webkit-animation:spin 8s infinite linear;
-    -webkit-transform-origin: 50% 50%;
+    animation:spin 8s infinite linear;
+    transform-origin: 50% 50%;
 }
 
-@-webkit-keyframes spin {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(36deg); }
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(36deg); }
 }
 
 /* Analytics Info Page Elements */
