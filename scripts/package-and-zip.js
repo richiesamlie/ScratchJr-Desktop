@@ -27,7 +27,7 @@ const options = {
             ? 'src/icons/mac/icon.icns'
             : 'src/icons/png/512x512.png'),
     asar: false,
-    ignore: [/^\/out\//g],
+    ignore: [/^\/out\//],
     appCopyright: pkg['app-copyright'] || '',
     appVersion: pkg.version,
 };
