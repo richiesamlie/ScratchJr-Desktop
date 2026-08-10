@@ -34,7 +34,6 @@ const isDev = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
 /* eslint-enable import/no-extraneous-dependencies */  // --> ON
 /* eslint-enable import/no-unresolved  */  // --> ON
 
-const isDev = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
 
 
 
