@@ -100,12 +100,28 @@ jobs:
           fi
           echo "Artifact size: $(du -h ${{ matrix.artifact_name }} | cut -f1)"
 
+      - name: Build MSI installer (Windows only)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "Downloading WiX 3.x binaries..."
+          curl -sL "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip" -o wix3.zip
+          mkdir -p out/wix3
+          unzip -q wix3.zip -d out/wix3
+          echo "Building MSI..."
+          node scripts/build-msi.js
+          cp out/installer/ScratchJr.msi ScratchJr-win32-x64.msi
+          echo "MSI created: ScratchJr-win32-x64.msi"
+
       - name: Generate checksums
         shell: bash
         run: |
           sha256sum "${{ matrix.artifact_name }}" > "${{ matrix.artifact_name }}.sha256"
-          echo "SHA256 checksum:"
-          cat "${{ matrix.artifact_name }}.sha256"
+          if [ "${{ matrix.release_suffix }}" = "windows" ]; then
+            sha256sum "ScratchJr-win32-x64.msi" > "ScratchJr-win32-x64.msi.sha256"
+          fi
+          echo "SHA256 checksums:"
+          cat *.sha256
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -114,6 +130,8 @@ jobs:
           path: |
             ${{ matrix.artifact_name }}
             ${{ matrix.artifact_name }}.sha256
+            *.msi
+            *.msi.sha256
           if-no-files-found: error
           retention-days: 5
 
@@ -139,6 +157,7 @@ jobs:
           generate_release_notes: true
           files: |
             artifacts/**/*.zip
+            artifacts/**/*.msi
             artifacts/**/*.sha256
           body: |
             ## ScratchJr Desktop ${{ github.ref_name }}
@@ -151,7 +170,8 @@ jobs:
 
             | File | Platform |
             |------|----------|
-            | `ScratchJr-win32-x64.zip` | Windows x64 |
+            | `ScratchJr-win32-x64.msi` | Windows x64 (installer) |
+            | `ScratchJr-win32-x64.zip` | Windows x64 (portable) |
             | `ScratchJr-darwin-x64.zip` | macOS x64 |
             | `ScratchJr-darwin-arm64.zip` | macOS ARM64 |
             | `ScratchJr-linux-x64.zip` | Linux x64 |

@@ -99,14 +99,28 @@
                     ]
                 }
             ],
-            "import/no-unresolved": [2, { "ignore": ["vitest"] }],
+            "import/no-unresolved": [
+                2,
+                {
+                    "ignore": [
+                        "vitest"
+                    ]
+                }
+            ],
             "import/no-cycle": 0,
             "import/prefer-default-export": 0,
             "default-case-last": 0,
             "no-constructor-return": 0,
             "no-new-func": 0,
             "function-call-argument-newline": 0,
-            "no-restricted-properties": 0,
+            "no-restricted-properties": [
+                0,
+                {
+                    "object": "Math",
+                    "property": "pow",
+                    "message": "Use the exponentiation operator (**) instead."
+                }
+            ],
             "no-restricted-syntax": 0,
             "no-nested-ternary": 0,
             "import/extensions": 0,
@@ -126,14 +140,6 @@
             "no-undef-init": 0,
             "radix": 0,
             "no-bitwise": 0,
-            "no-restricted-properties": [
-                0,
-                {
-                    "object": "Math",
-                    "property": "pow",
-                    "message": "Use the exponentiation operator (**) instead."
-                }
-            ],
             "guard-for-in": 0,
             "lines-between-class-members": 0,
             "prefer-destructuring": 0,
@@ -180,6 +186,7 @@
         "@electron-forge/cli": "^7.8.3",
         "@electron-forge/maker-deb": "^7.8.3",
         "@electron-forge/maker-rpm": "^7.8.3",
+        "@electron-forge/maker-squirrel": "^7.11.2",
         "@electron-forge/maker-wix": "^7.8.3",
         "@electron-forge/maker-zip": "^7.8.3",
         "@electron/packager": "^20.2.0",
