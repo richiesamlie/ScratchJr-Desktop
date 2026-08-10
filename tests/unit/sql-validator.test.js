@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createRequire } from 'module';
+
 const require = createRequire(import.meta.url);
 const { normalizeAndValidateSqlPayload, SQL_ALLOWED_VERBS, SQL_FORBIDDEN_KEYWORDS } = require('../../src/lib/sql-validator.js');
 
@@ -32,7 +33,7 @@ describe('normalizeAndValidateSqlPayload', () => {
     });
 
     it('accepts a valid DELETE', () => {
-        const result = normalizeAndValidateSqlPayload({
+        normalizeAndValidateSqlPayload({
             stmt: 'DELETE FROM projects WHERE id = ?',
             values: ['42'],
         });

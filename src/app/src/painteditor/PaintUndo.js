@@ -33,11 +33,11 @@ export default class PaintUndo {
         var div = newHTML('div', 'paintundo', p);
         div.setAttribute('id', 'paintundocontrols');
         var lib = [['undo', PaintUndo.undo], ['redo', PaintUndo.redo]];
-        var dx = 20; // eslint-disable-line no-unused-vars
+        var _dx = 20; // eslint-disable-line no-unused-vars
         for (var i = 0; i < lib.length; i++) {
             var bt = PaintUndo.newToggleClicky(div, 'id_p', lib[i][0], lib[i][1]);
-            dx += bt.offsetWidth;
-            dx += 20;
+            _dx += bt.offsetWidth;
+            _dx += 20;
         }
         PaintUndo.updateActiveUndo();
     }

@@ -39,9 +39,9 @@ export default class Grid {
 
     static setScaleAndPosition (grid, scale, x, y, w, h) {
         setProps(grid.style, {
-            webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) ' +
-                'scale(' + scale + ') ' +
-                'translate(' + (w / 2 + x) + 'px, ' + (h / 2 + y) + 'px)'
+            webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
+                + 'scale(' + scale + ') '
+                + 'translate(' + (w / 2 + x) + 'px, ' + (h / 2 + y) + 'px)'
         });
     }
 

@@ -16,7 +16,7 @@ import Camera from './Camera.js';
 import Events from '../utils/Events.js';
 import Transform from './Transform.js';
 import Vector from '../geom/Vector.js';
-import {gn, newHTML, setCanvasSize, isTouch, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib.js';
+import {gn, newHTML, setCanvasSize, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib.js';
 
 // Originally several files (Paint.js, PaintIO.js, PaintLayout.js)
 // were all contributing utility functions to the Paint object.
@@ -320,8 +320,8 @@ export default class Paint {
     }
 
     static canvasFits () {
-        return ((gn('maincanvas').offsetWidth * currentZoom <= gn('workspacebkg').offsetWidth) &&
-            (gn('maincanvas').offsetHeight * currentZoom <= gn('workspacebkg').offsetHeight));
+        return ((gn('maincanvas').offsetWidth * currentZoom <= gn('workspacebkg').offsetWidth)
+            && (gn('maincanvas').offsetHeight * currentZoom <= gn('workspacebkg').offsetHeight));
     }
 
     static mouseDown (e) {
@@ -753,8 +753,7 @@ export default class Paint {
         var rightpal = newHTML('div', 'side', div);
         Paint.addSidePalette(rightpal, 'selectortools', ['select', 'rotate']);
         Paint.addSidePalette(rightpal, 'edittools', ['stamper', 'scissors']);
-        Paint.addSidePalette(rightpal, 'filltools',
-            (iOS.camera == '1' && Camera.available) ? ['camera', 'paintbucket'] : ['paintbucket']);
+        Paint.addSidePalette(rightpal, 'filltools', (iOS.camera == '1' && Camera.available) ? ['camera', 'paintbucket'] : ['paintbucket']);
     }
 
     static addSidePalette (p, id, list) {

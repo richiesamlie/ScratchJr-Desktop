@@ -40,10 +40,10 @@ export default class Camera {
         var data = {};
         var x = Math.floor((viewbox.x + (viewbox.width / 2)) * Paint.currentZoom - (viewbox.width / 2));
         var y = Math.floor((viewbox.y + (viewbox.height / 2)) * Paint.currentZoom - (viewbox.height / 2));
-        data.x = globalx(gn('workspacebkg')) + x + gn('maincanvas').dx +
-            gn('maincanvas').cx - gn('maincanvas').cx * Paint.currentZoom;
-        data.y = globaly(gn('workspacebkg')) + y + gn('maincanvas').dy +
-            gn('maincanvas').cy - gn('maincanvas').cy * Paint.currentZoom;
+        data.x = globalx(gn('workspacebkg')) + x + gn('maincanvas').dx
+            + gn('maincanvas').cx - gn('maincanvas').cx * Paint.currentZoom;
+        data.y = globaly(gn('workspacebkg')) + y + gn('maincanvas').dy
+            + gn('maincanvas').cy - gn('maincanvas').cy * Paint.currentZoom;
         data.width = viewbox.width;
         data.height = viewbox.height;
         data.scale = Paint.currentZoom;
@@ -136,8 +136,8 @@ export default class Camera {
         SVG2Canvas.drawImage(gn('paintgrid'), ctx);
 
         var isgroup = (elem.parentNode && (elem.parentNode.id != 'layer1'));
-        var index = (isgroup ? Layer.groupStartsAt(gn('layer1'), elem.parentNode) :
-            Layer.groupStartsAt(gn('layer1'), elem));
+        var index = (isgroup ? Layer.groupStartsAt(gn('layer1'), elem.parentNode)
+            : Layer.groupStartsAt(gn('layer1'), elem));
         Camera.drawLayers(gn('layer1'), ctx, 0, index);
         let localindex;
         
@@ -171,14 +171,14 @@ export default class Camera {
         ctx.restore();
         ctx.fillStyle = 'rgba(0, 0, 0,0)';
         ctx.strokeStyle = !elem.getAttribute('stroke') ? 'none' : elem.getAttribute('stroke');
-        ctx.lineCap = elem.getAttribute('stroke-linecap') ?
-            elem.getAttribute('stroke-linecap') : SVG2Canvas.strokevalues['stroke-linecap'];
-        ctx.lineWidth = elem.getAttribute('stroke-width') ?
-            Number(elem.getAttribute('stroke-width')) : Number(SVG2Canvas.strokevalues['stroke-width']);
-        ctx.miterLimit = elem.getAttribute('stroke-miterlimit') ?
-            elem.getAttribute('stroke-miterlimit') : SVG2Canvas.strokevalues['stroke-miterlimit'];
-        ctx.linejoin = elem.getAttribute('stroke-linejoin') ?
-            elem.getAttribute('stroke-linejoin') : SVG2Canvas.strokevalues['stroke-linejoin'];
+        ctx.lineCap = elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap') : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.lineWidth = elem.getAttribute('stroke-width')
+            ? Number(elem.getAttribute('stroke-width')) : Number(SVG2Canvas.strokevalues['stroke-width']);
+        ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
+            ? elem.getAttribute('stroke-miterlimit') : SVG2Canvas.strokevalues['stroke-miterlimit'];
+        ctx.linejoin = elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin') : SVG2Canvas.strokevalues['stroke-linejoin'];
         SVG2Canvas.processXMLnode(elem, ctx, true);
     }
 

@@ -339,8 +339,7 @@ export default class UI {
                     var emailSubject = Localization.localize('SHARING_EMAIL_SUBJECT', {
                         PROJECT_NAME: IO.shareName
                     });
-                    iOS.sendSjrToShareDialog(IO.zipFileName, emailSubject, Localization.localize('SHARING_EMAIL_TEXT'),
-                        shareType, contents);
+                    iOS.sendSjrToShareDialog(IO.zipFileName, emailSubject, Localization.localize('SHARING_EMAIL_TEXT'), shareType, contents);
 
                     shareLoadingGif.style.visibility = 'hidden';
                 });
@@ -696,11 +695,9 @@ export default class UI {
             return;
         }
         if (gn('scrollbar').className == 'scrollbar off') {
-            Events.startDrag(e, tb, UI.ignoreEvent, UI.ignoreEvent, UI.ignoreEvent, UI.spriteClicked,
-                ScratchJr.isEditable() ? Thumbs.startCharShaking : undefined);
+            Events.startDrag(e, tb, UI.ignoreEvent, UI.ignoreEvent, UI.ignoreEvent, UI.spriteClicked, ScratchJr.isEditable() ? Thumbs.startCharShaking : undefined);
         } else {
-            Events.startDrag(e, tb, UI.prepareToScroll, UI.stopScroll, UI.spriteScolling, UI.spriteClicked,
-                ScratchJr.isEditable() ? Thumbs.startCharShaking : undefined);
+            Events.startDrag(e, tb, UI.prepareToScroll, UI.stopScroll, UI.spriteScolling, UI.spriteClicked, ScratchJr.isEditable() ? Thumbs.startCharShaking : undefined);
         }
     }
 
@@ -748,8 +745,8 @@ export default class UI {
         } else {
             t = e.target;
         }
-        if (ScratchJr.isEditable() && ScratchJr.getSprite() &&
-            (((t.className == 'sname') && (el.owner == ScratchJr.getSprite().id))
+        if (ScratchJr.isEditable() && ScratchJr.getSprite()
+            && (((t.className == 'sname') && (el.owner == ScratchJr.getSprite().id))
             || (t.className == 'brush'))) {
             UI.putInPaintEditor(e);
             return;

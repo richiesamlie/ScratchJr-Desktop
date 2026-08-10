@@ -204,9 +204,9 @@ export default class Ghost {
                     mt = gn(mt.getAttribute('relatedto'));
                 }
                 var isStencil = (
-                    (mt.id.indexOf('staticbkg') > -1) ||
-                    (mt.getAttribute('stencil') == 'yes') ||
-                    (mt.getAttribute('fixed') == 'yes')
+                    (mt.id.indexOf('staticbkg') > -1)
+                    || (mt.getAttribute('stencil') == 'yes')
+                    || (mt.getAttribute('fixed') == 'yes')
                 );
                 if (isStencil) {
                     mt = undefined;
@@ -408,10 +408,10 @@ export default class Ghost {
         var nostroke = (!elem.getAttribute('stroke')) || (elem.getAttribute('stroke') == 'none');
         var n = Number(elem.getAttribute('stroke-width'));
         ctx.lineWidth = nostroke ? 0 : n;
-        ctx.fillStyle = (elem.getAttribute('fill') == 'none') ?
-            'rgba(0,0,0,0)' : 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',255)';
-        ctx.strokeStyle = !elem.getAttribute('stroke') ?
-            'rgba(0,0,0,0)' : 'rgba(' + bc[0] + ',' + bc[1] + ',' + bc[2] + ',255)';
+        ctx.fillStyle = (elem.getAttribute('fill') == 'none')
+            ? 'rgba(0,0,0,0)' : 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',255)';
+        ctx.strokeStyle = !elem.getAttribute('stroke')
+            ? 'rgba(0,0,0,0)' : 'rgba(' + bc[0] + ',' + bc[1] + ',' + bc[2] + ',255)';
         if (!SVG2Canvas.isCloseDPath(elem)) {
             ctx.strokeStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',255)';
         }
@@ -507,8 +507,7 @@ export default class Ghost {
     ////////////////////////
 
     static showmask () {
-        var mask = newDiv(Paint.frame, 0, 0, maskCanvas.width, maskCanvas.height,
-            {
+        var mask = newDiv(Paint.frame, 0, 0, maskCanvas.width, maskCanvas.height, {
                 position: 'absolute',
                 zIndex: ScratchJr.layerTop + 20
             });

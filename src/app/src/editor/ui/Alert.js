@@ -50,9 +50,9 @@ export default class Alert {
             position: 'absolute',
             left: dx + 'px',
             zIndex: 1000,
-            webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) ' +
-                'scale(' + scale + ', ' + scale + ') ' +
-                'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px) '
+            webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
+                + 'scale(' + scale + ', ' + scale + ') '
+                + 'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px) '
         });
         Alert.draw(balloon.getContext('2d'), 6, w, h, color);
         writeText(ctx, 'bold 14px Verdana', 'white', label, 20, 8);

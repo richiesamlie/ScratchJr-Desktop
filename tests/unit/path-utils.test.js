@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import path from 'path';
 import { createRequire } from 'module';
+
 const require = createRequire(import.meta.url);
 const { isParentFolder, validateFilePath } = require('../../src/lib/path-utils.js');
 

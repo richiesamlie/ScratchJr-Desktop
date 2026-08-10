@@ -4,8 +4,8 @@ import Localization from '../utils/Localization.js';
 export function inappAbout () {
     gn('aboutScratchjrTitle').textContent = Localization.localize('ABOUT_SCRATCHJR');
     gn('aboutWhatIs').textContent = Localization.localize('ABOUT_WHAT_IS');
-    gn('aboutDescription').innerHTML = Localization.localize('ABOUT_DESCRIPTION') + '<br/><br/>' +
-        Localization.localize('ABOUT_INSPIRED_BY');
+    gn('aboutDescription').innerHTML = Localization.localize('ABOUT_DESCRIPTION') + '<br/><br/>'
+        + Localization.localize('ABOUT_INSPIRED_BY');
     gn('aboutWhyCreate').textContent = Localization.localize('ABOUT_WHY_CREATE');
     gn('aboutWhyCreateDescription').innerHTML = Localization.localize('ABOUT_WHY_CREATE_DESCRIPTION');
     gn('aboutWhoCreated').textContent = Localization.localize('ABOUT_WHO_CREATED');

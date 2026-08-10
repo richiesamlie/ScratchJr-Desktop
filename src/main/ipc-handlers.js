@@ -14,9 +14,7 @@ const {
 const { normalizeAndValidateSqlPayload } = require('../lib/sql-validator');
 
 function register(getDataStore, getWindow) {
-  ipcMain.handle('io_getIsDebug', () => {
-    return DEBUG;
-  });
+  ipcMain.handle('io_getIsDebug', () => DEBUG);
 
   ipcMain.on('debugWriteLog', (event, args) => {
     debugLog(args);
@@ -190,7 +188,7 @@ function register(getDataStore, getWindow) {
   });
 
   // IPC sender validation: reject calls from unexpected windows
-  function validateSender(event) {
+  function _validateSender(event) { // eslint-disable-line no-unused-vars
     const win = getWindow();
     if (!win || win.isDestroyed()) return false;
     return event.sender === win.webContents;
@@ -222,7 +220,7 @@ function register(getDataStore, getWindow) {
     }
   });
 
-  ipcMain.on('app-closed-acked', (event) => {
+  ipcMain.on('app-closed-acked', (_event) => {
     const dataStore = getDataStore();
     if (dataStore.databaseManager) {
       dataStore.databaseManager.save();

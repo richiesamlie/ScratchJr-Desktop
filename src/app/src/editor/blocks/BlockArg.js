@@ -53,8 +53,7 @@ export default class BlockArg {
             this.argValue = block.spec[4];
             this.div = this.pageIcon(this.argValue);
             var ctx = block.blockshape.getContext('2d');
-            ctx.drawImage(this.div, 0, 0, this.div.width, this.div.height, 0, 0,
-                this.div.width * block.scale, this.div.height * block.scale);
+            ctx.drawImage(this.div, 0, 0, this.div.width, this.div.height, 0, 0, this.div.width * block.scale, this.div.height * block.scale);
             break;
         case 's':
             this.argValue = block.spec[4];
@@ -128,11 +127,11 @@ export default class BlockArg {
         var h = 17;
         var field = newCanvas(this.daddy.div, 0, 0, w * window.devicePixelRatio, h * window.devicePixelRatio, {
             position: 'absolute',
-            webkitTransform: 'translate(' + (-w * window.devicePixelRatio / 2) + 'px, ' +
-                (-h * window.devicePixelRatio / 2) + 'px) ' +
-                'scale(' + (scale / window.devicePixelRatio) + ') ' +
-                'translate(' + (dx * window.devicePixelRatio + (w * window.devicePixelRatio / 2)) + 'px, ' +
-                (dy * window.devicePixelRatio + (h * window.devicePixelRatio / 2)) + 'px)',
+            webkitTransform: 'translate(' + (-w * window.devicePixelRatio / 2) + 'px, '
+                + (-h * window.devicePixelRatio / 2) + 'px) '
+                + 'scale(' + (scale / window.devicePixelRatio) + ') '
+                + 'translate(' + (dx * window.devicePixelRatio + (w * window.devicePixelRatio / 2)) + 'px, '
+                + (dy * window.devicePixelRatio + (h * window.devicePixelRatio / 2)) + 'px)',
             pointerEvents: 'all'
 
         });
@@ -152,16 +151,15 @@ export default class BlockArg {
         });
         var cnv = newCanvas(div, 0, 0, w * window.devicePixelRatio, h * window.devicePixelRatio, {
             position: 'absolute',
-            webkitTransform: 'translate(' + (-w * window.devicePixelRatio / 2) + 'px, ' +
-                (-h * window.devicePixelRatio / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (w * window.devicePixelRatio / 2) + 'px, ' + (h * window.devicePixelRatio / 2) + 'px)'
+            webkitTransform: 'translate(' + (-w * window.devicePixelRatio / 2) + 'px, '
+                + (-h * window.devicePixelRatio / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (w * window.devicePixelRatio / 2) + 'px, ' + (h * window.devicePixelRatio / 2) + 'px)'
         });
         ctx = cnv.getContext('2d');
         var font = (12 * window.devicePixelRatio) + 'px ' + window.Settings.blockArgFont;
         var lsize = getStringSize(ctx, font, str).width;
-        writeText(ctx, font, '#77787b', str, h * window.devicePixelRatio - 3,
-            Math.round((w * window.devicePixelRatio - lsize) / 2));
+        writeText(ctx, font, '#77787b', str, h * window.devicePixelRatio - 3, Math.round((w * window.devicePixelRatio - lsize) / 2));
         return div;
     }
 
@@ -250,14 +248,10 @@ export default class BlockArg {
         var scale = this.daddy.scale;
         if (!icon.complete) {
             icon.onload = function () {
-                ctx.drawImage(icon, 0, 0, icon.width, icon.height,
-                    0, 0, icon.width * scale * window.devicePixelRatio,
-                    icon.height * scale * window.devicePixelRatio);
+                ctx.drawImage(icon, 0, 0, icon.width, icon.height, 0, 0, icon.width * scale * window.devicePixelRatio, icon.height * scale * window.devicePixelRatio);
             };
         } else {
-            ctx.drawImage(icon, 0, 0, icon.width, icon.height,
-                0, 0, icon.width * scale * window.devicePixelRatio,
-                icon.height * scale * window.devicePixelRatio);
+            ctx.drawImage(icon, 0, 0, icon.width, icon.height, 0, 0, icon.width * scale * window.devicePixelRatio, icon.height * scale * window.devicePixelRatio);
         }
         return cnv;
     }
@@ -313,22 +307,17 @@ export default class BlockArg {
         b.owner.arg.argValue = c.substring(c.indexOf('_') + 1, c.length);
         var ctx = b.owner.blockicon.getContext('2d');
         b.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
-        ctx.clearRect(0, 0, 85 * scaleMultiplier * window.devicePixelRatio,
-            66 * scaleMultiplier * window.devicePixelRatio);
+        ctx.clearRect(0, 0, 85 * scaleMultiplier * window.devicePixelRatio, 66 * scaleMultiplier * window.devicePixelRatio);
         if (!b.icon.complete) {
             b.icon.onload = function () {
                 var w = b.icon.width;
                 var h = b.icon.height;
-                ctx.drawImage(b.icon, 0, 0, w, h, 0, 0,
-                    w * scaleMultiplier * window.devicePixelRatio,
-                    h * scaleMultiplier * window.devicePixelRatio);
+                ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
             };
         } else {
             var w = b.icon.width;
             var h = b.icon.height;
-            ctx.drawImage(b.icon, 0, 0, w, h, 0, 0,
-                w * scaleMultiplier * window.devicePixelRatio,
-                h * scaleMultiplier * window.devicePixelRatio);
+            ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
         }
         if (Menu.openMenu) {
             Menu.openMenu.parentNode.removeChild(Menu.openMenu);
@@ -352,8 +341,7 @@ export default class BlockArg {
         b.owner.arg.argValue = BlockSpecs.speeds.indexOf(c);
         var ctx = b.owner.blockicon.getContext('2d');
         b.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
-        ctx.clearRect(0, 0, 64 * scaleMultiplier * window.devicePixelRatio,
-            64 * scaleMultiplier * window.devicePixelRatio);
+        ctx.clearRect(0, 0, 64 * scaleMultiplier * window.devicePixelRatio, 64 * scaleMultiplier * window.devicePixelRatio);
         // On Android 4.2, clearRect does not work right away. Need to tickle the DOM
         b.owner.blockicon.style.display = 'none';
         //b.owner.blockicon.offsetHeight;
@@ -362,14 +350,12 @@ export default class BlockArg {
             b.icon.onload = function () {
                 var w = b.icon.width;
                 var h = b.icon.height;
-                ctx.drawImage(b.icon, 0, 0, w, h, 0, 0,
-                    w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
+                ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
             };
         } else {
             var w = b.icon.width;
             var h = b.icon.height;
-            ctx.drawImage(b.icon, 0, 0, w, h, 0, 0,
-                w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
+            ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
         }
         if (Menu.openMenu) {
             Menu.openMenu.parentNode.removeChild(Menu.openMenu);
@@ -442,8 +428,8 @@ export default class BlockArg {
         ictx.closePath();
         ictx.stroke();
         ictx.fill();
-        writeText(ictx, 'bold ' + (12 * dpr) + 'px ' +
-            window.Settings.blockArgFont, 'white', page.num, 26 * dpr, 58 * dpr);
+        writeText(ictx, 'bold ' + (12 * dpr) + 'px '
+            + window.Settings.blockArgFont, 'white', page.num, 26 * dpr, 58 * dpr);
         return icon;
     }
 
@@ -454,7 +440,6 @@ export default class BlockArg {
         this.div = this.pageIcon(num);
         var block = this.daddy;
         var ctx = block.blockshape.getContext('2d');
-        ctx.drawImage(this.div, 0, 0, this.div.width, this.div.height, 0, 0,
-            this.div.width * block.scale, this.div.height * block.scale);
+        ctx.drawImage(this.div, 0, 0, this.div.width, this.div.height, 0, 0, this.div.width * block.scale, this.div.height * block.scale);
     }
 }

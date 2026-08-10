@@ -90,8 +90,7 @@ export default class Palette {
             if (ScratchJr.shaking && (ScratchJr.shaking == ths)) {
                 Palette.removeSound(ths);
             } else {
-                Events.startDrag(e, ths, Palette.prepareForDrag,
-                    Palette.dropBlockFromPalette, ScriptsPane.draggingBlock, Palette.showHelp, Palette.startShaking);
+                Events.startDrag(e, ths, Palette.prepareForDrag, Palette.dropBlockFromPalette, ScriptsPane.draggingBlock, Palette.showHelp, Palette.startShaking);
             }
         }
         ScratchJr.clearSelection();
@@ -199,8 +198,8 @@ export default class Palette {
         });
         helpballoon.icon = obj;
         var ctx = helpballoon.getContext('2d');
-        w = 16 * window.devicePixelRatio * scaleMultiplier +
-            getStringSize(ctx, 'bold ' + fontSize + 'px ' + window.Settings.paletteBalloonFont, label).width;
+        w = 16 * window.devicePixelRatio * scaleMultiplier
+            + getStringSize(ctx, 'bold ' + fontSize + 'px ' + window.Settings.paletteBalloonFont, label).width;
         if (w < 36 * scaleMultiplier) {
             w = 36 * scaleMultiplier;
         }
@@ -208,12 +207,11 @@ export default class Palette {
         setCanvasSize(helpballoon, w, h);
         setProps(helpballoon.style, {
             position: 'absolute',
-            webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') translate(' + (dx + (w / 2)) + 'px, ' + (h / 2) + 'px)'
+            webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') translate(' + (dx + (w / 2)) + 'px, ' + (h / 2) + 'px)'
         });
         Palette.drawBalloon(helpballoon.getContext('2d'), w, h);
-        writeText(ctx, 'bold ' + fontSize + 'px ' + window.Settings.paletteBalloonFont, 'white', label,
-            21 * window.devicePixelRatio * scaleMultiplier, 8 * window.devicePixelRatio * scaleMultiplier);
+        writeText(ctx, 'bold ' + fontSize + 'px ' + window.Settings.paletteBalloonFont, 'white', label, 21 * window.devicePixelRatio * scaleMultiplier, 8 * window.devicePixelRatio * scaleMultiplier);
     }
 
     static hide () {
@@ -449,16 +447,13 @@ export default class Palette {
         var div = newDiv(pal, dx, 0, w, h, {
             top: (6 * scaleMultiplier) + 'px'
         });
-        var cnv = newCanvas(div, 0, 0,
-            div.offsetWidth * window.devicePixelRatio,
-            div.offsetHeight * window.devicePixelRatio,
-            {
-                webkitTransform: 'translate(' +
-                (-div.offsetWidth * window.devicePixelRatio / 2) + 'px, ' +
-                (-div.offsetHeight * window.devicePixelRatio / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') translate(' +
-                (div.offsetWidth * window.devicePixelRatio / 2) + 'px, ' +
-                (div.offsetHeight * window.devicePixelRatio / 2) + 'px)'
+        var cnv = newCanvas(div, 0, 0, div.offsetWidth * window.devicePixelRatio, div.offsetHeight * window.devicePixelRatio, {
+                webkitTransform: 'translate('
+                + (-div.offsetWidth * window.devicePixelRatio / 2) + 'px, '
+                + (-div.offsetHeight * window.devicePixelRatio / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') translate('
+                + (div.offsetWidth * window.devicePixelRatio / 2) + 'px, '
+                + (div.offsetHeight * window.devicePixelRatio / 2) + 'px)'
             }
         );
         if (BlockSpecs.mic.complete) {
@@ -495,10 +490,9 @@ export default class Palette {
             pt = null;
         }
         var box = new Rectangle(el.left / scale, el.top / scale, el.offsetWidth / scale, el.offsetHeight / scale);
-        var box2 = new Rectangle(globalx(gn('palette')), globaly(gn('palette')),
-                                 gn('palette').offsetWidth, gn('palette').offsetHeight);
-        if ((sc.flowCaret != null) && ((sc.flowCaret.prev != null) ||
-            (sc.flowCaret.next != null) || (sc.flowCaret.inside != null))) {
+        var box2 = new Rectangle(globalx(gn('palette')), globaly(gn('palette')), gn('palette').offsetWidth, gn('palette').offsetHeight);
+        if ((sc.flowCaret != null) && ((sc.flowCaret.prev != null)
+            || (sc.flowCaret.next != null) || (sc.flowCaret.inside != null))) {
             return 'scripts';
         }
         if (box2.overlapElemBy(box, 0.66) && box2.hitRect({x: el.left / scale, y: el.top / scale})) {
@@ -554,8 +548,7 @@ export default class Palette {
             if (node.nodeName == 'FORM') {
                 continue;
             }
-            var box2 = new Rectangle(globalx(node, node.offsetLeft), globaly(node, node.offsetTop) - dh,
-                node.offsetWidth, node.offsetHeight);
+            var box2 = new Rectangle(globalx(node, node.offsetLeft), globaly(node, node.offsetTop) - dh, node.offsetWidth, node.offsetHeight);
             var boxi = box1.intersection(box2);
             var a = boxi.width * boxi.height;
             if (a > area) {

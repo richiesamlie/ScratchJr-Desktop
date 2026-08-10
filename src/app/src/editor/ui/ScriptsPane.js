@@ -29,8 +29,7 @@ export default class ScriptsPane {
         watermark = newHTML('div', 'watermark', div);
         var h = Math.max(getDocumentHeight(), frame.offsetHeight);
         setCanvasSize(div, div.offsetWidth, h - div.offsetTop);
-        scroll = new Scroll(div, 'scriptscontainer', div.offsetWidth,
-            h - div.offsetTop, ScratchJr.getActiveScript, ScratchJr.getBlocks);
+        scroll = new Scroll(div, 'scriptscontainer', div.offsetWidth, h - div.offsetTop, ScratchJr.getActiveScript, ScratchJr.getBlocks);
     }
 
     static setActiveScript (sprname) {

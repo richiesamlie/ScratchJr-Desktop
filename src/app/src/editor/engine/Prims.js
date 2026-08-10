@@ -205,7 +205,7 @@ export default class Prims {
     static SetSpeed (strip) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()); // 0 - 1 - 2
-        s.speed = Math.pow(2, num); // eslint-disable-line no-restricted-properties
+        s.speed = 2 ** num; // eslint-disable-line no-restricted-properties
         strip.waitTimer = tinterval;
         strip.thisblock = strip.thisblock.next;
     }
@@ -245,7 +245,7 @@ export default class Prims {
                 dy = (360 - Grid.size);
             }
             s.setPos(s.xcoor + strip.vector.x, dy);
-            strip.waitTimer = tinterval + Math.floor(Math.pow(2, 2 - Math.floor(s.speed / 2)) / 2); // eslint-disable-line no-restricted-properties
+            strip.waitTimer = tinterval + Math.floor(2 ** (2 - Math.floor(s.speed / 2)) / 2); // eslint-disable-line no-restricted-properties
             strip.count = count;
         }
     }
@@ -307,7 +307,7 @@ export default class Prims {
         }
         if (num == 0) {
             strip.thisblock = strip.thisblock.next;
-            strip.waitTimer = tinterval * Math.pow(2, 2 - Math.floor(s.speed / 2)); // eslint-disable-line no-restricted-properties
+            strip.waitTimer = tinterval * 2 ** (2 - Math.floor(s.speed / 2)); // eslint-disable-line no-restricted-properties
             strip.vector = {
                 x: 0,
                 y: 0
@@ -339,7 +339,7 @@ export default class Prims {
                 x: 0,
                 y: 0
             };
-            strip.waitTimer = tinterval * Math.pow(2, 2 - Math.floor(s.speed / 2));  // eslint-disable-line no-restricted-properties
+            strip.waitTimer = tinterval * 2 ** (2 - Math.floor(s.speed / 2));  // eslint-disable-line no-restricted-properties
             return;
         }
         if (strip.distance < 0) {

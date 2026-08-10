@@ -274,8 +274,8 @@ export default class SVGTools {
         var serializer = new XMLSerializer();
         var str = serializer.serializeToString(elem);
         str = str.replace(/ href/g, ' xlink:href');
-        var svgdata = '<svg xmlns="' + Paint.xmlns + '" xmlns:xlink="' + Paint.xmlnslink +
-            '" viewBox= "0 0 ' + w + ' ' + h + '" width="' + w + 'px" height="' + h + 'px">';
+        var svgdata = '<svg xmlns="' + Paint.xmlns + '" xmlns:xlink="' + Paint.xmlnslink
+            + '" viewBox= "0 0 ' + w + ' ' + h + '" width="' + w + 'px" height="' + h + 'px">';
         var comment = document.createComment('Created with Scratch Jr');
         svgdata += serializer.serializeToString(comment);
         svgdata += str;
@@ -307,8 +307,8 @@ export default class SVGTools {
         h = box.height;
         var str = serializer.serializeToString(elem);
         str = str.replace(/ href/g, ' xlink:href');
-        var svgdata = '<svg xmlns="' + Paint.xmlns + '" xmlns:xlink="' + Paint.xmlnslink +
-            '" viewBox= "0 0 ' + w + ' ' + h + '" width="' + w + 'px" height="' + h + 'px">';
+        var svgdata = '<svg xmlns="' + Paint.xmlns + '" xmlns:xlink="' + Paint.xmlnslink
+            + '" viewBox= "0 0 ' + w + ' ' + h + '" width="' + w + 'px" height="' + h + 'px">';
         var comment = document.createComment('Created with Scratch Jr');
         svgdata += serializer.serializeToString(comment);
         svgdata += str;
@@ -653,16 +653,16 @@ export default class SVGTools {
 
     static getDataurl (copy, w, h) {
         var serializer = new XMLSerializer();
-        var header = '<svg  xmlns="' + Paint.xmlns + '"' + ' viewBox= "0 0 ' + w + ' ' + h + '"' +
-            ' width=' + '"' + w + 'px' + '"' + ' height=' + '"' + h + 'px' + '">';
+        var header = '<svg  xmlns="' + Paint.xmlns + '"' + ' viewBox= "0 0 ' + w + ' ' + h + '"'
+            + ' width=' + '"' + w + 'px' + '"' + ' height=' + '"' + h + 'px' + '">';
         var svgdata = header + '\n' + serializer.serializeToString(copy) + '</svg>';
         return 'data:image/svg+xml;base64,' + btoa(svgdata);
     }
 
     static getLayersAbove (p, index, w, h) {
         var serializer = new XMLSerializer();
-        var svgdata = '<svg  xmlns="' + Paint.xmlns + '"' + ' viewBox= "0 0 ' + w + ' ' + h + '"' +
-            ' width=' + '"' + w + 'px' + '"' + ' height=' + '"' + h + 'px' + '">';
+        var svgdata = '<svg  xmlns="' + Paint.xmlns + '"' + ' viewBox= "0 0 ' + w + ' ' + h + '"'
+            + ' width=' + '"' + w + 'px' + '"' + ' height=' + '"' + h + 'px' + '">';
         svgdata += '\n';
         var startat = Math.min(index + 1, p.childElementCount);
         for (var i = startat; i < p.childElementCount; i++) {
@@ -896,9 +896,9 @@ export default class SVGTools {
     static setObjectWaterMark (elem, color) {
         var fill = elem.getAttribute('fill');
         var stroke = elem.getAttribute('stroke') ? color : (elem.id.indexOf('Draw') > -1) ? color : 'none';
-        var lw = elem.getAttribute('stroke-width') ?
-            Number(elem.getAttribute('stroke-width')) :
-            Number(SVG2Canvas.strokevalues['stroke-width']);
+        var lw = elem.getAttribute('stroke-width')
+            ? Number(elem.getAttribute('stroke-width'))
+            : Number(SVG2Canvas.strokevalues['stroke-width']);
         var attr = {
             'fill': 'white',
             'stroke': stroke,

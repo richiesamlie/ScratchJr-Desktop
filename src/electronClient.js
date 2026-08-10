@@ -406,10 +406,10 @@ class ElectronDesktopInterface {
     let promisifiedOldGUM = function(constraints, successCallback, errorCallback) { // eslint-disable-line no-unused-vars
 
         // First get ahold of getUserMedia, if present
-        let getUserMedia = (navigator.getUserMedia ||
-                navigator.webkitGetUserMedia ||
-                navigator.mozGetUserMedia ||
-                navigator.msGetUserMedia);
+        let getUserMedia = (navigator.getUserMedia
+                || navigator.webkitGetUserMedia
+                || navigator.mozGetUserMedia
+                || navigator.msGetUserMedia);
 
         // Some browsers just don't implement it - return a rejected promise with an error
         // to keep a consistent interface

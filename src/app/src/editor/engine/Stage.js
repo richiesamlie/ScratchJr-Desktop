@@ -48,9 +48,9 @@ export default class Stage {
     setStageScaleAndPosition (scale, x, y) {
         this.stageScale = scale;
         setProps(gn('stage').style, {
-            webkitTransform: 'translate(' + (-this.width / 2) + 'px, ' + (-this.height / 2) + 'px) ' +
-                'scale(' + scale + ') ' +
-                'translate(' + (this.width / 2 + x) + 'px, ' + (this.height / 2 + y) + 'px)'
+            webkitTransform: 'translate(' + (-this.width / 2) + 'px, ' + (-this.height / 2) + 'px) '
+                + 'scale(' + scale + ') '
+                + 'translate(' + (this.width / 2 + x) + 'px, ' + (this.height / 2 + y) + 'px)'
         });
     }
 
@@ -696,8 +696,7 @@ export default class Stage {
 
     sd () {
         var stg = gn('stage');
-        var mask = newDiv(gn('stageframe'), stg.offsetLeft + 1, stg.offsetTop + 1, 482, 362,
-            {
+        var mask = newDiv(gn('stageframe'), stg.offsetLeft + 1, stg.offsetTop + 1, 482, 362, {
                 position: 'absolute',
                 zIndex: ScratchJr.layerTop + 20,
                 visibility: 'hidden'
@@ -718,8 +717,7 @@ export default class Stage {
         var stg = gn('stage');
         var w = spr.outline.width;
         var h = spr.outline.height;
-        var mask = newDiv(gn('stageframe'), stg.offsetLeft + 1, stg.offsetTop + 1, w, h,
-            {
+        var mask = newDiv(gn('stageframe'), stg.offsetLeft + 1, stg.offsetTop + 1, w, h, {
                 position: 'absolute',
                 zIndex: ScratchJr.layerTop + 20,
                 visibility: 'hidden'

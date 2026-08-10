@@ -118,9 +118,9 @@ export default class Layer {
                 continue;
             }
 
-            var checkThis = (overlap > factor) || // factor in
-                ((overlap > 0.34) &&
-                ((SVGTools.getArea(elem) / SVGTools.getArea(mt)) < 0.1));
+            var checkThis = (overlap > factor) // factor in
+                || ((overlap > 0.34)
+                && ((SVGTools.getArea(elem) / SVGTools.getArea(mt)) < 0.1));
             // or is a 3rd in of someting that is a light weight
             if (checkThis) {
                 // commented because pixel detecting because is too slow
@@ -308,8 +308,8 @@ export default class Layer {
         setCanvasSize(ScratchJr.workingCanvas, Paint.workspaceWidth, Paint.workspaceHeight);
         var list = Layer.getRelated(mt);
         var index = Layer.groupStartsAt(mt.parentNode, mt);
-        var test = (mt.getAttribute('fill') == 'none') &&
-            SVG2Canvas.isCloseDPath(mt) && (mt.id.indexOf('pathborder_image') < 0);
+        var test = (mt.getAttribute('fill') == 'none')
+            && SVG2Canvas.isCloseDPath(mt) && (mt.id.indexOf('pathborder_image') < 0);
         list = test ? Layer.addFromBelow(mt.parentNode, mt, index, list) : list;
         var newlist = Layer.onTopOfBy(mt.parentNode, mt, 0.5, index, list);
         // to keep righ laying order
@@ -387,8 +387,8 @@ export default class Layer {
             Layer.rotateFromCenter(ctx, elem, rot.angle);
         }
         ctx.scale(zoom, zoom);
-        ctx.fillStyle = (isTip &&
-            !SVG2Canvas.isCloseDPath(elem))
+        ctx.fillStyle = (isTip
+            && !SVG2Canvas.isCloseDPath(elem))
             || (elem.tagName == 'image') ? '#ff00FF' : Path.endDotColor;
         ctx.lineWidth = lw;
         ctx.strokeStyle = '#ff00FF';
@@ -435,8 +435,7 @@ export default class Layer {
     /////////////////////////////
 
     static showmask () {
-        var mask = newDiv(Paint.frame, 0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height,
-            {
+        var mask = newDiv(Paint.frame, 0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height, {
                 position: 'absolute',
                 zIndex: 200000,
                 visibility: 'visible'

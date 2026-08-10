@@ -21,14 +21,14 @@ process.on('uncaughtException', (err) => {
   const entry = JSON.stringify({ts: new Date().toISOString(), type: 'uncaughtException', message: err?.message, stack: err?.stack});
   logFile.write(entry + '\n');
   process.stdout.write(entry + '\n');
-  try { if (dataStore && dataStore.databaseManager) dataStore.databaseManager.save(); } catch (_) {}
+  try { if (dataStore && dataStore.databaseManager) dataStore.databaseManager.save(); } catch (_) { /* best-effort save */ }
   logFile.end(() => process.exit(1));
 });
 process.on('unhandledRejection', (reason) => {
   const entry = JSON.stringify({ts: new Date().toISOString(), type: 'unhandledRejection', message: String(reason), stack: reason?.stack});
   logFile.write(entry + '\n');
   process.stdout.write(entry + '\n');
-  try { if (dataStore && dataStore.databaseManager) dataStore.databaseManager.save(); } catch (_) {}
+  try { if (dataStore && dataStore.databaseManager) dataStore.databaseManager.save(); } catch (_) { /* best-effort save */ }
   logFile.end(() => process.exit(1));
 });
 

@@ -204,9 +204,9 @@ export default class Home {
         if (!Home.actionTarget) {
             return 'none';
         }
-        var shown = (Home.actionTarget.childElementCount > 2) ?
-            Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1].style.visibility == 'visible' :
-            false;
+        var shown = (Home.actionTarget.childElementCount > 2)
+            ? Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1].style.visibility == 'visible'
+            : false;
         if (e && shown) {
             var t;
             if (window.event) {

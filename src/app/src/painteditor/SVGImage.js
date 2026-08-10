@@ -201,9 +201,9 @@ export default class SVGImage {
         if ((mt.id.indexOf('pathborder_image') < 0) && (mt.id.indexOf('pathmask_image') < 0)) {
             return null;
         }
-        var imageid = (mt.id.indexOf('pathborder_image') < 0) ?
-            mt.id.substring(String('pathmask_').length, mt.id.length) :
-            mt.id.substring(String('pathborder_').length, mt.id.length);
+        var imageid = (mt.id.indexOf('pathborder_image') < 0)
+            ? mt.id.substring(String('pathmask_').length, mt.id.length)
+            : mt.id.substring(String('pathborder_').length, mt.id.length);
         return gn(imageid);
     }
 

@@ -95,8 +95,7 @@ export default class Scripts {
             // It seems to have been checking if the drag was on the invisible shadow of the repeat block
             // It's not clear to me why we would want this, and seems functional without it. -- TM
             //if ((ths.owner.blocktype == "repeat") && !hitTest(ths.childNodes[1], pixel)) continue;
-            Events.startDrag(e, ths, ScriptsPane.prepareToDrag,
-                ScriptsPane.dropBlock, ScriptsPane.draggingBlock, ScriptsPane.runBlock);
+            Events.startDrag(e, ths, ScriptsPane.prepareToDrag, ScriptsPane.dropBlock, ScriptsPane.draggingBlock, ScriptsPane.runBlock);
             return;
         }
         ScriptsPane.dragBackground(e);
@@ -209,8 +208,8 @@ export default class Scripts {
         if (me.findFirst().aStart && (you.prev != null)) {
             return false;
         } // a strip starting with a start cannot be inserted between 2 blocks
-        if ((myn == 0) && me.findLast().anEnd &&
-            (((you.blocktype == 'repeat') && (yourn == 1)) || this.insideCShape(you))) {
+        if ((myn == 0) && me.findLast().anEnd
+            && (((you.blocktype == 'repeat') && (yourn == 1)) || this.insideCShape(you))) {
             return false;
         }
         if (me.findLast().anEnd && (you.next != null)) {
@@ -411,8 +410,8 @@ export default class Scripts {
             last = b;
             b = b.next;
         }
-        var w = last.blockshape.width / last.scale / window.devicePixelRatio +
-            (last.div.left - first.div.left) / last.scale;
+        var w = last.blockshape.width / last.scale / window.devicePixelRatio
+            + (last.div.left - first.div.left) / last.scale;
         return w - (last.cShape ? 76 : 76);
     }
 

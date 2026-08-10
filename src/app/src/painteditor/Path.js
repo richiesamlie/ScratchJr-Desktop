@@ -420,11 +420,11 @@ export default class Path {
         var first = ptlist[1];
         var last = ptlist[ptlist.length - 1];
         var dist = Vector.len(Vector.diff(ptlist[0].pt, last.pt));
-        var shapetype = ((first.cmd == 'C') && (last.cmd == 'C') && (dist == 0)) ? 'ellipse' :
-            ((first.cmd == 'C') &&
-            (ptlist[ptlist.length - 2].cmd == 'C') && (last.cmd.toLowerCase() == 'z')) ? 'closecurve' :
-                ((first.cmd == 'L') && (ptlist[ptlist.length - 2].cmd == 'L') && (dist == 0)) ? 'polygon' :
-                    ((first.cmd == 'C') && (last.cmd == 'C')) ? 'curve' : 'line';
+        var shapetype = ((first.cmd == 'C') && (last.cmd == 'C') && (dist == 0)) ? 'ellipse'
+            : ((first.cmd == 'C')
+            && (ptlist[ptlist.length - 2].cmd == 'C') && (last.cmd.toLowerCase() == 'z')) ? 'closecurve'
+                : ((first.cmd == 'L') && (ptlist[ptlist.length - 2].cmd == 'L') && (dist == 0)) ? 'polygon'
+                    : ((first.cmd == 'C') && (last.cmd == 'C')) ? 'curve' : 'line';
         for (var i = 2; i < ptlist.length - 1; i++) {
             str += Path.thisCommand(ptlist, i);
         }
@@ -655,9 +655,9 @@ export default class Path {
             cp = Path.getDot(g, cmd, pt);
             cp.style.visibility = 'hidden';
         } else {
-            if ((Vector.len(Vector.diff(first, pt)) == 0) &&
-                (cmd.toLowerCase() == 'z') &&
-                (Vector.len(Vector.diff(first, prev.pt)) == 0)) {
+            if ((Vector.len(Vector.diff(first, pt)) == 0)
+                && (cmd.toLowerCase() == 'z')
+                && (Vector.len(Vector.diff(first, prev.pt)) == 0)) {
                 cp.setAttribute('cmd', 'x');
                 cp.style.visibility = 'hidden';
             } else {
@@ -1997,10 +1997,10 @@ export default class Path {
         while ((t <= 1) && (t >= 0)) { // t goes from 0 to 1
             x = 0;
             y = 0;
-            x = (1 - t) * (1 - t) * (1 - t) * p1x + 3 * (1 - t) * (1 - t) *
-                t * p2x + 3 * (1 - t) * t * t * p3x + t * t * t * p4x;
-            y = (1 - t) * (1 - t) * (1 - t) * p1y + 3 * (1 - t) * (1 - t) *
-                t * p2y + 3 * (1 - t) * t * t * p3y + t * t * t * p4y;
+            x = (1 - t) * (1 - t) * (1 - t) * p1x + 3 * (1 - t) * (1 - t)
+                * t * p2x + 3 * (1 - t) * t * t * p3x + t * t * t * p4x;
+            y = (1 - t) * (1 - t) * (1 - t) * p1y + 3 * (1 - t) * (1 - t)
+                * t * p2y + 3 * (1 - t) * t * t * p3y + t * t * t * p4y;
             x = Math.round(x);
             y = Math.round(y);
             if (x != xl || y != yl) {

@@ -97,8 +97,7 @@ export default class Thumbs {
         if (!ScratchJr.isEditable() || (gn('pagecc').childElementCount < 3)) {
             Thumbs.clickOnPage(e, tb.owner);
         } else {
-            Events.startDrag(e, tb, Thumbs.prepareToDragPage, Thumbs.dropPage, Thumbs.draggingPage,
-                Thumbs.clickPage, Thumbs.startPageShaking);
+            Events.startDrag(e, tb, Thumbs.prepareToDragPage, Thumbs.dropPage, Thumbs.draggingPage, Thumbs.clickPage, Thumbs.startPageShaking);
         }
     }
 
@@ -452,8 +451,7 @@ export default class Thumbs {
         if (!ScratchJr.isEditable()) {
             Thumbs.clickOnSprite(e, tb);
         } else {
-            Events.startDrag(e, tb, Thumbs.prepareToDrag, Thumbs.drop,
-                Thumbs.dragging, Thumbs.click, Thumbs.startCharShaking);
+            Events.startDrag(e, tb, Thumbs.prepareToDrag, Thumbs.drop, Thumbs.dragging, Thumbs.click, Thumbs.startCharShaking);
         }
     }
 
@@ -519,10 +517,10 @@ export default class Thumbs {
         Events.dragmousex = pt.x;
         Events.dragmousey = pt.y;
         Events.dragthumbnail = Thumbs.getObjectFor(gn('spritecc'), Events.dragthumbnail.owner);
-        var mx = Events.dragmousex - frame.offsetLeft -
-            localx(Events.dragthumbnail, Events.dragmousex) - gn('topsection').offsetLeft;
-        var my = Events.dragmousey - frame.offsetTop -
-            localy(Events.dragthumbnail, Events.dragmousey) - gn('topsection').offsetTop;
+        var mx = Events.dragmousex - frame.offsetLeft
+            - localx(Events.dragthumbnail, Events.dragmousex) - gn('topsection').offsetLeft;
+        var my = Events.dragmousey - frame.offsetTop
+            - localy(Events.dragthumbnail, Events.dragmousey) - gn('topsection').offsetTop;
         var sy = Events.dragthumbnail.parentNode.parentNode.scrollTop;
         var sx = Events.dragthumbnail.parentNode.parentNode.scrollLeft;
         my -= sy;

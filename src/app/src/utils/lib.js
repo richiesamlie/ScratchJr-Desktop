@@ -42,8 +42,7 @@ function evaluatePreprocessExpression (expression) {
     }
 
     try {
-        var value = Function('css_vh', 'css_vw', 'scaleMultiplier', 'Math',
-            '\'use strict\'; return (' + trimmed + ');')(css_vh, css_vw, scaleMultiplier, Math);
+        var value = Function('css_vh', 'css_vw', 'scaleMultiplier', 'Math', '\'use strict\'; return (' + trimmed + ');')(css_vh, css_vw, scaleMultiplier, Math);
         return (value === undefined || value === null) ? '' : String(value);
     } catch (e) {
         return '${' + expression + '}';
@@ -296,8 +295,8 @@ export function setCanvasSizeScaledToWindowDocumentHeight (c, w, h) {
 export function localx (el, gx) {
     var lx = gx;
     while (el && el.offsetTop != undefined) {
-        lx -= el.offsetLeft + el.clientLeft +
-            (new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform)).m41;
+        lx -= el.offsetLeft + el.clientLeft
+            + (new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform)).m41;
         el = el.parentNode;
     }
     return lx;

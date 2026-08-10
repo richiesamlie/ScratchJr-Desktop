@@ -553,7 +553,9 @@ export default class Sprite {
         var w = Math.floor(max * 1.5 * this.scale);
         var h = Math.floor(max * 1.5 * this.scale);
         return new Rectangle(Math.floor(this.xcoor - w / 2),
-            Math.floor(this.ycoor - h / 2), Math.floor(w), Math.floor(h));
+            Math.floor(this.ycoor - h / 2),
+Math.floor(w),
+Math.floor(h));
     }
 
     //////////////////////////////////////////////////
@@ -772,8 +774,8 @@ export default class Sprite {
         // TODO: Merge these for iOS
         var dx;
         if (isAndroid) {
-            AndroidInterface.scratchjr_setsoftkeyboardscrolllocation(dy * window.devicePixelRatio, (dy +
-                ti.parentNode.parentNode.getBoundingClientRect().height * 1.7) * window.devicePixelRatio);
+            AndroidInterface.scratchjr_setsoftkeyboardscrolllocation(dy * window.devicePixelRatio, (dy
+                + ti.parentNode.parentNode.getBoundingClientRect().height * 1.7) * window.devicePixelRatio);
             dx = (-10 + 240 - Math.round(formsize / 2)) * scaleMultiplier + globalx(gn('stage'));
             setProps(gn('textbox').style, {
                 top: dy + 'px',

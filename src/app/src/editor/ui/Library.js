@@ -113,14 +113,13 @@ export default class Library {
 
     static addThumbnails () {
         var div = gn('scrollarea');
-        Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier),
-            (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
+        Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier), (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
         // Student' assets
         var json = {};
         json.cond = 'ext = ? AND version = ?';
-        json.items = ((type == 'costumes') ?
-            ['md5', 'altmd5', 'name', 'scale', 'width', 'height'] : ['altmd5', 'md5', 'width', 'height']);
+        json.items = ((type == 'costumes')
+            ? ['md5', 'altmd5', 'name', 'scale', 'width', 'height'] : ['altmd5', 'md5', 'width', 'height']);
         json.values = ['svg', ScratchJr.version];
         json.order = 'ctime desc';
         IO.query(key, json, Library.displayAssets);
@@ -128,8 +127,7 @@ export default class Library {
 
     static skipUserAssets () {
         var div = gn('scrollarea');
-        Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier),
-            (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
+        Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier), (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
         Library.addHR(div);
         Library.displayLibAssets((type == 'costumes') ? MediaLib.sprites : MediaLib.backgrounds);
     }
@@ -151,8 +149,7 @@ export default class Library {
         var data = JSON.parse(str);
         if (data.length > 0) {
             for (var i = 0; i < data.length; i++) {
-                Library.addAssetThumbChoose(div, data[i], 120 * scaleMultiplier, 90 * scaleMultiplier,
-                    Library.selectAsset);
+                Library.addAssetThumbChoose(div, data[i], 120 * scaleMultiplier, 90 * scaleMultiplier, Library.selectAsset);
             }
         }
         Library.addHR(div);
@@ -178,8 +175,7 @@ export default class Library {
             if ('separator' in data[i]) {
                 Library.addHR(div);
             } else {
-                Library.addLocalThumbChoose(div, data[i], 120 * scaleMultiplier,
-                    90 * scaleMultiplier, Library.selectAsset);
+                Library.addLocalThumbChoose(div, data[i], 120 * scaleMultiplier, 90 * scaleMultiplier, Library.selectAsset);
             }
         }
     }
@@ -257,8 +253,8 @@ export default class Library {
         var tb = document.createElement('div');
         tb.setAttribute('class', 'assetbox off');
         tb.setAttribute('id', 'none');
-        tb.fieldname = ((type == 'costumes') ?
-            Localization.localize('LIBRARY_CHARACTER') : Localization.localize('LIBRARY_BACKGROUND'));
+        tb.fieldname = ((type == 'costumes')
+            ? Localization.localize('LIBRARY_CHARACTER') : Localization.localize('LIBRARY_BACKGROUND'));
         tb.byme = 1;
         var cnv = newCanvas(tb, 9 * scaleMultiplier, 7 * scaleMultiplier, w, h, {
             position: 'relative'
@@ -315,7 +311,7 @@ export default class Library {
             };
             timeoutEvent = setTimeout(repeat, 500);
         }
-        function clearEvents (e, tb) { // eslint-disable-line no-shadow
+        function clearEvents (e, tb) { // eslint-disable-line no-shadow
             var pt = Events.getTargetPoint(e);
             var pt2 = JSON.parse(tb.pt);
             if (Library.distance(pt, pt2) < 30) {
@@ -335,7 +331,7 @@ export default class Library {
                 window.onmouseup = undefined;
             };
         }
-        function clickMe (e, tb) { // eslint-disable-line no-shadow
+        function clickMe (e, tb) { // eslint-disable-line no-shadow
             if (timeoutEvent) {
                 clearTimeout(timeoutEvent);
             }

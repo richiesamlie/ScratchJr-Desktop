@@ -201,8 +201,8 @@ export default class PaintAction {
     static selectMouseDown (evt) {
         PaintAction.fingerDown(evt);
         if (currentShape) {
-            currentShape = currentShape.getAttribute('stencil') == 'yes' ?
-                null : currentShape;
+            currentShape = currentShape.getAttribute('stencil') == 'yes'
+                ? null : currentShape;
         }
         var holdit = getValidHold();
         if (holdit) {
@@ -680,12 +680,13 @@ export default class PaintAction {
                 PaintAction.removeShape(evt); // outside the working area
             } else if (!SVG2Canvas.isCloseDPath(currentShape)) { // check if it is a join issue
                 var pt = PaintAction.getScreenPt(evt);
-                var mt = Path.getClosestPath(pt, currentShape,
-                    gn('layer1'), Path.maxDistance()); // check the end
+                var mt = Path.getClosestPath(pt, currentShape, gn('layer1'), Path.maxDistance()); // check the end
                 if (!mt) {
                     pt = Path.getCommands(currentShape.getAttribute('d'))[0].pt;
                     mt = Path.getClosestPath(pt,
-                        currentShape, gn('layer1'), Path.maxDistance()); // check the start
+                        currentShape,
+gn('layer1'),
+Path.maxDistance()); // check the start
                 }
                 var s = currentShape.getAttribute('stroke');
                 var sw = currentShape.getAttribute('stroke-width');
@@ -792,8 +793,8 @@ export default class PaintAction {
         }
         var stroke = currentShape.getAttribute('stroke');
         if (!stroke) {
-            currentShape = gn(currentShape.id + 'Border') ?
-                gn(currentShape.id + 'Border') : currentShape;
+            currentShape = gn(currentShape.id + 'Border')
+                ? gn(currentShape.id + 'Border') : currentShape;
             if (currentShape.id.indexOf('Border') > -1) {
                 currentShape.setAttribute('fill', Paint.fillcolor);
             }
@@ -826,8 +827,8 @@ export default class PaintAction {
         case 'check':
             var group = Layer.findGroup(currentShape);
             for (var i = 0; i < group.length; i++) {
-                if ((group[i].id == currentShape.id) ||
-                    (group[i].getAttribute('relatedto') == currentShape.id)) {
+                if ((group[i].id == currentShape.id)
+                    || (group[i].getAttribute('relatedto') == currentShape.id)) {
                     group[i].setAttribute('stroke', Paint.fillcolor);
                 }
             }
@@ -1051,8 +1052,8 @@ export default class PaintAction {
         if (!currentShape) {
             return;
         }
-        if (currentShape && currentShape.parentNode &&
-            (currentShape.parentNode.tagName == 'g') && (currentShape.parentNode.id != 'layer1')) {
+        if (currentShape && currentShape.parentNode
+            && (currentShape.parentNode.tagName == 'g') && (currentShape.parentNode.id != 'layer1')) {
             return;
         }
         if (currentShape && (currentShape.id == 'staticbkg')) {

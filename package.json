@@ -75,13 +75,38 @@
             "prefer-arrow-callback": 0,
             "no-mixed-spaces-and-tabs": 0,
             "no-mixed-operators": 0,
+            "no-return-await": 0,
             "no-unused-vars": [
                 2,
                 {
                     "args": "after-used",
-                    "varsIgnorePattern": "^_"
+                    "varsIgnorePattern": "^_",
+                    "argsIgnorePattern": "^_"
                 }
             ],
+            "import/no-extraneous-dependencies": [
+                "error",
+                {
+                    "devDependencies": [
+                        "scripts/**",
+                        "tests/**",
+                        "vitest.config.*",
+                        "src/main/**",
+                        "src/main.js",
+                        "src/preload.js",
+                        "src/lib/**",
+                        "src/app/**"
+                    ]
+                }
+            ],
+            "import/no-unresolved": [2, { "ignore": ["vitest"] }],
+            "import/no-cycle": 0,
+            "import/prefer-default-export": 0,
+            "default-case-last": 0,
+            "no-constructor-return": 0,
+            "no-new-func": 0,
+            "function-call-argument-newline": 0,
+            "no-restricted-properties": 0,
             "no-restricted-syntax": 0,
             "no-nested-ternary": 0,
             "import/extensions": 0,
@@ -128,7 +153,14 @@
             "WebKitCSSMatrix": true,
             "webkitAudioContext": true,
             "electron": true,
-            "require": true
+            "require": true,
+            "ScratchJr": true,
+            "Undo": true,
+            "Home": true,
+            "loadPage": true,
+            "devicePixelRatio": true,
+            "globalThis": true,
+            "isTouch": true
         },
         "env": {
             "browser": true,
@@ -137,9 +169,11 @@
     },
     "eslintIgnore": [
         "./src/app/src/snap/snap.svg-min.js",
-        "./src/app/dist/*"
+        "./src/app/dist/*",
+        "src/app/dist/**"
     ],
     "dependencies": {
+        "eve": "~0.5.4",
         "sql.js": "^1.8.0"
     },
     "devDependencies": {

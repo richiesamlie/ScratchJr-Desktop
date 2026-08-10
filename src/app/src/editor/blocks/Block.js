@@ -15,24 +15,22 @@ export default class Block {
         this.setBlockshapeFromSpecs(spec, isPalette, scale);
         this.blockshape = document.createElement('canvas');
         setCanvasSize(this.div, this.getWidth() * this.scale, this.getHeight() * this.scale);
-        setCanvasSize(this.blockshape, this.getWidth() * this.scale * window.devicePixelRatio,
-            this.getHeight() * this.scale * window.devicePixelRatio);
+        setCanvasSize(this.blockshape, this.getWidth() * this.scale * window.devicePixelRatio, this.getHeight() * this.scale * window.devicePixelRatio);
         this.addShadow();
         this.div.appendChild(this.blockshape);
         setProps(this.blockshape.style, {
             position: 'absolute',
             left: '0px',
             top: '0px',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, ' +
-                (-this.blockshape.height / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
+                + (-this.blockshape.height / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
             pointerEvents: 'all'
         });
         this.addHighlight();
         this.drawBlock();
-        setCanvasSize(this.div, this.blockshape.width / window.devicePixelRatio,
-            this.blockshape.height / window.devicePixelRatio);
+        setCanvasSize(this.div, this.blockshape.width / window.devicePixelRatio, this.blockshape.height / window.devicePixelRatio);
         if (this.isCaret) {
             return;
         }
@@ -101,10 +99,10 @@ export default class Block {
             top: '4px',
             opacity: this.inpalette ? window.Settings.paletteBlockShadowOpacity : 1,
             visibility: 'hidden',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, ' +
-                (-this.blockshape.height / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
+                + (-this.blockshape.height / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
             pointerEvents: 'all'
         });
         setCanvasSize(this.shadow, this.blockshape.width, this.blockshape.height);
@@ -116,13 +114,10 @@ export default class Block {
         if (!img.complete) {
             var me = this;
         img.onload = function () {
-                ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
-                    img.width * me.scale * window.devicePixelRatio,
-                    img.height * me.scale * window.devicePixelRatio);
+                ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width * me.scale * window.devicePixelRatio, img.height * me.scale * window.devicePixelRatio);
             };
         } else {
-            ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
-                img.width * this.scale * window.devicePixelRatio, img.height * this.scale * window.devicePixelRatio);
+            ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width * this.scale * window.devicePixelRatio, img.height * this.scale * window.devicePixelRatio);
         }
     }
 
@@ -147,23 +142,20 @@ export default class Block {
             left: '0px',
             top: '0px',
             visibility: 'hidden',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) +
-                'px, ' + (-this.blockshape.height / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: 'translate(' + (-this.blockshape.width / 2)
+                + 'px, ' + (-this.blockshape.height / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
             pointerEvents: 'all'
         });
         var ctx = this.shine.getContext('2d');
         var me = this;
         if (!img.complete) {
             img.onload = function () {
-                ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
-                    img.width * me.scale * window.devicePixelRatio,
-                    img.height * me.scale * window.devicePixelRatio);
+                ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width * me.scale * window.devicePixelRatio, img.height * me.scale * window.devicePixelRatio);
             };
         } else {
-            ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
-                img.width * this.scale * window.devicePixelRatio, img.height * this.scale * window.devicePixelRatio);
+            ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width * this.scale * window.devicePixelRatio, img.height * this.scale * window.devicePixelRatio);
         }
     }
 
@@ -183,9 +175,7 @@ export default class Block {
 
     drawBlockType () {
         var ctx = this.blockshape.getContext('2d');
-        ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height, 0, 0,
-            this.image.width * this.scale * window.devicePixelRatio,
-            this.image.height * this.scale * window.devicePixelRatio);
+        ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height, 0, 0, this.image.width * this.scale * window.devicePixelRatio, this.image.height * this.scale * window.devicePixelRatio);
         var icnv = document.createElement('canvas');
         this.blockicon = icnv;
         this.div.appendChild(icnv);
@@ -194,10 +184,10 @@ export default class Block {
             position: 'absolute',
             left: '0px',
             top: '0px',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, ' +
-                (-this.blockshape.height / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
+                + (-this.blockshape.height / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
             pointerEvents: 'all'
         });
         if (this.icon && this.icon.tagName) {
@@ -242,14 +232,14 @@ export default class Block {
             var h = Math.round(65 * this.scale * window.devicePixelRatio);
             setCanvasSize(this.blockicon, w, h);
             dx = 0;
-            this.blockicon.style.left = (this.shine.width / window.devicePixelRatio -
-                Math.round(this.scale * 77)) + 'px';
+            this.blockicon.style.left = (this.shine.width / window.devicePixelRatio
+                - Math.round(this.scale * 77)) + 'px';
             dy = Math.round(this.scale * 14 * window.devicePixelRatio);
             setProps(this.blockicon.style, {
                 position: 'absolute',
-                webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) ' +
-                    'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                    'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px)'
+                webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
+                    + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                    + 'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px)'
             });
             break;
           default:
@@ -263,14 +253,10 @@ export default class Block {
         var icon = this.icon;
         if (!icon.complete) {
             icon.onload = function () {
-                ctx.drawImage(icon, 0, 0, icon.width, icon.height,
-                    dx, dy, icon.width * me.scale * window.devicePixelRatio,
-                    icon.height * me.scale * window.devicePixelRatio);
+                ctx.drawImage(icon, 0, 0, icon.width, icon.height, dx, dy, icon.width * me.scale * window.devicePixelRatio, icon.height * me.scale * window.devicePixelRatio);
             };
         } else {
-            ctx.drawImage(icon, 0, 0, icon.width, icon.height, dx, dy,
-                icon.width * me.scale * window.devicePixelRatio,
-                icon.height * me.scale * window.devicePixelRatio);
+            ctx.drawImage(icon, 0, 0, icon.width, icon.height, dx, dy, icon.width * me.scale * window.devicePixelRatio, icon.height * me.scale * window.devicePixelRatio);
         }
     }
 
@@ -511,27 +497,22 @@ export default class Block {
             (92 + this.hrubberband + 84) * scaleAndRatio,
             (82 + this.vrubberband) * scaleAndRatio);
         setProps(cnv.style, {
-            webkitTransform: 'translate(' + (-cnv.width / 2) + 'px, ' + (-cnv.height / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (cnv.width / 2) + 'px, ' + (cnv.height / 2) + 'px)'
+            webkitTransform: 'translate(' + (-cnv.width / 2) + 'px, ' + (-cnv.height / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (cnv.width / 2) + 'px, ' + (cnv.height / 2) + 'px)'
         });
         var ctx = cnv.getContext('2d');
         // top line
         ctx.drawImage(img, 0, 0, 92, 29, 0, 0, 92 * scaleAndRatio, 29 * scaleAndRatio);
         ctx.drawImage(img, 92, 0, 1, 29, 92 * scaleAndRatio, 0, this.hrubberband * scaleAndRatio, 29 * scaleAndRatio);
-        ctx.drawImage(img, 93, 0, img.width - 93, 29,
-            92 * scaleAndRatio + this.hrubberband * scaleAndRatio, 0, 83 * scaleAndRatio, 29 * scaleAndRatio);
+        ctx.drawImage(img, 93, 0, img.width - 93, 29, 92 * scaleAndRatio + this.hrubberband * scaleAndRatio, 0, 83 * scaleAndRatio, 29 * scaleAndRatio);
 
         // height streach
         ctx.drawImage(img, 0, 29, 92, 1, 0, 29 * scaleAndRatio, 92 * scaleAndRatio, this.vrubberband * scaleAndRatio);
-        ctx.drawImage(img, 93, 29, img.width - 93, 1,
-            92 * scaleAndRatio + this.hrubberband * scaleAndRatio,
-            29 * scaleAndRatio, 83 * scaleAndRatio, this.vrubberband * scaleAndRatio);
+        ctx.drawImage(img, 93, 29, img.width - 93, 1, 92 * scaleAndRatio + this.hrubberband * scaleAndRatio, 29 * scaleAndRatio, 83 * scaleAndRatio, this.vrubberband * scaleAndRatio);
 
         // bottom
-        ctx.drawImage(img, 0, 29, 45, 53, 0, 29 * scaleAndRatio + this.vrubberband * scaleAndRatio,
-            45 * scaleAndRatio, 53 * scaleAndRatio);
-        ctx.drawImage(img, 93, 29, img.width - 93, 53, 92 * scaleAndRatio + this.hrubberband * scaleAndRatio,
-            29 * scaleAndRatio + this.vrubberband * scaleAndRatio, 83 * scaleAndRatio, 53 * scaleAndRatio);
+        ctx.drawImage(img, 0, 29, 45, 53, 0, 29 * scaleAndRatio + this.vrubberband * scaleAndRatio, 45 * scaleAndRatio, 53 * scaleAndRatio);
+        ctx.drawImage(img, 93, 29, img.width - 93, 53, 92 * scaleAndRatio + this.hrubberband * scaleAndRatio, 29 * scaleAndRatio + this.vrubberband * scaleAndRatio, 83 * scaleAndRatio, 53 * scaleAndRatio);
     }
 }

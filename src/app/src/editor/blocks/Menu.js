@@ -38,9 +38,9 @@ export default class Menu {
         var mu = newDiv(frame, dx, dy, w, dh, {
             position: 'absolute',
             zIndex: 100000,
-            webkitTransform: 'translate(' + (-w / 2) + 'px,' + (-dh / 2) + 'px) ' +
-                'scale(' + scaleMultiplier + ', ' + scaleMultiplier + ') ' +
-                'translate(' + (w / 2) + 'px, ' + (dh / 2) + 'px)'
+            webkitTransform: 'translate(' + (-w / 2) + 'px,' + (-dh / 2) + 'px) '
+                + 'scale(' + scaleMultiplier + ', ' + scaleMultiplier + ') '
+                + 'translate(' + (w / 2) + 'px, ' + (dh / 2) + 'px)'
         });
         mu.setAttribute('class', 'menustyle ' + color);
         mu.active = b;
@@ -58,9 +58,9 @@ export default class Menu {
         var scaledIconSize = iconSize * window.devicePixelRatio;
         setCanvasSize(micon, scaledIconSize, scaledIconSize);
         setProps(micon.style, {
-            webkitTransform: 'translate(' + (-scaledIconSize / 2) + 'px, ' + (-scaledIconSize / 2) + 'px) ' +
-                'scale(' + (1 / window.devicePixelRatio) + ', ' + (1 / window.devicePixelRatio) + ') ' +
-                'translate(' + (scaledIconSize / 2) + 'px, ' + (scaledIconSize / 2) + 'px)'
+            webkitTransform: 'translate(' + (-scaledIconSize / 2) + 'px, ' + (-scaledIconSize / 2) + 'px) '
+                + 'scale(' + (1 / window.devicePixelRatio) + ', ' + (1 / window.devicePixelRatio) + ') '
+                + 'translate(' + (scaledIconSize / 2) + 'px, ' + (scaledIconSize / 2) + 'px)'
         });
         if (!img.complete) {
             img.onload = function () {

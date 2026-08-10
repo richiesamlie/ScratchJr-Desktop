@@ -86,7 +86,7 @@ function finalize(code, timedOut = false) {
     if (process.platform === 'win32') {
         spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
     } else {
-        try { child.kill('SIGTERM'); } catch (_) {}
+        try { child.kill('SIGTERM'); } catch (_) { /* process may already be dead */ }
     }
 
     console.log('\n=== Smoke Check Results ===\n');

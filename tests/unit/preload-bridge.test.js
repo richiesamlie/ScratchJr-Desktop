@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('preload bridge contract', () => {
@@ -61,7 +62,7 @@ describe('preload bridge contract', () => {
     });
 
     it('exposes as window.scratchjr', () => {
-        expect(preloadSource).toContain("'scratchjr'");
+        expect(preloadSource).toContain('\'scratchjr\'');
     });
 
     it('does not expose nodeIntegration or require', () => {

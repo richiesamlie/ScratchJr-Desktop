@@ -353,9 +353,9 @@ export default class Page {
             data.md5 = md5;
         }
         data.num = this.num;
-        this.currentSpriteName = !this.currentSpriteName ?
-            undefined : (gn(this.currentSpriteName).owner.type == 'sprite') ?
-            this.currentSpriteName : this.getSprites()[0];
+        this.currentSpriteName = !this.currentSpriteName
+            ? undefined : (gn(this.currentSpriteName).owner.type == 'sprite')
+            ? this.currentSpriteName : this.getSprites()[0];
         data.lastSprite = this.currentSpriteName;
         for (var j = 0; j < spritelist.length; j++) {
             data[spritelist[j]] = Project.encodeSprite(spritelist[j]);

@@ -75,44 +75,44 @@ export default class SVG2Canvas {
 
     static drawLayer (elem, ctx) {
         // svg no fill means black
-        ctx.fillStyle = !elem.getAttribute('fill') ?
-            'black' :
-            (elem.getAttribute('fill') == 'none') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('fill');
+        ctx.fillStyle = !elem.getAttribute('fill')
+            ? 'black'
+            : (elem.getAttribute('fill') == 'none') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('fill');
         if (elem.getAttribute('opacity')) {
             ctx.fillStyle = colorToRGBA(ctx.fillStyle, elem.getAttribute('opacity'));
         }
         ctx.strokeStyle = !elem.getAttribute('stroke') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('stroke');
-        ctx.lineCap = elem.getAttribute('stroke-linecap') ?
-            elem.getAttribute('stroke-linecap') :
-            SVG2Canvas.strokevalues['stroke-linecap'];
-        ctx.lineWidth = elem.getAttribute('stroke-width') ?
-            Number(elem.getAttribute('stroke-width')) :
-            Number(SVG2Canvas.strokevalues['stroke-width']);
-        ctx.miterLimit = elem.getAttribute('stroke-miterlimit') ?
-            elem.getAttribute('stroke-miterlimit') :
-            SVG2Canvas.strokevalues['stroke-miterlimit'];
-        ctx.linejoin = elem.getAttribute('stroke-linejoin') ?
-            elem.getAttribute('stroke-linejoin') :
-            SVG2Canvas.strokevalues['stroke-linejoin'];
+        ctx.lineCap = elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')
+            : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.lineWidth = elem.getAttribute('stroke-width')
+            ? Number(elem.getAttribute('stroke-width'))
+            : Number(SVG2Canvas.strokevalues['stroke-width']);
+        ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
+            ? elem.getAttribute('stroke-miterlimit')
+            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+        ctx.linejoin = elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')
+            : SVG2Canvas.strokevalues['stroke-linejoin'];
         SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawLayer);
     }
 
     static drawElementHole (elem, ctx) {
-        ctx.fillStyle = (!elem.getAttribute('fill') ||
-            (elem.getAttribute('fill') == 'none')) ? 'black' : elem.getAttribute('fill');
+        ctx.fillStyle = (!elem.getAttribute('fill')
+            || (elem.getAttribute('fill') == 'none')) ? 'black' : elem.getAttribute('fill');
         ctx.strokeStyle = !elem.getAttribute('stroke') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('stroke');
-        ctx.lineCap = elem.getAttribute('stroke-linecap') ?
-            elem.getAttribute('stroke-linecap') :
-            SVG2Canvas.strokevalues['stroke-linecap'];
-        ctx.lineWidth = elem.getAttribute('stroke-width') ?
-            Number(elem.getAttribute('stroke-width')) :
-            Number(SVG2Canvas.strokevalues['stroke-width']);
-        ctx.miterLimit = elem.getAttribute('stroke-miterlimit') ?
-            elem.getAttribute('stroke-miterlimit') :
-            SVG2Canvas.strokevalues['stroke-miterlimit'];
-        ctx.linejoin = elem.getAttribute('stroke-linejoin') ?
-            elem.getAttribute('stroke-linejoin') :
-            SVG2Canvas.strokevalues['stroke-linejoin'];
+        ctx.lineCap = elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')
+            : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.lineWidth = elem.getAttribute('stroke-width')
+            ? Number(elem.getAttribute('stroke-width'))
+            : Number(SVG2Canvas.strokevalues['stroke-width']);
+        ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
+            ? elem.getAttribute('stroke-miterlimit')
+            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+        ctx.linejoin = elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')
+            : SVG2Canvas.strokevalues['stroke-linejoin'];
         if (elem.tagName) {
             SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawElementHole);
         } else {
@@ -133,18 +133,18 @@ export default class SVG2Canvas {
             ctx.fillStyle = (elem.getAttribute('fill') == 'none') ? 'rgba(0, 0, 0,0)' : 'white';
         }
         ctx.strokeStyle = elem.getAttribute('stroke') ? 'white' : 'rgba(0, 0, 0,0)';
-        ctx.lineCap = elem.getAttribute('stroke-linecap') ?
-            elem.getAttribute('stroke-linecap') :
-            SVG2Canvas.strokevalues['stroke-linecap'];
-        ctx.lineWidth = elem.getAttribute('stroke-width') ?
-            Number(elem.getAttribute('stroke-width')) :
-            Number(SVG2Canvas.strokevalues['stroke-width']);
-        ctx.miterLimit = elem.getAttribute('stroke-miterlimit') ?
-            elem.getAttribute('stroke-miterlimit') :
-            SVG2Canvas.strokevalues['stroke-miterlimit'];
-        ctx.linejoin = elem.getAttribute('stroke-linejoin') ?
-            elem.getAttribute('stroke-linejoin') :
-            SVG2Canvas.strokevalues['stroke-linejoin'];
+        ctx.lineCap = elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')
+            : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.lineWidth = elem.getAttribute('stroke-width')
+            ? Number(elem.getAttribute('stroke-width'))
+            : Number(SVG2Canvas.strokevalues['stroke-width']);
+        ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
+            ? elem.getAttribute('stroke-miterlimit')
+            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+        ctx.linejoin = elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')
+            : SVG2Canvas.strokevalues['stroke-linejoin'];
         SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawElementMask);
     }
 
@@ -158,8 +158,8 @@ export default class SVG2Canvas {
         if (elem.id.indexOf('pathborder_image') > -1) {
             ctx.fillStyle = window.Settings.spriteOutlineColor;
         } else {
-            ctx.fillStyle = (elem.getAttribute('fill') == 'none') ?
-                'rgba(0, 0, 0,0)' : window.Settings.spriteOutlineColor;
+            ctx.fillStyle = (elem.getAttribute('fill') == 'none')
+                ? 'rgba(0, 0, 0,0)' : window.Settings.spriteOutlineColor;
         }
         ctx.strokeStyle = window.Settings.spriteOutlineColor;
         ctx.lineCap = 'round';
@@ -200,12 +200,12 @@ export default class SVG2Canvas {
         ctx.fillStyle = (fill == 'none') ? 'rgba(0, 0, 0,0)' : 'black';
         ctx.strokeStyle = elem.getAttribute('stroke') ? 'black' : 'rgba(0, 0, 0,0)';
         ctx.lineCap = 'round';
-        ctx.lineWidth = elem.getAttribute('stroke-width') ?
-            Number(elem.getAttribute('stroke-width')) :
-            Number(SVG2Canvas.strokevalues['stroke-width']);
-        ctx.miterLimit = elem.getAttribute('stroke-miterlimit') ?
-            elem.getAttribute('stroke-miterlimit') :
-            SVG2Canvas.strokevalues['stroke-miterlimit'];
+        ctx.lineWidth = elem.getAttribute('stroke-width')
+            ? Number(elem.getAttribute('stroke-width'))
+            : Number(SVG2Canvas.strokevalues['stroke-width']);
+        ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
+            ? elem.getAttribute('stroke-miterlimit')
+            : SVG2Canvas.strokevalues['stroke-miterlimit'];
         ctx.linejoin = 'round';
         if (ctx.lineWidth < 2) {
             ctx.lineWidth = 2;
@@ -381,8 +381,8 @@ export default class SVG2Canvas {
     }
 
     static drawText (kid, ctx) {
-        ctx.font = kid.getAttribute('font-weight') + ' ' +
-            kid.getAttribute('font-size') + 'px ' + kid.getAttribute('font-family');
+        ctx.font = kid.getAttribute('font-weight') + ' '
+            + kid.getAttribute('font-size') + 'px ' + kid.getAttribute('font-family');
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillText(kid.textContent, 0, 0);
@@ -630,9 +630,9 @@ export default class SVG2Canvas {
     }
 
     static absoluteSmooth (ctx, cmd) {
-        var c1 = acurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        var c1 = acurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         var c2 = {
             x: cmd[1],
             y: cmd[2]
@@ -647,9 +647,9 @@ export default class SVG2Canvas {
     }
 
     static relativeSmooth (ctx, cmd) {
-        var c1 = acurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        var c1 = acurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         var c2 = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -691,9 +691,9 @@ export default class SVG2Canvas {
     }
 
     static absoluteQSmooth (ctx, cmd) {
-        var c1 = aqcurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        var c1 = aqcurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         endp = {
             x: cmd[1],
             y: cmd[2]
@@ -703,9 +703,9 @@ export default class SVG2Canvas {
     }
 
     static relativeQSmooth (ctx, cmd) {
-        var c1 = aqcurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        var c1 = aqcurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         endp = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -938,9 +938,9 @@ export default class SVG2Canvas {
     }
 
     static setRelativeSmooth (cmd) {
-        var c1 = acurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        var c1 = acurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         var c2 = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -981,9 +981,9 @@ export default class SVG2Canvas {
     }
 
     static setAbsoluteQSmooth (cmd) {
-        var c1 = aqcurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        var c1 = aqcurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         endp = {
             x: cmd[1],
             y: cmd[2]
@@ -993,9 +993,9 @@ export default class SVG2Canvas {
     }
 
     static setRelativeQSmooth (cmd) {
-        lastcxy = aqcurve ?
-            Vector.sum(endp, Vector.diff(endp, lastcxy)) :
-            endp;
+        lastcxy = aqcurve
+            ? Vector.sum(endp, Vector.diff(endp, lastcxy))
+            : endp;
         endp = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]

@@ -211,8 +211,8 @@ export default class IO {
 
     static query (type, obj, fcn) {
         var json = {};
-        json.stmt = 'select ' + obj.items + ' from ' + type +
-            ' where ' + obj.cond + (obj.order ? ' order by ' + obj.order : '');
+        json.stmt = 'select ' + obj.items + ' from ' + type
+            + ' where ' + obj.cond + (obj.order ? ' order by ' + obj.order : '');
         json.values = obj.values;
         iOS.query(json, fcn);
     }
@@ -330,8 +330,8 @@ export default class IO {
                             }
                         } else {
                             // Otherwise, first check if it's in the library
-                            if (md5 && (typeof md5 !== 'undefined') &&
-                                !MediaLib.keys[md5] && MediaLib.sounds.indexOf(md5) < 0) {
+                            if (md5 && (typeof md5 !== 'undefined')
+                                && !MediaLib.keys[md5] && MediaLib.sounds.indexOf(md5) < 0) {
                                 if (projectMetadata[assetType].indexOf(md5) < 0) {
                                     projectMetadata[assetType].push(md5);
                                 }
@@ -640,8 +640,8 @@ export default class IO {
 
                             // First ensure that this character doesn't already exist in the exact form
                             var json = {};
-                            json.cond = ('ext = ? AND md5 = ? AND altmd5 = ? AND name = ? ' +
-                                'AND scale = ? AND width = ? AND height = ?');
+                            json.cond = ('ext = ? AND md5 = ? AND altmd5 = ? AND name = ? '
+                                + 'AND scale = ? AND width = ? AND height = ?');
                             json.items = ['*'];
                             json.values = ['svg', fullName, thumbnailMD5,
                                 charName, scale, width.toString(), height.toString()];
@@ -693,8 +693,8 @@ export default class IO {
                                     var keylist = ['md5', 'altmd5', 'version', 'width', 'height', 'ext'];
                                     var values = '?,?,?,?,?,?';
                                     json.values = [fullName, thumbnailMD5, 'iOSv01', '480', '360', 'svg'];
-                                    json.stmt = 'insert into userbkgs (' + keylist.toString() +
-                                        ') values (' + values + ')';
+                                    json.stmt = 'insert into userbkgs (' + keylist.toString()
+                                        + ') values (' + values + ')';
                                     iOS.stmt(json, function () {
                                         saveActual++;
                                     });

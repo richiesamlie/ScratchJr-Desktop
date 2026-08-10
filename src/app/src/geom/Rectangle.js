@@ -129,8 +129,8 @@ export default class Rectangle {
     }
 
     isEqual (box2) {
-        return (this.x == box2.x) && (this.y == box2.y) &&
-            (this.width == box2.width) && (this.height == box2.height);
+        return (this.x == box2.x) && (this.y == box2.y)
+            && (this.width == box2.width) && (this.height == box2.height);
     }
 
     isEmpty () {
