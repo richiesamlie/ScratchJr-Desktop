@@ -35,18 +35,15 @@ describe('isParentFolder', () => {
         expect(isParentFolder('/app', '/app/a/b/c/d/e/f.txt')).toBe(true);
     });
 
-    it('handles Windows-style paths', () => {
-        // On Windows, path.relative handles backslashes
-        if (!isWindows) return; // Skip on non-Windows
-        const parent = 'C:\\Users\\app';
-        const child = 'C:\\Users\\app\\file.txt';
+    it('handles platform-native absolute paths', () => {
+        const parent = isWindows ? 'C:\\Users\\app' : '/home/user/app';
+        const child = isWindows ? 'C:\\Users\\app\\file.txt' : '/home/user/app/file.txt';
         expect(isParentFolder(parent, child)).toBe(true);
     });
 
-    it('blocks Windows path traversal', () => {
-        if (!isWindows) return; // Skip on non-Windows
-        const parent = 'C:\\Users\\app';
-        const escape = 'C:\\Users\\other\\file.txt';
+    it('blocks platform-native path traversal', () => {
+        const parent = isWindows ? 'C:\\Users\\app' : '/home/user/app';
+        const escape = isWindows ? 'C:\\Users\\other\\file.txt' : '/home/user/other/file.txt';
         expect(isParentFolder(parent, escape)).toBe(false);
     });
 });
@@ -75,17 +72,14 @@ describe('validateFilePath', () => {
         expect(() => validateFilePath(appRoot, '../../../etc/passwd')).toThrow('file outside app folder');
     });
 
-    it('throws for Windows root-relative escape', () => {
-        if (!isWindows) return; // Backslash is not a path separator on Unix
-        // path.join normalizes \etc\passwd as root-relative on Windows
-        // After the fix, validateFilePath uses path.resolve to catch this
-        expect(() => validateFilePath(appRoot, '\\etc\\passwd')).toThrow();
+    it('throws for root-relative escape', () => {
+        // On Windows, \etc\passwd is root-relative; on Unix, /etc/passwd is the equivalent
+        const escape = isWindows ? '\\etc\\passwd' : '/etc/passwd';
+        expect(() => validateFilePath(appRoot, escape)).toThrow();
     });
 
     it('throws for absolute path outside parent', () => {
-        if (!isWindows) return; // Windows drive paths are relative on Unix
-        // Use a Windows-native absolute path that path.join won't collapse
-        const escape = 'C:\\Windows\\System32\\config\\SAM';
+        const escape = isWindows ? 'C:\\Windows\\System32\\config\\SAM' : '/etc/shadow';
         expect(() => validateFilePath(appRoot, escape)).toThrow();
     });
 
