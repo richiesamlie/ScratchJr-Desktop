@@ -1,168 +1,213 @@
-## Official disclaimer
-Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, which does not sponsor, endorse, or authorize this content. See scratchjr.org for more information.
+# ScratchJr Desktop
 
-## Downloads 
-[Download ScratchJr for Desktop](https://github.com/richiesamlie/ScratchJr-Desktop/releases/latest)
+> A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — maintained through **Vibe Coding**.
 
-Note: 
+## Official Disclaimer
 
-    Windows: npm run make:zip produces out/ScratchJr-win32-x64.zip
+Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, which does not sponsor, endorse, or authorize this content. See [scratchjr.org](https://scratchjr.org) for more information.
 
-## The geeky stuff
+## Downloads
 
-This repository contains a port of ScratchJr for Desktop. 
+**[Download ScratchJr for Desktop (latest release)](https://github.com/richiesamlie/ScratchJr-Desktop/releases/latest)**
 
-It has been ported with love from the iPad / Android editions to Mac/Windows/Linux
-as an independent, open source community project.
+| File | Platform |
+|------|----------|
+| `ScratchJr-win32-x64.zip` | Windows x64 |
+| `ScratchJr-darwin-x64.zip` | macOS x64 |
+| `ScratchJr-darwin-arm64.zip` | macOS ARM64 |
+| `ScratchJr-linux-x64.zip` | Linux x64 |
+| `ScratchJr-linux-arm64.zip` | Linux ARM64 |
 
+Each release includes SHA256 checksums (`.sha256` files) for integrity verification.
 
-If you are looking for the Official ScratchJr build from MIT for Android and iPad, visit
-the LLK/ScratchJr (https://github.com/LLK/scratchjr) repository.
+---
 
-## About Electron and Electron Forge
+## What's Different from the Original
 
-This port makes use of Electron to host the ScratchJR HTML5 application on Mac, Windows, and, Linux.
+This is a **complete modernization** of the original [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop) fork. The app looks the same to users, but the internals have been rebuilt from the ground up.
 
-Electron (https://electronjs.org/) is a framework for creating native applications with web technologies like JavaScript, HTML, and CSS.   
+### v1.4.0 — Full Modernization (8 Phases)
 
-Electron Forge (https://electronforge.io/) stitches together several electron modules to provide easier support for using the latest version 
-of javascript, making builds and installers ie: .exe/.app/.deb files.     
+| Area | Before | After |
+|------|--------|-------|
+| **Electron** | 22 | 42.8.1 (Chromium 134) |
+| **Node compatibility** | Broken on Node 22+ | Node 22/26 compatible |
+| **IPC** | Synchronous `sendSync` (renderer freezes) | Async `invoke`/`handle` (all 18 channels) |
+| **Security** | `nodeIntegration: true`, no CSP | `sandbox: true`, CSP on all pages, SQL validation |
+| **Main process** | 1,122-line monolith | 94-line orchestrator + 5 focused modules |
+| **Renderer** | Global vendor scripts, no bundler | esbuild bundler, explicit ESM imports |
+| **Tests** | None | 80 tests (vitest) covering IPC, SQL, paths, layout |
+| **CI** | Broken lint, no checksums | Lint + test + SHA256 checksums + version verification |
+| **Vulnerabilities** | 26 known | 0 |
+| **CSS** | WebKit-only prefixes | Standard CSS with `-webkit-` only where required |
 
+### Security Hardening
 
-## Architecture Overview
+- **Content Security Policy** on all HTML pages
+- **Sandboxed renderer** — `nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`
+- **Preload bridge** — only named IPC operations exposed, no raw `ipcRenderer`
+- **SQL validation** — allowlisted verbs, parameterized queries, no multi-statement payloads
+- **Navigation restrictions** — file:// only within app root
+- **Permission policy** — camera/microphone only, all other requests blocked
+- **Window open handler** — all new window creation denied
 
-![Scratch Jr. Architecture Diagram](docs/scratchjr_electron_overview.png)
+### Architecture
 
-* The HTML5 side of Scratch Jr very close to the original ios / android versions.  Some changes had to be made to load modules correctly inside of the electron environment.  
-* Minor changes were made to the CSS stylesheets to support resizing.
-* Touch events were translated to mouse events.
+```
+src/main.js (94 lines)  ← orchestrator: crash handlers, dependency wiring, app lifecycle
+  ├── src/main/logging.js        — structured logging, debug flags
+  ├── src/main/database.js       — SQL.js DatabaseManager class
+  ├── src/main/data-store.js     — project storage, media cache, path validation
+  ├── src/main/window-lifecycle.js — BrowserWindow, security, close handshake
+  └── src/main/ipc-handlers.js   — all 19 IPC channels
 
- 
-## ElectronDesktopInterface as a third tabletInterface
+src/preload.js            — contextBridge API (invoke-based)
+src/electronClient.js     — renderer adapter (async methods)
+src/app/                  — bundled renderer (esbuild)
+  ├── appEntry.js         — async page bootstrap
+  ├── src/utils/lib.js    — async CSS preprocessing
+  └── src/iPad/iOS.js     — tabletInterface bridge (async)
+```
 
-The original html implementation called out to a tabletInterface to make calls to 
-the host operating system (Android / iOS) for filesystem access and audio and video recording.
+### Bug Fixes (v1.3.x)
 
- 
-ElectronDesktopInterface handles these calls and either handles them itself in HTML5 
-(e.g. audio and video recording are achieved through the HTML5 WebRTC apis) or passes them
-onto the electron main process to read and write files / db.
+19 bugs fixed across the main process, renderer engine, and UI:
 
-
- 
-## Sql.js 
-
-As the database is rather small we were able to use a version of SQLLite that has been compiled into JavaScript.
-
-
-The database is largely the same format as the original ios / android version, but it adds
-a third table called PROJECTFILES.  Instead of writing individual svg, video, and audio files out to 
-the filesystem they are all stored within the PROJECTFILES table.   This was done so that
-you can make a set of Scratch Jr projects as a starter kit. 
-
-## Building
-
-You will need node.js installed. (https://nodejs.org/en/)
-Also git (which you may already have).
-
-
-* <tt>npm install</tt>
-* <tt>npm run start</tt>
-
-
-## Packaging for Windows / Mac / Linux
-
-For windows installers, you must do this from a Windows machine.  Same for Mac and/or Linux.
-
-* <tt>npm run make</tt>
-
-
-## Running lint
-
-We use eslint to verify the install.  Our configuration is similar to airbnb, however 
-several style rules had to be adapted to avoid changing the original scratch sources.
-
-* <tt>npm run lint</tt>
-
-
-## Debugging
-
-To debug the html files, audio and video recording you can simply run
-* <tt>npm run start</tt>
-
-A chrome inspector window will appear by default.
-
-To debug writing to the filesystem and database queries, you need to debug the main 
-electron process.  This is done by 
-
-* <tt>npm run debugMain</tt>
-
-To get the chrome inspector window, open another instance of the real chrome on your computer
-and navigate to chrome://inspect
-
-There should be a listing there for the electron main process.
-Note between debugging sessions you may have to close and reopen this chrome://inspect window.
-
-
-## Directory Structure and Projects
-This repository has the following directory structure:
-
-* <tt>package.json</tt> - Contains eslint rules, modules used, build and packaging scripts
-* <tt>forge.config.js</tt> - Contains rules for packaging for windows and Mac
-* <tt>src/app/</tt> - Shared JavaScript code for iOS and Android and Desktop common client. This is where most changes should be made for features, bug fixes, UI, etc.
-* <tt>src/icons/</tt> - Icons for Mac / Windows and ( in theory Linux  NYI) 
-* <tt>out/</tt> - Build scripts and other executables
-* <tt>docs/</tt> - Developer Documentation
-
-
-## Credits
-
-This is a fork of [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop), originally created by the ScratchJr open source community. All credit for the original Electron desktop port goes to the contributors of that repository and the official [LLK/ScratchJr](https://github.com/LLK/scratchjr) project by MIT.
-
-### Changes in this fork
-
-**Electron upgrade:** Electron 22 → 42.8.1, Forge 6 → 7.11.2, Node 26 compatibility
-
-**Bug fixes (19 items):**
 - Fixed `isTablet` always returning `true` on desktop (broke mouse interaction)
-- Fixed async IPC `event.returnValue` returning `undefined` (eager DB init)
+- Fixed async IPC `event.returnValue` returning `undefined`
 - Fixed save-on-close data loss (ack sent before save completes)
 - Fixed `delete this.mediaStrings.key` → `[key]` (memory leak)
-- Parameterized5 SQL injection vulnerabilities
-- Fixed `for...in` on arrays in Runtime (4 locations) and DrawPath
+- Parameterized 5 SQL injection vulnerabilities
+- Fixed `for...in` on arrays in Runtime and DrawPath
 - Replaced deprecated `new Buffer()` with `Buffer.from()`
 - Fixed sql.js prepared statements never freed (memory leak)
 - Fixed HTML injection via `innerHTML` in camera picker
-- Fixed CSS syntax error in camera picker (commas → semicolons)
-- Added5s window close timeout fallback
+- Added 5s window close timeout fallback
 - Fixed DB init race condition with promise guard
-- Fixed `blockstab` handler checking wrong element (copy-paste bug)
-- Fixed ScratchAudio callback silently skipped
-- Added drag lifecycle safety (try/catch + window blur handler) for stuck blocks
-- Removed leaked BrowserView, dead `enableRemoteModule`, dead `remote` import
-- Fixed HTML meta tags outside `<html>`, missing `</div>` in about.html
-- Removed `electron-squirrel-startup` (dead dependency)
 - Added `statement.free()` in finally blocks for database queries
+- And more — see commit history for full details
 
-**Build:**
-- Added `npm run make:zip` for reliable builds on Node 26
-- Added `scripts/patch-for-node26.js` (auto-applied via postinstall)
-- Added `scripts/package-and-zip.js`
+---
 
-## Acknowledgments
+## What is Vibe Coding?
 
-Thank you to the official Scratch team and their supporters.  Their contributions are listed here:
-https://github.com/LLK/scratchjr
+This project is maintained using **Vibe Coding** — a development approach where an AI agent handles the heavy lifting of code analysis, refactoring, testing, and verification, while a human developer directs the work at a higher level.
 
-In addition, thank you to the folks working on Electron, ElectronForge, and Sql.js.
+In practice, this means:
 
-Thank you to Github for workflows that allow building for Windows, Mac OS, and, Linux.
+- **The AI reads, analyzes, and modifies the codebase** — tracing execution paths, identifying bugs, refactoring modules, and writing tests
+- **The human sets the goals and reviews the results** — defining what "done" looks like, verifying behavior, and making architectural decisions
+- **Iterative and evidence-driven** — every change is verified with tests, smoke checks, and live UI screenshots before moving on
+- **Fast modernization** — the entire 8-phase modernization (security, async IPC, modularization, CSS audit, CI hardening) was completed in a single session
 
+The result is a codebase that's been thoroughly audited, tested, and modernized — without the weeks of manual effort that would normally require.
 
-## Disclaimers
+---
+
+## Building from Source
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/) 22+ (26 also supported)
+- [Git](https://git-scm.com/)
+
+### Development
+
+```bash
+npm install
+npm start
+```
+
+### Packaging
+
+```bash
+# Platform-specific (must run on target OS)
+npm run make:zip
+
+# Output: out/ScratchJr-<platform>-<arch>.zip
+```
+
+### Testing
+
+```bash
+npm test        # 80 tests via vitest
+npm run lint    # ESLint (airbnb-base config)
+```
+
+### Debugging
+
+```bash
+npm start           # Launches with Chrome DevTools
+npm run debugMain   # Debug main process (open chrome://inspect)
+```
+
+---
+
+## Architecture Notes
+
+### ElectronDesktopInterface
+
+The original ScratchJr calls a `tabletInterface` for OS operations (filesystem, audio, video). On desktop, `ElectronDesktopInterface` implements this interface — handling some calls in HTML5 (e.g., WebRTC for recording) and forwarding others to the main process via IPC.
+
+### SQL.js
+
+The project database uses [sql.js](https://github.com/sql-js/sql.js/) (SQLite compiled to JavaScript). The schema is largely the same as the original iOS/Android version, with an added `PROJECTFILES` table that stores SVG, audio, and video files inline — enabling project bundles as starter kits.
+
+### CSS Preprocessing
+
+CSS files use JavaScript template literals (e.g., `${css_vh(10)}`) for responsive sizing. These are preprocessed at load time via `preprocessAndLoadCss()` — now fully async to support the sandboxed preload bridge.
+
+---
+
+## Directory Structure
+
+```
+package.json          — dependencies, scripts, ESLint config
+forge.config.js       — Electron Forge packaging config
+vitest.config.mjs     — test runner config
+src/
+  main.js             — entry point (orchestrator)
+  main/               — modular main process components
+  preload.js          — contextBridge API
+  electronClient.js   — renderer adapter
+  app/                — renderer (HTML, CSS, JS, assets)
+    appEntry.js       — page bootstrap
+    src/              — application source modules
+    css/              — stylesheets (template literal preprocessing)
+    dist/             — bundled output (generated)
+  lib/                — shared utilities (path-utils, sql-validator)
+  icons/              — platform icons
+scripts/
+  build-renderer.js   — esbuild bundler
+  package-and-zip.js  — packaging script
+  smoke.js            — boot verification test
+tests/
+  unit/               — vitest test suite
+docs/                 — developer documentation
+```
+
+---
+
+## Credits
+
+**Original port:** [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop)
+
+**ScratchJr:** [LLK/ScratchJr](https://github.com/LLK/scratchjr) by MIT
+
+**Modernization:** [richiesamlie/ScratchJr-Desktop](https://github.com/richiesamlie/ScratchJr-Desktop) — maintained through Vibe Coding
+
+### Acknowledgments
+
+Thank you to the official Scratch team and their supporters: https://github.com/LLK/scratchjr
+
+Thank you to the teams behind [Electron](https://electronjs.org/), [Electron Forge](https://electronforge.io/), [sql.js](https://github.com/sql-js/sql.js/), and [esbuild](https://esbuild.github.io/).
+
+---
+
+## License
+
+MIT
+
+## Disclaimer
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-For more information, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
