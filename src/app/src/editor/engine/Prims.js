@@ -263,9 +263,7 @@ export default class Prims {
             };
             return;
         }
-        if (num == 0) {
-            strip.distance = 0;
-        } else if (strip.distance < 0) {
+        if (strip.distance < 0) {
             strip.distance = distance;
             strip.vector = {
                 x: 0,
@@ -341,12 +339,10 @@ export default class Prims {
                 x: 0,
                 y: 0
             };
-            strip.waitTimer = tinterval * Math.pow(2, 2 - Math.floor(s.speed / 2));  // eslint-disable-line no-restricted-properties
+            strip.waitTimer = tinterval * Math.pow(2, 2 - Math.floor(s.speed / 2));  // eslint-disable-line no-restricted-properties
             return;
         }
-        if (num == 0) {
-            strip.distance = 0;
-        } else if (strip.distance < 0) {
+        if (strip.distance < 0) {
             strip.distance = distance;
             strip.vector = {
                 x: -2,
@@ -584,7 +580,7 @@ export default class Prims {
             };
             Prims.applyToAllStrips(['onmessage'], findReceivers);
             var newthreads = [];
-            for (var i in receivers) {
+            for (var i = 0; i < receivers.length; i++) {
                 pair = receivers[i];
                 newthreads.push(ScratchJr.runtime.restartThread(pair[0], pair[1], true));
             }

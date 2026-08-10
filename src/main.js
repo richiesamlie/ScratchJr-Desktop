@@ -66,11 +66,21 @@ function debugLog(...args) {
 }
 process.on('uncaughtException', (err) => {
   debugLog('uncaughtException', err);
-  process.exit();
+  try {
+    if (dataStore && dataStore.databaseManager) {
+      dataStore.databaseManager.save();
+    }
+    logFile.end(() => process.exit(1));
+  } catch (e) { process.exit(1); }
 });
 process.on('unhandledRejection', (reason, p) => {
   debugLog('unhandledRejection', reason, p);
-  process.exit();
+  try {
+    if (dataStore && dataStore.databaseManager) {
+      dataStore.databaseManager.save();
+    }
+    logFile.end(() => process.exit(1));
+  } catch (e) { process.exit(1); }
 });
 
 
@@ -94,7 +104,9 @@ function getWindowState() {
 function saveWindowState() {
   if (!win || win.isDestroyed()) return;
   const bounds = win.getBounds();
-  try { fs.writeFileSync(windowStateFile, JSON.stringify(bounds)); } catch (e) {}
+  try { fs.writeFileSync(windowStateFile, JSON.stringify(bounds)); } catch (e) {
+    debugLog('saveWindowState error:', e);
+  }
 }
 
 function createWindow() {
@@ -148,6 +160,7 @@ function createWindow() {
   });
 
   win.webContents.on('did-finish-load', () => {
+    globalShortcut.unregisterAll();
     // Ctrl+S = save
     globalShortcut.register('CommandOrControl+S', () => {
       if (win && !win.isDestroyed()) {
@@ -301,14 +314,14 @@ ipcMain.on('debugWriteLog', (event, args) => { // eslint-disable-line  no-unused
 */
 ipcMain.on('io_cleanassets', (event, fileType) => {
   if (DEBUG_NYI) debugLog('cleanAssets - ', fileType);
-  dataStore.getDatabaseManager().then((db) => {
+  try {
+    const db = dataStore.databaseManager;
     if (db) {
       db.cleanProjectFiles(fileType);
     }
-  }).catch((err) => {
+  } catch (err) {
     if (DEBUG_NYI) debugLog('cleanAssets error:', err);
-  });
-
+  }
   event.returnValue = true;
 });
 
@@ -317,8 +330,12 @@ ipcMain.on('io_cleanassets', (event, fileType) => {
  */
 ipcMain.on('io_setfile', (event, arg) => {
   if (DEBUG_FILEIO) debugLog('io_setfile', arg);
-
-  event.returnValue = dataStore.writeProjectFile(arg.name, arg.contents, { encoding: 'utf8' });
+  try {
+    event.returnValue = dataStore.writeProjectFile(arg.name, arg.contents, { encoding: 'utf8' });
+  } catch (e) {
+    debugLog('io_setfile error:', e);
+    event.returnValue = false;
+  }
 });
 
 /** Gets a base64-encoded view of the contents of the given file
@@ -326,8 +343,12 @@ ipcMain.on('io_setfile', (event, arg) => {
 */
 ipcMain.on('io_getfile', (event, arg) => {
   if (DEBUG_FILEIO) debugLog('io_getfile', arg);
-
-  event.returnValue = dataStore.readProjectFileAsBase64EncodedString(arg);
+  try {
+    event.returnValue = dataStore.readProjectFileAsBase64EncodedString(arg);
+  } catch (e) {
+    debugLog('io_getfile error:', e);
+    event.returnValue = null;
+  }
 });
 
 
@@ -337,9 +358,12 @@ ipcMain.on('io_getfile', (event, arg) => {
  */
 ipcMain.on('io_getmedia', (event, filename) => {
   if (DEBUG_FILEIO) debugLog('io_getmedia', filename);
-
-
-  event.returnValue = dataStore.readProjectFileAsBase64EncodedString(filename);
+  try {
+    event.returnValue = dataStore.readProjectFileAsBase64EncodedString(filename);
+  } catch (e) {
+    debugLog('io_getmedia error:', e);
+    event.returnValue = null;
+  }
 });
 
 
@@ -361,6 +385,7 @@ ipcMain.on('io_getmediadata', (event, key, offset, length) => {
       event.returnValue = mediaString.substring(offset, offset + length);
     } catch (e) {
       debugLog('error parsing media');
+      event.returnValue = null;
     }
     return;
   }
@@ -394,11 +419,14 @@ ipcMain.on('io_getmedialen', (event, file, key) => {
  */
 ipcMain.on('io_setmedia', (event, base64ContentStr, ext) => {
   if (DEBUG_FILEIO) debugLog('io_setmedia - write file', ext);
-
-  const filename = `${dataStore.getMD5(base64ContentStr)}.${ext}`;
-  dataStore.writeProjectFile(filename, base64ContentStr, { encoding: 'base64' });
-
-  event.returnValue = filename;
+  try {
+    const filename = `${dataStore.getMD5(base64ContentStr)}.${ext}`;
+    dataStore.writeProjectFile(filename, base64ContentStr, { encoding: 'base64' });
+    event.returnValue = filename;
+  } catch (e) {
+    debugLog('io_setmedia error:', e);
+    event.returnValue = null;
+  }
 });
 
 
@@ -408,10 +436,14 @@ ipcMain.on('io_setmedia', (event, base64ContentStr, ext) => {
 
 ipcMain.on('io_setmedianame', (event, encodedData, key, ext) => {
   if (DEBUG_FILEIO) debugLog('io_setmedianame', key, ext);
-
-  const filename = `${key}.${ext}`;
-  dataStore.writeProjectFile(filename, encodedData, { encoding: 'base64' });
-  event.returnValue = filename;
+  try {
+    const filename = `${key}.${ext}`;
+    dataStore.writeProjectFile(filename, encodedData, { encoding: 'base64' });
+    event.returnValue = filename;
+  } catch (e) {
+    debugLog('io_setmedianame error:', e);
+    event.returnValue = null;
+  }
 });
 
 /**
@@ -454,8 +486,13 @@ ipcMain.on('io_getmd5', (event, data) => {
 */
 ipcMain.on('io_remove', (event, filename) => {
   if (DEBUG_FILEIO) debugLog('io_remove: ', filename);
-  dataStore.removeProjectFile(filename);
-  event.returnValue = true;
+  try {
+    dataStore.removeProjectFile(filename);
+    event.returnValue = true;
+  } catch (e) {
+    debugLog('io_remove error:', e);
+    event.returnValue = false;
+  }
 });
 
 
@@ -537,7 +574,7 @@ ipcMain.on('database_stmt', (event, json) => {
   const db = dataStore.databaseManager;
   event.returnValue = db.stmt(json);
 
-  if (DEBUG_DATABASE) debugLog('database_stmt result:', result);
+  if (DEBUG_DATABASE) debugLog('database_stmt result:', event.returnValue);
 
 
 });
@@ -612,8 +649,7 @@ class ScratchJRDataStore {
           buttons: ['OK'],
           title: 'Database Restored',
           message: 'The database has been restored'
-        },
-        null /*no callback*/
+        }
       );
 
     } else {
@@ -827,7 +863,8 @@ class DatabaseManager {
 
 
     const queryListAllFilesWithExtension = {
-      stmt: `select MD5 FROM PROJECTFILES WHERE MD5 LIKE "%.${fileType}"`,
+      stmt: `select MD5 FROM PROJECTFILES WHERE MD5 LIKE ?`,
+      values: [`%.${fileType}`],
     };
 
     const allProjectFilesWithExtension = this.query(queryListAllFilesWithExtension);
@@ -924,8 +961,7 @@ class DatabaseManager {
     if (rows.length > 0) {
       return rows[0].CONTENTS;
     }
-    event.returnValue = null;
-    return;
+    return null;
   }
 
   saveToProjectFiles(fileMD5, content) {
@@ -933,7 +969,7 @@ class DatabaseManager {
     const keylist = ['md5', 'contents'];
     const values = '?,?';
     json.values = [fileMD5, content];
-    json.stmt = `insert into projectfiles (${keylist.toString()}) values (${values})`;
+    json.stmt = `insert or replace into projectfiles (${keylist.toString()}) values (${values})`;
     var insertSQLResult = this.stmt(json);
 
     this.save(); // flush the database to disk.

@@ -614,7 +614,6 @@ export default class Stage {
         }
         var th = spr.thumbnail;
         var sprite = ScratchJr.getSprite();
-        ScratchAudio.sndFX('cut.wav');
         list.splice(n, 1);
         spr.div.parentNode.removeChild(spr.div);
         if (sc) {
@@ -645,6 +644,7 @@ export default class Stage {
                 for (var j = 0; j < gotoblocks.length; j++) {
                     var b = gotoblocks[j];
                     var indx = b.getArgValue() - 1;
+                    if (indx < 0 || indx >= list.length) continue;
                     b.arg.argValue = pages.indexOf(list[indx]) + 1;
                     b.updateBlock();
                 }

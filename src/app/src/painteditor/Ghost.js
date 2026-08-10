@@ -1,4 +1,4 @@
-const Snap = ('snapsvg');
+const Snap = require('snapsvg');
 
 import ScratchJr from '../editor/ScratchJr.js';
 import SVGTools from './SVGTools.js';

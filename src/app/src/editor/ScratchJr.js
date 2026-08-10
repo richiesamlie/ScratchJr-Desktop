@@ -687,7 +687,7 @@ export default class ScratchJr {
     }
     
     static isNumberPadKeyCode(e) {
-    	return (isFinite(event.key) || e.keyCode == 8 /*delete*/ || e.keyCode === 46 /*backspace*/);
+    	return (isFinite(e.key) || e.keyCode == 8 /*delete*/ || e.keyCode === 46 /*backspace*/);
     }
     static onNumberKeyDown(e) {
     	

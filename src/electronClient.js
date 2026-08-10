@@ -551,15 +551,18 @@ class AudioCapture {
 
         this.stopAudioMeter();
 
+        if (this.currentStream) {
+            var tracks = this.currentStream.getTracks();
+            for (var i = 0; i < tracks.length; i++) {
+                tracks[i].stop();
+            }
+        }
         if (this.mediaRecorder) {
-            //this.mediaRecorder.stop();
-
-            // https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/ondataavailable
             this.mediaRecorder.requestData();
             this.mediaRecorder.stop();
-
         }
         this.mediaRecorder = null;
+        this.currentStream = null;
 
     }
 

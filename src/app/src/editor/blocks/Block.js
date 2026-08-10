@@ -114,10 +114,11 @@ export default class Block {
         var ctx = this.shadow.getContext('2d');
         var img = this.shadowimg;
         if (!img.complete) {
-            img.onload = function () {
+            var me = this;
+        img.onload = function () {
                 ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
-                    img.width * this.scale * window.devicePixelRatio,
-                    img.height * this.scale * window.devicePixelRatio);
+                    img.width * me.scale * window.devicePixelRatio,
+                    img.height * me.scale * window.devicePixelRatio);
             };
         } else {
             ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
@@ -153,11 +154,12 @@ export default class Block {
             pointerEvents: 'all'
         });
         var ctx = this.shine.getContext('2d');
+        var me = this;
         if (!img.complete) {
             img.onload = function () {
                 ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
-                    img.width * this.scale * window.devicePixelRatio,
-                    img.height * this.scale * window.devicePixelRatio);
+                    img.width * me.scale * window.devicePixelRatio,
+                    img.height * me.scale * window.devicePixelRatio);
             };
         } else {
             ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0,
