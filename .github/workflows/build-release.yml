@@ -57,6 +57,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Build and package
         shell: bash
         env:

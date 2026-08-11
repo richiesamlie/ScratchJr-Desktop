@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.js", "tests/**/*.js"],
+  "exclude": [
+    "src/app/src/snap/**",
+    "src/app/dist/**",
+    "src/app/pnglibrary/**",
+    "src/app/svglibrary/**",
+    "node_modules"
+  ]
+}
