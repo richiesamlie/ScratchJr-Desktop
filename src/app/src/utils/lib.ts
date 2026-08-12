@@ -734,8 +734,8 @@ export function css_vw (x) {
     return (x *  window.innerWidth / 100.0) + 'px';
 }
 
-Number.prototype.mod = function (n) {  // eslint-disable-line no-extend-native
-    return ((this % n) + n) % n;
+Number.prototype.mod = function (this: Number, n: number): number {  // eslint-disable-line no-extend-native
+    return ((Number(this) % n) + n) % n;
 };
 
 declare global {

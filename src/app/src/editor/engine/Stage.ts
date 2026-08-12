@@ -28,7 +28,7 @@ export default class Stage {
     pagesdiv: HTMLElement;
     width: number;
     height: number;
-    stageScale: number;
+    stageScale!: number;
     currentZoom: number;
     initialPoint: { x: number; y: number };
     deltaPoint: { x: number; y: number };

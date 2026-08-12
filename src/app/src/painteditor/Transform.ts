@@ -506,6 +506,6 @@ export default class Transform {
 }
 
 const svgMatrixProto = SVGMatrix.prototype as unknown as { isIdentity: () => boolean };
-        svgMatrixProto.isIdentity = function () {
+        svgMatrixProto.isIdentity = function (this: SVGMatrix) {
     return (this.a == 1 && this.b == 0 && this.c == 0 && this.d == 1 && this.e == 0 && this.f == 0);
 };

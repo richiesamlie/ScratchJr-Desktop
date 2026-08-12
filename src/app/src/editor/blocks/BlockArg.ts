@@ -11,7 +11,7 @@ import type Block from './Block';
 /*
 Argument types
 
-n: numbers
+n!: numbers
 t: text
 m: regular menu with icons
 s: text for soundblock
@@ -24,12 +24,12 @@ export default class BlockArg {
     arg: HTMLElement & { updateIcon?: () => void };
     argType: string;
     argValue: unknown;
-    button: HTMLCanvasElement;
+    button!: HTMLCanvasElement;
     daddy: Block;
-    icon: HTMLImageElement | string;
-    input: HTMLInputElement;
-    list: string;
-    numperrow: number;
+    icon!: HTMLImageElement | string;
+    input!: HTMLInputElement;
+    list!: string;
+    numperrow!: number;
     type: string;
 
     constructor (block) {

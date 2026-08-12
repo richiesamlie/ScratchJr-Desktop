@@ -282,7 +282,7 @@ export default class Project {
             var errorMessage = 'Error -- project data corrupted.';
 
             if (window.reloadDebug) {
-                document.write(e.message + '\n' + metadata.json);
+                document.write((e as Error).message + '\n' + metadata.json);
                 return;
             }
 

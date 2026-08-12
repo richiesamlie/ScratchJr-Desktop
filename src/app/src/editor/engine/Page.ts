@@ -18,12 +18,12 @@ import {newHTML, newDiv, gn,
 export default class Page {
     div: HTMLElement;
     bkg: HTMLElement;
-    currentSpriteName: string;
+    currentSpriteName!: string;
     id: string;
-    md5: string;
+    md5!: string;
     num: number;
     sprites: string;
-    svg: Element;
+    svg!: Element;
     textstartat: number;
     thumbnail: unknown;
 

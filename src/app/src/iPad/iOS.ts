@@ -353,7 +353,7 @@ export default class iOS {
         try {
             IO.loadProjectFromSjr(b64data);
         } catch (err) {
-            var errorMessage = 'Couldn\'t load share -- project data corrupted. ' + err.message;
+            var errorMessage = 'Couldn\'t load share -- project data corrupted. ' + (err as Error).message;
             Alert.open(gn('frame'), gn('frame'), errorMessage, '#ff0000');
             console.log(err); // eslint-disable-line no-console
             return 0;
