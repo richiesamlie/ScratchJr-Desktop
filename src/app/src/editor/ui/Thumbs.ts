@@ -408,7 +408,7 @@ export default class Thumbs {
 
     static updateSprites () {
         var costumes = gn('spritecc')!;
-        costumes.style.top = '0px';
+        costumes.parentElement!.scrollTop = 0;
         while (costumes.childElementCount > 0) {
             costumes.removeChild(costumes.childNodes[0]);
         }

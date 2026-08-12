@@ -539,6 +539,9 @@ export default class UI {
         sprites.setAttribute('id', 'library');
         //scrolling area
         var p = newHTML('div', 'spritethumbs', sprites);
+        p.onscroll = function () {
+            UI.updateSpriteScroll();
+        };
         var div = newHTML('div', 'spritecc', p);
         div.setAttribute('id', 'spritecc');
         div.onmousedown = UI.spriteThumbsActions;
@@ -602,8 +605,8 @@ export default class UI {
 
     static updateSpriteScroll () {
         var sc = gn('spritecc')!;
-        var dy = sc.offsetTop;
         var p = sc.parentNode as HTMLElement;
+        var dy = -p.scrollTop;
         var top = -dy / (sc.scrollHeight / p.offsetHeight);
         var size = (p.offsetHeight / sc.scrollHeight) * p.offsetHeight;
         var thumb = gn('sbthumb')!;
@@ -629,13 +632,14 @@ export default class UI {
 
     static spriteInView (spr: Sprite) {
         var sc = gn('spritecc')!;
+        var p = sc.parentNode as HTMLElement;
         var achild = spr.thumbnail;
         if (!achild) {
             return;
         }
-        var h = (gn('spritecc')!.parentNode as HTMLElement).offsetHeight;
-        var scroll = -gn('spritecc')!.offsetTop;
-        var dy = -gn('spritecc')!.offsetTop;
+        var h = p.offsetHeight;
+        var scroll = -p.scrollTop;
+        var dy = -p.scrollTop;
         if ((achild.offsetTop + achild.offsetHeight + scroll) > h) {
             dy = h - (achild.offsetTop + achild.offsetHeight);
         }
@@ -645,7 +649,7 @@ export default class UI {
         if (dy > 0) {
             dy = 0;
         }
-        sc.style.top = dy + 'px';
+        p.scrollTop = -dy;
         UI.needsScroll();
     }
 
@@ -733,16 +737,16 @@ export default class UI {
         var deltay = Events.dragmousey - pt.y;
         Events.dragmousey = pt.y;
         var sc = gn('spritecc')!;
-        var dy = sc.offsetTop;
-        dy -= deltay;
         var p = sc.parentNode as HTMLElement;
+        var dy = -p.scrollTop;
+        dy -= deltay;
         if (dy > 0) {
             dy = 0;
         }
         if ((dy + sc.offsetHeight) < p.offsetHeight) {
             dy = p.offsetHeight - sc.offsetHeight;
         }
-        sc.style.top = dy + 'px';
+        p.scrollTop = -dy;
         UI.updateSpriteScroll();
     }
 
