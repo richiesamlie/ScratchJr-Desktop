@@ -25,7 +25,7 @@
     top: 0px;
     left: ${css_vh(32.29)};
     width: ${css_vh(1.04)};
-    height: ${css_vh(50)};
+    height: calc(100% - ${css_vh(10.29)});
     background: rgba(255,255,255,0.5);
 }
 
@@ -49,6 +49,7 @@
     padding: 0px;
     top: ${css_vh(9.38)};
     width: ${css_vh(33.85)};
+    height: calc(100% - ${css_vh(9.38)});
     overflow-x: hidden;
 }
 
@@ -60,7 +61,9 @@
     overflow-y: scroll;
     overflow-x: hidden;
     width: ${css_vh(33.85)};
-    max-height: ${css_vh(50)};
+    /* Leave room for the add-sprite button below so it stays visible
+       regardless of the dynamic left-panel height. */
+    max-height: calc(100% - ${css_vh(10.29)});
 }
 
 .spritethumbs::-webkit-scrollbar {
