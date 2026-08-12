@@ -377,33 +377,35 @@ export default class IO {
 
             // Nested project JSON (pages -> sprites) is an opaque bag; page/sprite
             // shapes vary by project version, so index it dynamically.
-            var projectData = jsonData.json as Record<string, any>;
+            var projectData = jsonData.json as Record<string, unknown>;
 
             // Data for each page
             if (projectData && typeof projectData === 'object' && 'pages' in projectData && Array.isArray(projectData.pages)) {
                 var pages = projectData.pages;
                 for (var p = 0; p < pages.length; p++) {
                     var pageReference = pages[p];
-                    var page = projectData[pageReference];
+                    var page = projectData[pageReference] as Record<string, unknown>;
 
                     // Page background
-                    collectAsset('backgrounds', page.md5);
+                    collectAsset('backgrounds', page.md5 as string);
 
                     // Sprites
-                    for (var s = 0; s < page.sprites.length; s++) {
-                        var spriteReference = page.sprites[s];
-                        var sprite = page[spriteReference];
+                    var sprites = page.sprites as string[];
+                    for (var s = 0; s < sprites.length; s++) {
+                        var spriteReference = sprites[s];
+                        var sprite = page[spriteReference] as Record<string, unknown>;
 
                         if (sprite.type != 'sprite') {
                             continue;
                         }
 
                         // Sprite image
-                        collectAsset('characters', sprite.md5);
+                        collectAsset('characters', sprite.md5 as string);
 
                         // Sprite's recorded sounds
-                        for (var snd = 0; snd < sprite.sounds.length; snd++) {
-                            collectAsset('sounds', sprite.sounds[snd]);
+                        var sounds = sprite.sounds as string[];
+                        for (var snd = 0; snd < sounds.length; snd++) {
+                            collectAsset('sounds', sounds[snd]);
                         }
                     }
                 }

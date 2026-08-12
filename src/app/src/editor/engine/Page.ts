@@ -27,7 +27,7 @@ export default class Page {
     textstartat: number;
     thumbnail!: HTMLElement;
 
-    constructor (id: string, data?: Record<string, any>, fcn?: () => void) {
+    constructor (id: string, data?: Record<string, unknown>, fcn?: () => void) {
         var container = ScratchJr.stage.pagesdiv;
         this.div = newHTML('div', 'stagepage', container); // newDiv(container,0,0, 480, 360, {position: 'absolute'});
         this.div.owner = this;
@@ -35,7 +35,7 @@ export default class Page {
         this.textstartat = 36;
         this.div.setAttribute('id', this.id);
         ScratchJr.stage.currentPage = this;
-        this.num = data ? data.num : ScratchJr.stage.pages.length + 1;
+        this.num = data ? data.num as number : ScratchJr.stage.pages.length + 1;
         this.sprites = JSON.stringify([]);
         this.bkg = newDiv(this.div, 0, 0, 480, 360, {
             position: 'absolute',
@@ -50,23 +50,24 @@ export default class Page {
         }
     }
 
-    loadPageData (data: Record<string, any>, fcn?: () => void) {
-        this.currentSpriteName = data.lastSprite;
+    loadPageData (data: Record<string, unknown>, fcn?: () => void) {
+        this.currentSpriteName = data.lastSprite as string;
         if (data.textstartat) {
             this.textstartat = Number(data.textstartat);
         }
         if (data.md5 && (data.md5 != 'undefined')) {
             Project.mediaCount++;
-            this.setBackground(data.md5, checkBkgDone);
+            this.setBackground(data.md5 as string, checkBkgDone);
         } else {
             this.clearBackground();
         }
-        var list = data.sprites;
+        var list = data.sprites as string[];
         for (var j = 0; j < list.length; j++) {
-            Project.recreateObject(this, list[j], data[list[j]], checkCount);
+            Project.recreateObject(this, list[j], data[list[j]] as Record<string, unknown>, checkCount);
         }
-        for (var i = 0; i < data.layers.length; i++) {
-            var obj = gn(data.layers[i])!;
+        var layers = data.layers as string[];
+        for (var i = 0; i < layers.length; i++) {
+            var obj = gn(layers[i])!;
             if (obj) {
                 this.div.appendChild(obj);
             }
@@ -216,9 +217,10 @@ export default class Page {
         }
     }
 
-    redoChangeBkg (data: Record<string, any>) {
+    redoChangeBkg (data: Record<string, unknown>) {
         var me = this;
-        var md5 = data[this.id].md5 ? data[this.id].md5 : 'none';
+        var pagebag = data[this.id] as Record<string, unknown>;
+        var md5 = pagebag.md5 as string || 'none';
         this.setBackground(md5, me.updateThumb);
     }
 
@@ -520,7 +522,7 @@ export default class Page {
         return new Sprite(sprAttr, this.spriteAdded);
     }
 
-    createSprite (data: Record<string, any>) {
+    createSprite (data: Record<string, unknown>) {
         return new Sprite(data, this.spriteAdded);
     }
 

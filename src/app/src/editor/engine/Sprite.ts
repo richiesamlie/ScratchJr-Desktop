@@ -83,15 +83,15 @@ export default class Sprite {
     oldvalue!: string;
     readOnly!: boolean;
 
-    constructor (attr: Record<string, any>, whenDone?: (spr: Sprite) => void) {
+    constructor (attr: Record<string, unknown>, whenDone?: (spr: Sprite) => void) {
         if (attr.type == 'sprite') {
-            this.createSprite(attr.page, attr.md5, attr.id, attr, whenDone);
+            this.createSprite(attr.page as Page, attr.md5 as string, attr.id as string, attr, whenDone);
         } else {
             this.createText(attr, whenDone);
         }
     }
 
-    createSprite (page: Page, md5: string, id: string, attr: Record<string, any>, fcn?: (spr: Sprite) => void) {
+    createSprite (page: Page, md5: string, id: string, attr: Record<string, unknown>, fcn?: (spr: Sprite) => void) {
         ScratchJr.storyStart('Sprite.prototype.createSprite');
         this.div = document.createElement('div');
         setProps(this.div.style, {
@@ -754,8 +754,8 @@ Math.floor(h));
     // Text Creation
     /////////////////////////////////////
 
-    createText (attr: Record<string, any>, whenDone?: (spr: Sprite) => void) {
-        var page = attr.page;
+    createText (attr: Record<string, unknown>, whenDone?: (spr: Sprite) => void) {
+        var page = attr.page as Page;
         setProps(this, attr);
         this.div = newHTML('p', 'textsprite', page.div);
         setProps(this.div.style, {
