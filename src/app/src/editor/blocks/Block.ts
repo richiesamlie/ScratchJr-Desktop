@@ -103,13 +103,13 @@ export default class Block {
             || (this.image == BlockSpecs.redEndLong
         );
         this.cShape = (this.blocktype == 'repeat') || (this.blocktype == 'caretrepeat');
-        this.prev = null;
-        this.next = null;
-        this.inside = null;
+        this.prev = null as unknown as Block;
+        this.next = null as unknown as Block;
+        this.inside = null as unknown as Block;
         this.isCaret = this.blocktype.indexOf('caret') > -1;
         this.type = 'block';
-        this.arg = null;
-        this.daddy = null;
+        this.arg = null as unknown as BlockArg;
+        this.daddy = null as unknown as Block;
         this.scale = scale || 1;  
         this.repeatCounter = -1;
         this.originalCount = -1;
@@ -130,7 +130,7 @@ export default class Block {
             position: 'absolute',
             left: '1px',
             top: '4px',
-            opacity: this.inpalette ? window.Settings.paletteBlockShadowOpacity : 1,
+            opacity: this.inpalette ? window.Settings!.paletteBlockShadowOpacity : 1,
             visibility: 'hidden',
             webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
                 + (-this.blockshape.height / 2) + 'px) '
@@ -142,7 +142,7 @@ export default class Block {
         if (!this.shadowimg) {
             return;
         }
-        var ctx = this.shadow.getContext('2d');
+        var ctx = this.shadow.getContext('2d')!;
         var img = this.shadowimg;
         if (!img.complete) {
             var me = this;
@@ -182,7 +182,7 @@ export default class Block {
                 + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
             pointerEvents: 'all'
         });
-        var ctx = this.shine.getContext('2d');
+        var ctx = this.shine.getContext('2d')!;
         var me = this;
         if (!img.complete) {
             img.onload = function () {
@@ -195,7 +195,7 @@ export default class Block {
 
     drawBlock () {
         var cnv = this.blockshape;
-        var ctx = this.blockshape.getContext('2d');
+        var ctx = this.blockshape.getContext('2d')!;
         ctx.clearRect(0, 0, cnv.width, cnv.height);
         var me = this;
         if (!this.image.complete) {
@@ -208,7 +208,7 @@ export default class Block {
     }
 
     drawBlockType () {
-        var ctx = this.blockshape.getContext('2d');
+        var ctx = this.blockshape.getContext('2d')!;
         ctx.drawImage(this.image, 0, 0, this.image.width, this.image.height, 0, 0, this.image.width * this.scale * window.devicePixelRatio, this.image.height * this.scale * window.devicePixelRatio);
         var icnv = document.createElement('canvas');
         this.blockicon = icnv;
@@ -311,7 +311,7 @@ export default class Block {
     }
 
     getSoundName (list) {
-        var val = this.arg.argValue;
+        var val = this.arg.argValue as number;
         if (Number(val).toString() == 'NaN') {
             return val;
         }
@@ -329,11 +329,11 @@ export default class Block {
 
     setSound (bt) {
         var p = this.arg.div;
-        p.parentNode.removeChild(p);
+        p.parentNode!.removeChild(p);
         var icon = this.blockicon;
-        icon.parentNode.removeChild(icon);
+        icon.parentNode!.removeChild(icon);
         var op = bt;
-        var specs = BlockSpecs.defs[op];
+        var specs = BlockSpecs.defs[op] as unknown[];
         this.setBlockshapeFromSpecs(specs);
         this.drawBlock();
         this.createArgument();
@@ -341,7 +341,7 @@ export default class Block {
 
     duplicateBlock (dx, dy, spr) {
         var op = this.blocktype;
-        var specs = BlockSpecs.defs[op];
+        var specs = BlockSpecs.defs[op] as unknown[];
         specs[4] = this.getArgValue();
         var bbx = new Block(specs, false, scaleMultiplier);
         setProps(bbx.div.style, {
@@ -482,11 +482,11 @@ export default class Block {
         if (you == null) {
             return;
         }
-        this.prev = null;
+        this.prev = null as unknown as Block;
         if ((you.cShape) && (you.inside == this)) {
-            you.inside = null;
+            you.inside = null as unknown as Block;
         } else {
-            you.next = null;
+            you.next = null as unknown as Block;
         }
     }
 

@@ -3,10 +3,10 @@ import {gn, isiOS, getUrlVars} from '../utils/lib';
 let place;
 
 export function gettingStartedMain () { // eslint-disable-line import/prefer-default-export
-    gn('closeHelp').onclick = gettingStartedCloseMe;
-    gn('closeHelp').onmousedown = gettingStartedCloseMe;
+    gn('closeHelp')!.onclick = gettingStartedCloseMe;
+    gn('closeHelp')!.onmousedown = gettingStartedCloseMe;
     // Legacy: .type is assigned on the <video> element itself (normally a <source> prop)
-    var videoObj = gn('myVideo') as HTMLVideoElement & { type: string };
+    var videoObj = gn('myVideo')! as HTMLVideoElement & { type: string };
     if (isiOS) {
         // On iOS we can load from server
         videoObj.src = 'assets/lobby/intro.mp4';

@@ -1,6 +1,7 @@
 
 import Paint from './Paint';
 import Vector from '../geom/Vector';
+import type {Point} from '../geom/Vector';
 import {gn, getIdFor, rgb2hsb} from '../utils/lib';
 import Transform from './Transform';
 import SVG2Canvas from '../utils/SVG2Canvas';
@@ -229,7 +230,7 @@ export default class SVGTools {
     static toObject (str) {
         str.replace(/>\s*</g, '><');
         var xmlDoc = (new DOMParser()).parseFromString(str, 'text/xml');
-        var node = document.importNode(xmlDoc.documentElement.firstChild, true);
+        var node = document.importNode(xmlDoc.documentElement.firstChild!, true);
         return node;
     }
 
@@ -251,13 +252,13 @@ export default class SVGTools {
             }
             break;
         case 'image':
-            var corner = Transform.point(elem.getAttribute('x'), elem.getAttribute('y'), window.xform.matrix);
+            var corner = Transform.point(elem.getAttribute('x'), elem.getAttribute('y'), window.xform!.matrix);
             elem.setAttributeNS(null, 'x', corner.x);
             elem.setAttributeNS(null, 'y', corner.y);
             elem.id = getIdFor('image');
             if (elem.getAttribute('pathUrl')) {
                 var cp = getIdFor('clippath');
-                gn(elem.getAttribute('pathUrl')).id = cp;
+                gn(elem.getAttribute('pathUrl'))!.id = cp;
                 elem.setAttribute('pathUrl', cp);
             }
             break;
@@ -325,8 +326,8 @@ export default class SVGTools {
             };
         }
         box = box.expandBy(20);
-        window.xform.setTranslate(-box.x, -box.y);
-        Transform.translateTo(elem, window.xform);
+        window.xform!.setTranslate(-box.x, -box.y);
+        Transform.translateTo(elem, window.xform!);
         return box;
     }
 
@@ -393,7 +394,7 @@ export default class SVGTools {
         var angle = Transform.getRotationAngle(elem);
         if (angle != 0) {
             var rot = Transform.getRotation(elem);
-            var list = [];
+            var list: Point[] = [];
             list.push(Transform.point(box.x, box.y, rot.matrix));
             list.push(Transform.point(box.x + box.width, box.y, rot.matrix));
             list.push(Transform.point(box.x + box.width, box.y + box.height, rot.matrix));
@@ -465,7 +466,7 @@ export default class SVGTools {
             break;
         case 'polygon':
             var points = elem.points;
-            var list = [];
+            var list: Point[] = [];
             for (var j = 0; j < points.numberOfItems; j++) {
                 list.push(points.getItem(j));
             }
@@ -544,8 +545,8 @@ export default class SVGTools {
     }
 
     static polygonArea (list) {
-        var xlist = [];
-        var ylist = [];
+        var xlist: number[] = [];
+        var ylist: number[] = [];
         for (var n = 0; n < list.length; n++) {
             xlist.push(list[n].x); ylist.push(list[n].y);
         }
@@ -616,19 +617,19 @@ export default class SVGTools {
     }
 
     static getOnePathBox (d) {
-        var path = SVG2Canvas.getCommandList(d);
-        var allpoints = [];
+        var path = SVG2Canvas.getCommandList(d)!;
+        var allpoints: Point[] = [];
         for (var i = 0; i < path.length; i++) {
             var cmd = SVG2Canvas.getAbsoluteCommand(path[i]);
             if (SVG2Canvas.acurve) {
                 allpoints.push({
-                    x: cmd[1],
-                    y: cmd[2]
+                    x: cmd[1] as number,
+                    y: cmd[2] as number
                 });
                 if (cmd.length > 4) {
                     allpoints.push({
-                        x: cmd[3],
-                        y: cmd[4]
+                        x: cmd[3] as number,
+                        y: cmd[4] as number
                     });
                 }
             }
@@ -639,7 +640,7 @@ export default class SVGTools {
     }
 
     static onlyKeys (obj) {
-        var res = [];
+        var res: string[] = [];
         for (var key in obj) {
             res.push(key);
         }
@@ -692,13 +693,13 @@ export default class SVGTools {
 
     static cloneSVGelement (elem) {
         var group = Layer.findGroup(elem);
-        var p = gn('layer1');
+        var p = gn('layer1')!;
         if (!p) {
             return;
         }
-        window.xform.setTranslate(5, 5);
-        var old = [];
-        var newlist = [];
+        window.xform!.setTranslate(5, 5);
+        var old: string[] = [];
+        var newlist: string[] = [];
         if (SVGTools.getCount(p) > 175) {
             return;
         }
@@ -706,7 +707,7 @@ export default class SVGTools {
             if (SVGTools.getCount(p) > 175) {
                 return;
             }
-            var shape = SVGTools.getClonedElement(gn('layer1'), group[i]);
+            var shape = SVGTools.getClonedElement(gn('layer1')!, group[i]);
             if (!shape) {
                 continue;
             }
@@ -715,27 +716,27 @@ export default class SVGTools {
             }
             old.push(group[i].id);
             newlist.push(shape.id);
-            if (group[i].getAttribute('id').indexOf('Boder') > -1) {
-                var name = group[i].getAttribute('id').split('Border')[0];
+            if (group[i].getAttribute('id')!.indexOf('Boder') > -1) {
+                var name = group[i].getAttribute('id')!.split('Border')[0];
                 var k = old.indexOf(name);
                 if (k > -1) {
                     shape.setAttribute('id', newlist[k] + 'Border');
                 }
             }
             if (group[i].getAttribute('relatedto')) {
-                var n = old.indexOf(group[i].getAttribute('relatedto'));
+                var n = old.indexOf(group[i].getAttribute('relatedto')!);
                 if (n > -1) {
                     shape.setAttribute('relatedto', newlist[n]);
                 }
             }
         }
-        var elems = SVGTools.getFlatten(gn('layer1'));
+        var elems = SVGTools.getFlatten(gn('layer1')!);
         SVGTools.removeDuplicates(elems);
     }
 
     static removeDuplicates (list) {
         for (var i = 0; i < list.length; i++) {
-            var mt = gn(list[i]);
+            var mt = gn(list[i])!;
             if (!mt) {
                 continue;
             }
@@ -746,7 +747,7 @@ export default class SVGTools {
                 continue;
             }
             for (var j = i + 1; j < list.length; j++) {
-                var elem = gn(list[j]);
+                var elem = gn(list[j])!;
                 if (!elem) {
                     continue;
                 }
@@ -759,9 +760,9 @@ export default class SVGTools {
                 if (elem.getAttribute('d') == mt.getAttribute('d')) {
                     if ((mt.id.indexOf('pathborder_image') > -1) && (elem.id.indexOf('pathborder_image') > -1)) {
                         var imageid = elem.id.substring(String('pathborder_').length, elem.id.length);
-                        var group = gn('group_' + imageid);
+                        var group = gn('group_' + imageid)!;
                         if (group) {
-                            group.parentNode.removeChild(group);
+                            group.parentNode!.removeChild(group);
                         }
                     }
                     elem.parentNode.removeChild(elem);
@@ -771,7 +772,7 @@ export default class SVGTools {
     }
 
     static getFlatten (p) {
-        var res = [];
+        var res: string[] = [];
         for (var i = 0; i < p.childElementCount; i++) {
             var elem = p.childNodes[i];
 
@@ -802,18 +803,18 @@ export default class SVGTools {
             if (mt) {
                 return SVGImage.cloneImage(p, mt);
             }
-            var old = [];
-            var newlist = [];
+            var old: string[] = [];
+            var newlist: string[] = [];
             var g = SVGTools.createGroup(p, getIdFor('group'));
             for (var i = 0; i < elem.childElementCount; i++) {
                 var shape = SVGTools.getClonedElement(g, elem.childNodes[i]);
                 old.push(elem.childNodes[i].id);
-                newlist.push(shape.id);
+                newlist.push(shape!.id);
                 if (elem.childNodes[i].getAttribute('id').indexOf('Border') > -1) {
                     var name = elem.childNodes[i].getAttribute('id').split('Border')[0];
                     var k = old.indexOf(name);
                     if (k > -1) {
-                        shape.setAttribute('id', newlist[k] + 'Border');
+                        shape!.setAttribute('id', newlist[k] + 'Border');
                     }
                 }
             }

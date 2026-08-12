@@ -26,7 +26,7 @@ export default class Home {
 
     static init () {
         version = Lobby.version;
-        frame = gn('htmlcontents');
+        frame = gn('htmlcontents')!;
         var inner = newHTML('div', 'inner', frame);
         var div = newHTML('div', 'scrollarea', inner);
         div.setAttribute('id', 'scrollarea');
@@ -140,7 +140,7 @@ export default class Home {
             if (md5 && (md5 == 'newproject')) {
                 Home.createNewProject();
             } else if (md5) {
-                iOS.setfile('homescroll.sjr', gn('wrapc').scrollTop, function () {
+                iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
                     doNext();
                 });
             }
@@ -149,7 +149,7 @@ export default class Home {
             ScratchAudio.sndFX('cut.wav');
             Project.thumbnailUnique(Home.actionTarget.thumb, Home.actionTarget.id, function (isUnique) {
                 if (isUnique) {
-                    iOS.remove(Home.actionTarget.thumb, iOS.trace);
+                    iOS.remove(Home.actionTarget!.thumb, iOS.trace);
                 }
             });
             iOS.setfield(iOS.database, Home.actionTarget.id, 'deleted', 'YES', Home.removeProjThumb);
@@ -178,7 +178,7 @@ export default class Home {
     }
 
     static gotoEditor (md5) {
-        iOS.setfile('homescroll.sjr', gn('wrapc').scrollTop, function () {
+        iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
             doNext(md5);
         });
         function doNext (md5) {
@@ -188,14 +188,14 @@ export default class Home {
 
     // Project names are given by reading the DOM elements of existing projects...
     static getNextName (name) {
-        var pn = [];
-        var div = gn('scrollarea');
+        var pn: string[] = [];
+        var div = gn('scrollarea')!;
         for (var i = 0; i < div.childElementCount; i++) {
             const child = div.childNodes[i] as HTMLElement;
             if (child.id == 'newproject') {
                 continue;
             }
-            pn.push(div.childNodes[i].childNodes[1].childNodes[0].textContent);
+            pn.push(div.childNodes[i].childNodes[1].childNodes[0].textContent!);
         }
         var n = 1;
         while (pn.indexOf(name + ' ' + n) > -1) {
@@ -208,7 +208,7 @@ export default class Home {
         if (Home.actionTarget && Home.actionTarget.parentNode) {
             Home.actionTarget.parentNode.removeChild(Home.actionTarget);
         }
-        Home.actionTarget = undefined;
+        Home.actionTarget = null;
     }
 
     static getAction (e) {
@@ -254,7 +254,7 @@ export default class Home {
 
     static displayProjects (str) {
         var data = JSON.parse(str);
-        var div = gn('scrollarea');
+        var div = gn('scrollarea')!;
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
         }
@@ -265,8 +265,8 @@ export default class Home {
         setTimeout(function () {
             Lobby.busy = false;
         }, 1000);
-        if (gn('wrapc')) {
-            gn('wrapc').scrollTop = scrollvalue;
+        if (gn('wrapc')!) {
+            gn('wrapc')!.scrollTop = scrollvalue;
         }
     }
 

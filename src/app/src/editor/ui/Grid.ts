@@ -51,7 +51,7 @@ export default class Grid {
             position: 'absolute'
         });
         cnv.style.opacity = '0.5';
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         ctx.strokeStyle = '#B3B3B3';
         ctx.lineWidth = 1;
         var dx = size;
@@ -76,7 +76,7 @@ export default class Grid {
     }
 
     static createNumbering (w, h) {
-        var row = newDiv(gn('stageframe'), 0, 0, w - 46 - 30, 24, {
+        var row = newDiv(gn('stageframe')!, 0, 0, w - 46 - 30, 24, {
             position: 'absolute',
             zIndex: ScratchJr.layerTop
         });
@@ -95,7 +95,7 @@ export default class Grid {
             p.setAttribute('class', 'stylelabel');
             dx += offset;
         }
-        var column = newDiv(gn('stageframe'), 0, 0, 24, h + 24, {
+        var column = newDiv(gn('stageframe')!, 0, 0, 24, h + 24, {
             position: 'absolute',
             zIndex: ScratchJr.layerTop
         });
@@ -116,7 +116,7 @@ export default class Grid {
     }
 
     static createYcursor () {
-        var num = newDiv(gn('colnum'), 0, 0, size, size, {
+        var num = newDiv(gn('colnum')!, 0, 0, size, size, {
             position: 'absolute',
             zIndex: 20
         });
@@ -128,7 +128,7 @@ export default class Grid {
     }
 
     static createXcursor () {
-        var num = newDiv(gn('rownum'), size, 0, size, size, {
+        var num = newDiv(gn('rownum')!, size, 0, size, size, {
             position: 'absolute',
             zIndex: 20
         });
@@ -140,7 +140,7 @@ export default class Grid {
     }
 
     static createCursor () {
-        var gc = newDiv(gn('livegrid'), 0, 0, size + 2, size + 2, {
+        var gc = newDiv(gn('livegrid')!, 0, 0, size + 2, size + 2, {
             position: 'absolute',
             zIndex: ScratchJr.layerAboveBottom
         });
@@ -151,7 +151,7 @@ export default class Grid {
         cnv.onmousedown = function (evt) {
                 Grid.mouseDownOnCursor(evt);
             };
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = '#28A5DA';
         ctx.strokeStyle = '#656e73';
@@ -189,34 +189,34 @@ export default class Grid {
             return;
         }
         if (!ScratchJr.getSprite()) {
-            gn('circlenum').style.visibility = 'hidden';
-            gn('xcursor').style.visibility = 'hidden';
-            gn('ycursor').style.visibility = 'hidden';
+            gn('circlenum')!.style.visibility = 'hidden';
+            gn('xcursor')!.style.visibility = 'hidden';
+            gn('ycursor')!.style.visibility = 'hidden';
             return;
         }
-        var spr = gn(ScratchJr.stage.currentPage.currentSpriteName);
+        var spr = gn(ScratchJr.stage.currentPage.currentSpriteName)!;
         if (!spr) {
             return;
         }
         var obj = spr.owner as Sprite;
-        var c = gn('circlenum');
+        var c = gn('circlenum')!;
         if (!c) {
             return;
         }
         var dx = obj.xcoor + size / 2;
         var dy = obj.ycoor - size / 2;
-        gn('xcursor').style.visibility = 'visible';
-        gn('ycursor').style.visibility = 'visible';
-        gn('circlenum').style.visibility = 'visible';
+        gn('xcursor')!.style.visibility = 'visible';
+        gn('ycursor')!.style.visibility = 'visible';
+        gn('circlenum')!.style.visibility = 'visible';
         Grid.setCursorsValues(dx, dy);
     }
 
     static setCursorsValues (dx, dy) {
-        var c = gn('circlenum');
+        var c = gn('circlenum')!;
         var numX = Math.round(dx / size);
         var numY = Math.round(dy / size);
         if (c.offsetLeft != (numX * 24)) {
-            var xc = gn('xcursor');
+            var xc = gn('xcursor')!;
             var xstate = ((numX < 1) || (numX > 20)) ? 'hidden' : 'visible';
             setProps(xc.style, {
                 position: 'absolute',
@@ -228,7 +228,7 @@ export default class Grid {
             });
         }
         if (c.offsetTop != (numY * 24)) {
-            var yc = gn('ycursor');
+            var yc = gn('ycursor')!;
             var ystate = ((numY < 0) || (numY > 14)) ? 'hidden' : 'visible';
             setProps(yc.style, {
                 position: 'absolute',
@@ -249,14 +249,14 @@ export default class Grid {
     static hide (b) {
         hidden = b;
         var mystate = hidden ? 'hidden' : 'visible';
-        gn('livegrid').style.visibility = mystate;
-        gn('rownum').style.visibility = mystate;
-        gn('colnum').style.visibility = mystate;
+        gn('livegrid')!.style.visibility = mystate;
+        gn('rownum')!.style.visibility = mystate;
+        gn('colnum')!.style.visibility = mystate;
         if (ScratchJr.stage.currentPage) {
             mystate = !ScratchJr.getSprite() ? 'hidden' : mystate;
         }
-        gn('circlenum').style.visibility = mystate;
-        gn('xcursor').style.visibility = mystate;
-        gn('ycursor').style.visibility = mystate;
+        gn('circlenum')!.style.visibility = mystate;
+        gn('xcursor')!.style.visibility = mystate;
+        gn('ycursor')!.style.visibility = mystate;
     }
 }

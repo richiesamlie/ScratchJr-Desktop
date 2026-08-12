@@ -14,6 +14,7 @@ const collectLibraryAssets = false;
 interface LegacyZipArchive {
     load(data: string, options: { base64: boolean }): void;
     forEach(callback: (relativePath: string, file: LegacyZipEntry) => void): void;
+    generate(options: { compression: string }): unknown;
 }
 
 interface LegacyZipEntry {
@@ -23,7 +24,7 @@ interface LegacyZipEntry {
 }
 
 // Sharing state
-let zipFile = null;
+let zipFile: JSZip | null = null;
 let zipAssetsExpected = 0;
 let zipAssetsActual = 0;
 let zipFileName = '';
@@ -134,10 +135,10 @@ export default class IO {
         }
 
         function loadInnerImages (str, whenDone) {
-            var xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
-            var extxml = document.importNode(xmlDoc.documentElement, true);
-            if (extxml.childNodes[0].nodeName == '#comment') {
-                extxml.removeChild(extxml.childNodes[0]);
+            var xmlDoc: Document | null = new DOMParser().parseFromString(str, 'text/xml');
+            var extxml: HTMLElement | null = document.importNode(xmlDoc.documentElement, true);
+            if (extxml!.childNodes[0].nodeName == '#comment') {
+                extxml!.removeChild(extxml!.childNodes[0]);
             }
             var images = IO.getImages(extxml, []);
             var imageCount = images.length;
@@ -267,7 +268,7 @@ export default class IO {
         function addValue (key, str) {
             keylist.push(key);
             values += ',?';
-            json.values.push(str);
+            json.values!.push(str);
         }
     }
 
@@ -394,10 +395,10 @@ export default class IO {
 
             // Get the media in projectMetadata and add it to a zip file
             zipFile = new JSZip();
-            zipFile.folder('project');
+            zipFile!.folder('project');
 
             var projectDataForZip = JSON.stringify(jsonData);
-            zipFile.file('project/data.json', projectDataForZip, {});
+            zipFile!.file('project/data.json', projectDataForZip, {});
 
             zipAssetsExpected = 0;
             zipAssetsActual = 0;
@@ -405,7 +406,7 @@ export default class IO {
             // Generic function for adding media to the zip file
             var addMediaToZip = function (folder, md5) {
                 var addB64ToZip = function (b64data) {
-                    zipFile.file('project/' + folder + '/' + md5, b64data, {
+                    zipFile!.file('project/' + folder + '/' + md5, b64data, {
                         base64: true,
                         createFolders: true
                     });
@@ -469,7 +470,7 @@ export default class IO {
 
             function checkStatus () {
                 if ((zipAssetsActual / zipAssetsExpected) == 1) {
-                    finished(zipFile.generate({
+                    finished((zipFile as unknown as LegacyZipArchive).generate({
                         'compression': 'STORE'
                     }));
                 } else {
@@ -511,7 +512,7 @@ export default class IO {
         json.items = ['name'];
         json.values = ['NO'];
         IO.query(iOS.database, json, function (existingProjects) {
-            var newNumber = null;
+            var newNumber: number | null = null;
 
             existingProjects = JSON.parse(existingProjects);
             for (var i = 0; i < existingProjects.length; i++) {
@@ -612,7 +613,7 @@ export default class IO {
             var subFolder = relativePath.split('/')[1]; // should be {backgrounds, characters, thumbnails, sounds}
 
             // Filename processing
-            var fullName = relativePath.split('/').pop(); // e.g. Cat.svg
+            var fullName = relativePath.split('/').pop()!; // e.g. Cat.svg
             var name = fullName.split('.')[0]; // e.g. Cat
             var ext = fullName.split('.').pop(); // e.g. svg
 
@@ -732,7 +733,7 @@ export default class IO {
 
         // For updating the Lobby UI - if we're on the lobby page when receiving a project, refresh it
         function refreshLobby () {
-            if (gn('hometab') !== null) { // Check if we're on the lobby page
+            if (gn('hometab')! !== null) { // Check if we're on the lobby page
                 if (saveActual == saveExpected) {
                     Lobby.setPage('home');
                 } else { // Waiting for assets to be saved

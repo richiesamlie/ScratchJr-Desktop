@@ -22,7 +22,7 @@ import Localization from '../utils/Localization';
 import {libInit, gn, scaleMultiplier, newHTML,
     isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib';
 
-const bridge = window.scratchjr;
+const bridge = window.scratchjr!;
 
 // Named-form access
 const namedForms = document.forms as unknown as {
@@ -69,9 +69,9 @@ let stopShaking;
 let version;
 
 let autoSaveEnabled = true;
-let autoSaveSetInterval = null;
+let autoSaveSetInterval: number | null = null;
 
-let onBackButtonCallback = [];
+let onBackButtonCallback: Array<() => void> = [];
 
 export default class ScratchJr {
     static get workingCanvas () {
@@ -192,8 +192,8 @@ export default class ScratchJr {
     }
 
     static appinit (v) {
-        stagecolor = window.Settings.stageColor;
-        defaultSprite = window.Settings.defaultSprite;
+        stagecolor = window.Settings!.stageColor;
+        defaultSprite = window.Settings!.defaultSprite;
         version = v;
         document.body.scrollTop = 0;
         time = Date.now();
@@ -220,7 +220,7 @@ export default class ScratchJr {
         ScratchJr.editorEvents();
         Project.load(currentProject);
         Events.init();
-        if (window.Settings.autoSaveInterval > 0) {
+        if (window.Settings!.autoSaveInterval > 0) {
             autoSaveSetInterval = window.setInterval(function () {
                 const projectWithSaving = Project as unknown as { saving: boolean };
         if (autoSaveEnabled && !onHold && !projectWithSaving.saving && !UI.infoBoxOpen) {
@@ -228,7 +228,7 @@ export default class ScratchJr {
                         Alert.close();
                     });
                 }
-            }, window.Settings.autoSaveInterval);
+            }, window.Settings!.autoSaveInterval);
         }
     }
 
@@ -246,13 +246,13 @@ export default class ScratchJr {
             e.preventDefault();
         };
         window.onmousedown = ScratchJr.unfocus;
-        window.onmouseup = undefined;
+        window.onmouseup = null;
     }
 
     static unfocus (evt?) {
         if (Palette.helpballoon) {
-            Palette.helpballoon.parentNode.removeChild(Palette.helpballoon);
-            Palette.helpballoon = undefined;
+            Palette.helpballoon.parentNode!.removeChild(Palette.helpballoon);
+            Palette.helpballoon = null;
         }
         if (namedForms.editable) {
             if (evt && (evt.target == namedForms.editable.field)) {
@@ -269,8 +269,8 @@ export default class ScratchJr {
                 return;
             } // infobox text box
         }
-        if (document.activeElement.tagName.toLowerCase() == 'input') {
-            (document.activeElement as HTMLElement).blur();
+        if (document.activeElement!.tagName.toLowerCase() == 'input') {
+            (document.activeElement! as HTMLElement).blur();
         }
         ScratchJr.clearSelection();
         ScratchJr.blur();
@@ -294,10 +294,10 @@ export default class ScratchJr {
         if (!stage.currentPage.currentSpriteName) {
             return undefined;
         }
-        if (!gn(stage.currentPage.currentSpriteName)) {
+        if (!gn(stage.currentPage.currentSpriteName)!) {
             return undefined;
         }
-        return gn(stage.currentPage.currentSpriteName).owner;
+        return gn(stage.currentPage.currentSpriteName)!.owner;
     }
 
     static gestureStart (e) {
@@ -345,25 +345,25 @@ export default class ScratchJr {
                     Alert.close();
                 });
             }
-        }, window.Settings.autoSaveInterval);
+        }, window.Settings!.autoSaveInterval);
     }
 
     static onPause () {
         autoSaveEnabled = false;
-        window.clearInterval(autoSaveSetInterval);
+        window.clearInterval(autoSaveSetInterval!);
     }
 
     static saveProject (e, onDone) {
         if (ScratchJr.isEditable() && editmode == 'storyStarter' && storyStarted && !Project.error) {
-            iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata.name);
+            iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata!.name);
             // Localize sample project names
-            var sampleName = Localization.localize('SAMPLE_' + Project.metadata.name);
+            var sampleName = Localization.localize('SAMPLE_' + Project.metadata!.name);
             // Get the new project name
             IO.uniqueProjectName({
                 name: sampleName
             }, function (jsonData) {
                 var newName = jsonData.name;
-                Project.metadata.name = newName;
+                Project.metadata!.name = newName;
                 // Create the new project
                 IO.createProject({
                     name: newName,
@@ -418,7 +418,7 @@ export default class ScratchJr {
             return 'home.html?place=home';
         }
 
-        if (Project.metadata.gallery == 'samples') {
+        if (Project.metadata!.gallery == 'samples') {
             return 'home.html?place=help';
         } else {
             return 'home.html?place=home&timestamp=' + new Date().getTime();
@@ -428,10 +428,10 @@ export default class ScratchJr {
     static updateRunStopButtons () {
         var isOff = runtime.inactive();
         if (inFullscreen) {
-            gn('go').className = isOff ? 'go on presentationmode' : 'go off presentationmode';
+            gn('go')!.className = isOff ? 'go on presentationmode' : 'go off presentationmode';
             UI.updatePageControls();
         } else {
-            gn('go').className = isOff ? 'go on' : 'go off';
+            gn('go')!.className = isOff ? 'go on' : 'go off';
             Grid.updateCursor();
         }
         if (ScratchJr.getSprite()) {
@@ -468,7 +468,7 @@ export default class ScratchJr {
             if (!spr) {
                 continue;
             }
-            if (!gn(spr.id + '_scripts')) {
+            if (!gn(spr.id + '_scripts')!) {
                 continue;
             } // text case
             ScratchJr.startScriptsFor(spr, list);
@@ -476,7 +476,7 @@ export default class ScratchJr {
     }
 
     static startScriptsFor (spr, list) {
-        var sc = gn(spr.id + '_scripts');
+        var sc = gn(spr.id + '_scripts')!;
         const scriptsOwner = sc.owner as Scripts;
         var topblocks = scriptsOwner.getBlocksType(list);
         for (var j = 0; j < topblocks.length; j++) {
@@ -503,7 +503,7 @@ export default class ScratchJr {
     }
 
     static fullScreen (e) {
-        if (gn('full').className == 'fullscreen') {
+        if (gn('full')!.className == 'fullscreen') {
             onBackButtonCallback.push(function () {
                 var fakeEvent = document.createEvent('TouchEvent');
                 (fakeEvent as TouchEvent & { initTouchEvent: () => void }).initTouchEvent();
@@ -519,8 +519,8 @@ export default class ScratchJr {
     static displayStatus (type) {
         var ids = ['topsection', 'blockspalette', 'scripts', 'flip', 'projectinfo'];
         for (var i = 0; i < ids.length; i++) {
-            if (gn(ids[i])) {
-                gn(ids[i]).style.display = type;
+            if (gn(ids[i])!) {
+                gn(ids[i])!.style.display = type;
             }
         }
     }
@@ -556,7 +556,7 @@ export default class ScratchJr {
 
     static getActiveScript () {
         var str = stage.currentPage.currentSpriteName + '_scripts';
-        return gn(str);
+        return gn(str)!;
     }
 
     static getBlocks () {
@@ -794,10 +794,10 @@ export default class ScratchJr {
                 duration: 0.5,
                 transition: 'ease-out',
                 style: {
-                    left: (look.left + delta) + 'px'
+                    left: (look.left! + delta) + 'px'
                 },
                 onComplete: function () {
-                    ScriptsPane.scroll.refresh();
+                    ScriptsPane.scroll!.refresh();
                 }
             };
             CSSTransition3D(look, transition);
@@ -877,8 +877,8 @@ export default class ScratchJr {
     }
 
     static editDone () {
-        if (document.activeElement.tagName === 'INPUT') {
-            (document.activeElement as HTMLElement).blur();
+        if (document.activeElement!.tagName === 'INPUT') {
+            (document.activeElement! as HTMLElement).blur();
         }
         if (activeFocus == undefined) {
             return;
@@ -938,10 +938,10 @@ export default class ScratchJr {
                 duration: 0.5,
                 transition: 'ease-out',
                 style: {
-                    left: (look.left - delta) + 'px'
+                    left: (look.left! - delta) + 'px'
                 },
                 onComplete: function () {
-                    ScriptsPane.scroll.refresh();
+                    ScriptsPane.scroll!.refresh();
                 }
             };
             CSSTransition3D(look, transition);

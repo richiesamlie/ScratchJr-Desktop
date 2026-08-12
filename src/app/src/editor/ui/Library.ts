@@ -45,25 +45,25 @@ export default class Library {
 
     static open (libType) {
         type = libType;
-        gn('assetname').textContent = '';
+        gn('assetname')!.textContent = '';
         nativeJr = true;
         frame.style.display = 'none';
         libFrame.className = 'libframe appear';
         libFrame.focus();
         selectedOne = undefined;
-        gn('okbut').onmousedown = (type == 'costumes') ? Library.closeSpriteSelection : Library.closeBkgSelection;
+        gn('okbut')!.onmousedown = (type == 'costumes') ? Library.closeSpriteSelection : Library.closeBkgSelection;
         Library.clean();
         Library.createScrollPanel();
         Library.addThumbnails(type);
 
 
-        window.onmousedown = undefined;
-        window.onmouseup = undefined;
-        document.onmousemove = undefined;
-        window.onresize = undefined;
+        window.onmousedown = null;
+        window.onmouseup = null;
+        document.onmousemove = null;
+        window.onresize = null;
 
-        gn('library_paintme').style.opacity = '1';
-        gn('library_paintme').onmousedown = Library.editResource;
+        gn('library_paintme')!.style.opacity = '1';
+        gn('library_paintme')!.onmousedown = Library.editResource;
 
         // Set the back button callback
         ScratchJr.onBackButtonCallback.push(function () {
@@ -74,8 +74,8 @@ export default class Library {
     }
 
     static clean () {
-        if (gn('scrollarea')) {
-            var div = gn('scrollarea').parentNode;
+        if (gn('scrollarea')!) {
+            var div = gn('scrollarea')!.parentNode;
             libFrame.removeChild(div);
         }
     }
@@ -93,7 +93,7 @@ export default class Library {
     }
 
     static layoutHeader () {
-        var buttons = newHTML('div', 'bkgbuttons', gn('libactions'));
+        var buttons = newHTML('div', 'bkgbuttons', gn('libactions')!);
         var paintme = newHTML('div', 'painticon', buttons);
         paintme.id = 'library_paintme';
         paintme.onmousedown = Library.editResource;
@@ -112,7 +112,7 @@ export default class Library {
     }
 
     static addThumbnails (type?) {
-        var div = gn('scrollarea');
+        var div = gn('scrollarea')!;
         Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier), (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
         // Student' assets
@@ -126,7 +126,7 @@ export default class Library {
     }
 
     static skipUserAssets () {
-        var div = gn('scrollarea');
+        var div = gn('scrollarea')!;
         Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier), (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
         Library.addHR(div);
         Library.displayLibAssets((type == 'costumes') ? MediaLib.sprites : MediaLib.backgrounds);
@@ -145,7 +145,7 @@ export default class Library {
 
     static displayAssets (str) {
         nativeJr = true;
-        var div = gn('scrollarea');
+        var div = gn('scrollarea')!;
         var data = JSON.parse(str);
         if (data.length > 0) {
             for (var i = 0; i < data.length; i++) {
@@ -159,7 +159,7 @@ export default class Library {
     }
 
     static displayLibAssets (data) {
-        var div = gn('scrollarea');
+        var div = gn('scrollarea')!;
         if (data.length < 1) {
             return;
         }
@@ -241,7 +241,7 @@ export default class Library {
 
     static userAssetThumbnail (img, cnv, sizew, sizeh) {
         var scale = Math.min(sizew / img.width, sizeh / img.height);
-        var currentCtx = cnv.getContext('2d');
+        var currentCtx = cnv.getContext('2d')!;
         var iw = Math.floor(scale * img.width);
         var ih = Math.floor(scale * img.height);
         var ix = Math.floor((sizew - (scale * img.width)) / 2);
@@ -259,7 +259,7 @@ export default class Library {
         var cnv = newCanvas(tb, 9 * scaleMultiplier, 7 * scaleMultiplier, w, h, {
             position: 'relative'
         });
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         ctx.fillStyle = ScratchJr.stagecolor;
         ctx.fillRect(0, 0, w, h);
         parent.appendChild(tb);
@@ -300,9 +300,9 @@ export default class Library {
         };
         function holdit () {
             var repeat = function () {
-                tb.onmouseup = undefined;
-                window.onmouseup = undefined;
-                window.onmousemove = undefined;
+                tb.onmouseup = null;
+                window.onmouseup = null;
+                window.onmousemove = null;
                 timeoutEvent = undefined;
                 Library.stopShaking();
                 shaking = tb;
@@ -325,10 +325,10 @@ export default class Library {
                 Library.unSelect(clickThumb);
             }
             timeoutEvent = undefined;
-            tb.onmouseup = undefined;
+            tb.onmouseup = null;
             window.onmouseup = function () {
-                window.onmousemove = undefined;
-                window.onmouseup = undefined;
+                window.onmousemove = null;
+                window.onmouseup = null;
             };
         }
         function clickMe (e, tb) { // eslint-disable-line no-shadow
@@ -337,10 +337,10 @@ export default class Library {
             }
             Library.selectThisAsset(e, tb);
             timeoutEvent = undefined;
-            tb.onmouseup = undefined;
-            tb.onmouseup = undefined;
-            window.onmousemove = undefined;
-            window.onmouseup = undefined;
+            tb.onmouseup = null;
+            tb.onmouseup = null;
+            window.onmousemove = null;
+            window.onmouseup = null;
         }
     }
 
@@ -436,24 +436,24 @@ export default class Library {
             var thumbID = tb.id;
             var thumbType = thumbID.substr(thumbID.length - 3);
             if (thumbType == 'png') {
-                gn('library_paintme').style.opacity = '0';
-                gn('library_paintme').onmousedown = null;
+                gn('library_paintme')!.style.opacity = '0';
+                gn('library_paintme')!.onmousedown = null;
             } else {
-                gn('library_paintme').style.opacity = '1';
-                gn('library_paintme').onmousedown = Library.editResource;
+                gn('library_paintme')!.style.opacity = '1';
+                gn('library_paintme')!.onmousedown = Library.editResource;
             }
 
             tb.className = 'assetbox on';
             selectedOne = tb.id;
             clickThumb = tb;
             if (tb.fieldname) {
-                gn('assetname').textContent = tb.fieldname;
+                gn('assetname')!.textContent = tb.fieldname;
             }
         }
     }
 
     static clearAllSelections () {
-        var div = gn('scrollarea');
+        var div = gn('scrollarea')!;
         for (var i = 0; i < div.childElementCount; i++) {
             if (div.childNodes[i].nodeName == 'DIV') {
                 (div.childNodes[i] as HTMLElement).className = 'assetbox off';
@@ -462,7 +462,7 @@ export default class Library {
     }
 
     static unSelect (tb) {
-        gn('assetname').textContent = '';
+        gn('assetname')!.textContent = '';
         tb.className = 'assetbox off';
         selectedOne = undefined;
         if (clickThumb) {
@@ -478,7 +478,7 @@ export default class Library {
         var h = Math.max(getDocumentHeight(), frame.offsetHeight);
         var dx = w - 20 * scaleMultiplier;
         
-        setProps(gn('scrollarea').style, {
+        setProps(gn('scrollarea')!.style, {
             width: dx + 'px',
             height: (h - 120 * scaleMultiplier) + 'px'
         });

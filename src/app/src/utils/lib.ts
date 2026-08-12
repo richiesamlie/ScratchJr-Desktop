@@ -85,7 +85,7 @@ export function preprocess (s) {
  */
 export async function preprocessAndLoad (url) {
 
-    var responseText = null;
+    var responseText: string | null = null;
     if (window.tablet) {
     	responseText = await window.tablet.io_gettextresource(url);
     } else {  // hopefully unused
@@ -569,7 +569,7 @@ export function getUrlVars (): Record<string, string> {
         return {};
     }
     var args = window.location.href.slice(window.location.href.indexOf('?') + 1);
-    var vars = [], hash;
+    var vars = [] as unknown as Record<string, string> & string[], hash;
     var hashes = args.split('&');
     for (var i = 0; i < hashes.length; i++) {
         hash = hashes[i].split('=');

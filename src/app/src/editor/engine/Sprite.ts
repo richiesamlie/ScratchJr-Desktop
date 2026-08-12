@@ -74,7 +74,7 @@ export default class Sprite {
     fontsize!: number;
     color!: string;
     border!: HTMLCanvasElement;
-    balloon!: HTMLElement;
+    balloon: HTMLElement | null = null;
     page!: Page;
     watermark: unknown;
     thumbnail!: HTMLElement;
@@ -218,14 +218,14 @@ export default class Sprite {
             this.border.height = h;
             this.border.style.width = (w * this.scale) + 'px';
             this.border.style.height = (h * this.scale) + 'px';
-            SVG2Canvas.drawBorder(extxml, this.border.getContext('2d'));
+            SVG2Canvas.drawBorder(extxml, this.border.getContext('2d')!);
         } else {
             this.border = document.createElement('canvas');
             w = this.img.width;
             h = this.img.height;
             extxml = this.svg;
             setCanvasSize(this.border, w, h);
-            SVG2Canvas.drawBorder(extxml, this.border.getContext('2d'));
+            SVG2Canvas.drawBorder(extxml, this.border.getContext('2d')!);
         }
     }
 
@@ -281,7 +281,7 @@ export default class Sprite {
         var imgw = img.naturalWidth ? img.naturalWidth : img.width;
         var imgh = img.naturalHeight ? img.naturalHeight : img.height;
         var scale = Math.min(w / imgw, h / imgh);
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         var iw = Math.floor(scale * imgw);
         var ih = Math.floor(scale * imgh);
         var ix = Math.floor((w - (scale * imgw)) / 2);
@@ -318,8 +318,8 @@ export default class Sprite {
         setCanvasSize(ScratchJr.workingCanvas2, 480, 360);
         var page = this.div.parentNode;
         var box = this.getBoxWithEffects(); // box with effects is a scale  and 1.5 times to count for rotations
-        for (var i = 0; i < page.childElementCount; i++) {
-            var other = page.childNodes[i].owner as Sprite;
+        for (var i = 0; i < page!.childElementCount; i++) {
+            var other = page!.childNodes[i].owner as Sprite;
             if (!other) {
                 continue;
             }
@@ -347,8 +347,8 @@ export default class Sprite {
     }
 
     verifyHit (other) {
-        var ctx = ScratchJr.workingCanvas.getContext('2d');
-        var ctx2 = ScratchJr.workingCanvas2.getContext('2d');
+        var ctx = ScratchJr.workingCanvas.getContext('2d')!;
+        var ctx2 = ScratchJr.workingCanvas2.getContext('2d')!;
         ctx.clearRect(0, 0, 480, 360);
         ctx2.clearRect(0, 0, 480, 360);
         var box = this.getBoxWithEffects();
@@ -616,8 +616,8 @@ Math.floor(h));
         if (!this.balloon) {
             return;
         }
-        this.balloon.parentNode.removeChild(this.balloon);
-        this.balloon = undefined;
+        this.balloon.parentNode!.removeChild(this.balloon);
+        this.balloon = null;
     }
 
     openBalloon (label) {
@@ -649,7 +649,7 @@ Math.floor(h));
             w = 200;
         }
         // stage div owner is the Stage instance
-        const stageOwner = gn('stage').owner as Stage;
+        const stageOwner = gn('stage')!.owner as Stage;
         w += (10 * stageOwner.currentZoom);
         setProps(p.style, {
             position: 'absolute',
@@ -699,11 +699,11 @@ Math.floor(h));
     }
 
     drawBalloon () {
-        var img = this.balloon.childNodes[0] as HTMLImageElement;
-        var w = this.balloon.offsetWidth;
-        var h = this.balloon.offsetHeight;
+        var img = this.balloon!.childNodes[0] as HTMLImageElement;
+        var w = this.balloon!.offsetWidth;
+        var h = this.balloon!.offsetHeight;
         var curve = 6;
-        var dx = this.balloon.left;
+        var dx = this.balloon!.left!;
         var x = this.xcoor;
         var h2 = h - 8;
         var w2 = w - 1;
@@ -758,7 +758,7 @@ Math.floor(h));
         setProps(this.div.style, {
             fontSize: this.fontsize + 'px',
             color: this.color,
-            fontFamily: window.Settings.textSpriteFont
+            fontFamily: window.Settings!.textSpriteFont
         });
         this.div.owner = this;
         this.div.id = this.id;
@@ -810,27 +810,27 @@ Math.floor(h));
             };
         }
         var ci = BlockSpecs.fontcolors.indexOf(rgbToHex(this.color));
-        UI.setMenuTextColor(gn('textcolormenu').childNodes[(ci < 0) ? 9 : ci]);
+        UI.setMenuTextColor(gn('textcolormenu')!.childNodes[(ci < 0) ? 9 : ci]);
         setProps(ti.style, styles);
 
         // TODO: Merge these for iOS
         var dy;
         if (isAndroid) {
-            dy = box.y * scaleMultiplier + globaly(gn('stage')) - 10 * scaleMultiplier;
+            dy = box.y * scaleMultiplier + globaly(gn('stage')!) - 10 * scaleMultiplier;
         } else {
-            dy = box.y + globaly(gn('stage')) - 10;
+            dy = box.y + globaly(gn('stage')!) - 10;
         }
         var formsize = 470;
-        gn('textbox').className = 'pagetext on';
+        gn('textbox')!.className = 'pagetext on';
 
         // TODO: Merge these for iOS
         var dx;
         if (isAndroid) {
-            const inputParent = ti.parentNode.parentNode as HTMLElement;
+            const inputParent = ti.parentNode!.parentNode as HTMLElement;
             AndroidInterface.scratchjr_setsoftkeyboardscrolllocation(dy * window.devicePixelRatio, (dy
                 + inputParent.getBoundingClientRect().height * 1.7) * window.devicePixelRatio);
-            dx = (-10 + 240 - Math.round(formsize / 2)) * scaleMultiplier + globalx(gn('stage'));
-            setProps(gn('textbox').style, {
+            dx = (-10 + 240 - Math.round(formsize / 2)) * scaleMultiplier + globalx(gn('stage')!);
+            setProps(gn('textbox')!.style, {
                 top: dy + 'px',
                 left: dx + 'px',
                 zIndex: 10
@@ -842,8 +842,8 @@ Math.floor(h));
                 AndroidInterface.scratchjr_forceShowKeyboard();
             }, 500);
         } else {
-            dx = -10 + 240 - Math.round(formsize / 2) + globalx(gn('stage'));
-            setProps(gn('textbox').style, {
+            dx = -10 + 240 - Math.round(formsize / 2) + globalx(gn('stage')!);
+            setProps(gn('textbox')!.style, {
                 top: dy + 'px',
                 left: dx + 'px',
                 zIndex: 10
@@ -866,17 +866,17 @@ Math.floor(h));
             this.contractText();
             this.div.style.visibility = 'visible';
             if (isAndroid) {
-                gn('textbox').style.visibility = 'hidden';
+                gn('textbox')!.style.visibility = 'hidden';
             }
-            gn('textbox').className = 'pagetext off';
-            gn('textcolormenu').className = 'textuicolormenu off';
-            gn('textfontsizes').className = 'textuifont off';
-            gn('fontsizebutton').className = 'fontsizeText off';
-            gn('fontcolorbutton').className = 'changecolorText off';
+            gn('textbox')!.className = 'pagetext off';
+            gn('textcolormenu')!.className = 'textuicolormenu off';
+            gn('textfontsizes')!.className = 'textuifont off';
+            gn('fontsizebutton')!.className = 'fontsizeText off';
+            gn('fontcolorbutton')!.className = 'changecolorText off';
             form.textsprite = null;
             this.deactivateInput();
             if (changed) {
-                const parentPage = this.div.parentNode.owner as Page;
+                const parentPage = this.div.parentNode!.owner as Page;
             Undo.record({
                     action: 'edittext',
                     where: parentPage.id,
@@ -902,10 +902,10 @@ Math.floor(h));
             return;
         }
         list.splice(n, 1);
-        this.div.parentNode.removeChild(this.div);
+        this.div.parentNode!.removeChild(this.div);
         page.sprites = JSON.stringify(list);
         var form = namedForms.activetextbox;
-        gn('textbox').style.visibility = 'hidden';
+        gn('textbox')!.style.visibility = 'hidden';
         form.textsprite = null;
         if (record) {
             Undo.record({
@@ -935,7 +935,7 @@ Math.floor(h));
     clickOnText (e) {
         e.stopPropagation();
         this.setTextBox();
-        gn('textbox').style.visibility = 'visible';
+        gn('textbox')!.style.visibility = 'visible';
         this.div.style.visibility = 'hidden';
         this.activateInput();
     }
@@ -943,7 +943,7 @@ Math.floor(h));
     activateInput () {
         this.oldvalue = this.str;
         var ti = namedForms.activetextbox.typing;
-        gn('textbox').style.visibility = 'visible';
+        gn('textbox')!.style.visibility = 'visible';
         var me = this;
         ti.onblur = function () {
             me.unfocusText();
@@ -984,7 +984,7 @@ Math.floor(h));
             e.target.blur();
         } else {
             if (!(ti.parentNode).textsprite) {
-                gn('textbox').style.visibility = 'hidden';
+                gn('textbox')!.style.visibility = 'hidden';
                 this.deactivateInput();
             }
         }
@@ -1000,9 +1000,9 @@ Math.floor(h));
 
     deactivateInput () {
         var ti = namedForms.activetextbox.typing;
-        ti.onblur = undefined;
-        ti.onkeypress = undefined;
-        ti.onsubmit = undefined;
+        ti.onblur = null;
+        ti.onkeypress = null;
+        ti.onsubmit = null;
     }
 
     activate () {
@@ -1054,8 +1054,8 @@ Math.floor(h));
         this.div.style.color = this.color;
         this.div.style.fontSize = this.fontsize + 'px';
         this.div.textContent = this.str;
-        var ctx = this.outline.getContext('2d');
-        ctx.font = 'bold ' + this.fontsize + 'px ' + window.Settings.textSpriteFont;
+        var ctx = this.outline.getContext('2d')!;
+        ctx.font = 'bold ' + this.fontsize + 'px ' + window.Settings!.textSpriteFont;
         var w = ctx.measureText(this.str).width;
         this.w = (Math.round(w) + 1);
         this.div.style.width = (this.w * 2) + 'px';
@@ -1064,7 +1064,7 @@ Math.floor(h));
         this.cy = this.h / 2;
         setCanvasSize(this.outline, this.w, this.h);
         ctx.clearRect(0, 0, this.outline.width, this.outline.height);
-        ctx.font = 'bold ' + this.fontsize + 'px ' + window.Settings.textSpriteFont;
+        ctx.font = 'bold ' + this.fontsize + 'px ' + window.Settings!.textSpriteFont;
         ctx.fillStyle = this.color;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
@@ -1130,7 +1130,7 @@ Math.floor(h));
         this.div = this.div.childNodes[0] as HTMLElement;
         ScratchJr.stage.currentPage.div.appendChild(this.div);
         if (p.id == 'shakediv') {
-            p.parentNode.removeChild(p);
+            p.parentNode!.removeChild(p);
         }
 
         // TODO: merge these for iOS
@@ -1152,7 +1152,7 @@ Math.floor(h));
 
     drawCloseButton () {
         const canvasDiv = this.div as HTMLCanvasElement;
-        var ctx = canvasDiv.getContext('2d');
+        var ctx = canvasDiv.getContext('2d')!;
         var img = document.createElement('img');
         img.src = 'assets/ui/closeit.svg';
         if (!img.complete) {
@@ -1173,8 +1173,8 @@ Math.floor(h));
         if (this.type != 'sprite') {
             return data;
         }
-        const scriptsOwner = gn(this.id + '_scripts').owner as Scripts;
-        var res = [];
+        const scriptsOwner = gn(this.id + '_scripts')!.owner as Scripts;
+        var res: (string | number | (string | number)[][])[][][] = [];
         var topblocks = scriptsOwner.getEncodableBlocks();
         for (var i = 0; i < topblocks.length; i++) {
             res.push(Project.encodeStrip(topblocks[i]));

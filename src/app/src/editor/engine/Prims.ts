@@ -4,6 +4,8 @@ import Grid from '../ui/Grid';
 import Vector from '../../geom/Vector';
 import {gn} from '../../utils/lib';
 import type Thread from './Thread';
+import type {BlockLike} from './Thread';
+import type Sprite from './Sprite';
 import type Scripts from '../ui/Scripts';
 
 let tinterval = 1;
@@ -580,15 +582,15 @@ export default class Prims {
         var b = strip.thisblock;
         var pair;
         if (strip.firstTime) {
-            var receivers = [];
+            var receivers: Array<[Sprite, BlockLike]> = [];
             var msg = b.getArgValue();
-            var findReceivers = function (block, s) {
+            var findReceivers = function (block: BlockLike, s: Sprite) {
                 if ((block.blocktype == 'onmessage') && (block.getArgValue() == msg)) {
                     receivers.push([s, block]);
                 }
             };
             Prims.applyToAllStrips(['onmessage'], findReceivers);
-            var newthreads = [];
+            var newthreads: Thread[] = [];
             for (var i = 0; i < receivers.length; i++) {
                 pair = receivers[i];
                 newthreads.push(ScratchJr.runtime.restartThread(pair[0], pair[1], true));
@@ -631,7 +633,7 @@ export default class Prims {
             if (!spr) {
                 continue;
             }
-            var sc = gn(spr.id + '_scripts');
+            var sc = gn(spr.id + '_scripts')!;
             if (!sc) {
                 continue;
             }

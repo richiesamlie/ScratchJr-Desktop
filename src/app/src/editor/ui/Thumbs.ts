@@ -16,17 +16,17 @@ import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, localx, newHTML, scaleMultiplier, getIdFor,
     isTouch, newImage, localy, setProps} from '../../utils/lib';
 
-let caret = undefined;
+let caret: HTMLElement | null = null;
 
 export default class Thumbs {
     static t: unknown;
 
     static updatePages () {
-        var pthumbs = gn('pagecc');
+        var pthumbs = gn('pagecc')!;
         while (pthumbs.childElementCount > 0) {
             pthumbs.removeChild(pthumbs.childNodes[0]);
         }
-        var prev = undefined;
+        var prev: HTMLElement | null = null;
         
         let th;
         for (var i = 0; i < ScratchJr.stage.pages.length; i++) {
@@ -51,7 +51,7 @@ export default class Thumbs {
             currentThumb.scrollIntoView({ block: 'nearest' });
         }
         // Cap on pages per project — configurable via settings.json maxPages (default 4)
-        if ((ScratchJr.stage.pages.length >= (window.Settings.maxPages ?? 4)) || !ScratchJr.isEditable()) {
+        if ((ScratchJr.stage.pages.length >= (window.Settings!.maxPages ?? 4)) || !ScratchJr.isEditable()) {
             return;
         }
         var ep = Thumbs.emptyPage(pthumbs);
@@ -105,7 +105,7 @@ export default class Thumbs {
         if (!tb) {
             return;
         }
-        if (!ScratchJr.isEditable() || (gn('pagecc').childElementCount < 3)) {
+        if (!ScratchJr.isEditable() || (gn('pagecc')!.childElementCount < 3)) {
             Thumbs.clickOnPage(e, tb.owner);
         } else {
             Events.startDrag(e, tb, Thumbs.prepareToDragPage, Thumbs.dropPage, Thumbs.draggingPage, Thumbs.clickPage, Thumbs.startPageShaking);
@@ -131,9 +131,9 @@ export default class Thumbs {
         setProps(Events.dragcanvas.style, mstyle);
         Events.move3D(Events.dragcanvas, mx, my);
         frame.appendChild(Events.dragcanvas);
-        caret = newHTML('div', 'pagethumb caret', gn('pagecc'));
-        caret.prev = Events.dragthumbnail.prev;
-        caret.next = Events.dragthumbnail.next;
+        caret = newHTML('div', 'pagethumb caret', gn('pagecc')!);
+        caret!.prev = Events.dragthumbnail.prev;
+        caret!.next = Events.dragthumbnail.next;
         if (Events.dragthumbnail.prev) {
             (Events.dragthumbnail.prev).next = caret;
         }
@@ -146,15 +146,15 @@ export default class Thumbs {
 
     static layoutPages () {
         var thispage = Thumbs.findFirst();
-        var p = gn('pagecc');
+        var p = gn('pagecc')!;
         while (thispage) {
             p.appendChild(thispage);
-            thispage = thispage.next;
+            thispage = thispage.next!;
         }
     }
 
     static findFirst () {
-        var kid = gn('pagecc').childNodes[0];
+        var kid = gn('pagecc')!.childNodes[0];
         while (kid.prev) {
             kid = kid.prev;
         }
@@ -162,7 +162,7 @@ export default class Thumbs {
     }
 
     static findLast () {
-        var kid = gn('pagecc').childNodes[0];
+        var kid = gn('pagecc')!.childNodes[0];
         while (kid.next) {
             kid = kid.next;
         }
@@ -171,13 +171,13 @@ export default class Thumbs {
 
     static getPageOrder () {
         var page = Thumbs.findFirst();
-        var res = [];
+        var res: Page[] = [];
         while (page) {
             var pagename = page.owner;
             if (pagename) {
-                res.push(gn(pagename).owner);
+                res.push(gn(pagename)!.owner as Page);
             }
-            page = page.next;
+            page = page.next!;
         }
         return res;
     }
@@ -197,43 +197,43 @@ export default class Thumbs {
     }
 
     static removeCaret () {
-        var myprev = caret.prev;
-        var mynext = caret.next;
+        var myprev = caret!.prev as ChildNode;
+        var mynext = caret!.next as ChildNode;
         if (myprev) {
             myprev.next = mynext;
         }
         if (mynext) {
             mynext.prev = myprev;
         }
-        caret.prev = undefined;
-        caret.next = undefined;
-        var p = caret.parentNode;
+        caret!.prev = undefined;
+        caret!.next = undefined;
+        var p = caret!.parentNode;
         if (p) {
-            p.removeChild(caret);
+            p.removeChild(caret!);
         }
     }
 
     static insertCaret (el) {
         var pos = Thumbs.getPagePos(el.top);
         Thumbs.positionMe(pos, caret);
-        gn('pagecc').appendChild(caret);
+        gn('pagecc')!.appendChild(caret!);
     }
 
     static getPagePos (dy) {
-        const pageSecond = gn('pagecc').childNodes[1] as HTMLElement;
-        const pageFirst = gn('pagecc').childNodes[0] as HTMLElement;
+        const pageSecond = gn('pagecc')!.childNodes[1] as HTMLElement;
+        const pageFirst = gn('pagecc')!.childNodes[0] as HTMLElement;
         var delta = pageSecond.offsetTop - pageFirst.offsetTop;
         // localy() measures from the container's layout top; add the scroll
         // offset so the drop caret lands on the right page when the strip
         // is scrolled (no-op when scrollTop is 0)
-        var pos = Math.floor((localy(gn('pagecc'), dy + (delta / 2)) + gn('pagecc').scrollTop) / delta);
+        var pos = Math.floor((localy(gn('pagecc')!, dy + (delta / 2)) + gn('pagecc')!.scrollTop) / delta);
         pos = Math.max(0, pos);
         var max = Thumbs.getPageOrder().length;
         return Math.min(max, pos);
     }
 
     static positionMe (pos, elem) {
-        var beforewho = pos >= gn('pagecc').childElementCount ? undefined : gn('pagecc').childNodes[pos];
+        var beforewho = pos >= gn('pagecc')!.childElementCount ? undefined : gn('pagecc')!.childNodes[pos];
         if (!beforewho) {
             var last = Thumbs.findLast();
             last.next = elem;
@@ -283,7 +283,7 @@ export default class Thumbs {
         if (caret.parentNode) {
             caret.parentNode.removeChild(caret);
         }
-        caret = undefined;
+        caret = null;
         Events.dragthumbnail.style.position = '';
         Events.dragthumbnail.style.left = '';
         Events.dragthumbnail.style.top = '';
@@ -317,7 +317,7 @@ export default class Thumbs {
 
     static clickOnPage (e, pagename) {
         ScratchJr.unfocus(e);
-        var pthumbs = gn('pagecc');
+        var pthumbs = gn('pagecc')!;
         for (var i = 0; i < pthumbs.childElementCount; i++) {
             var thumb = pthumbs.childNodes[i] as HTMLElement;
             if (thumb.id == 'emptypage') {
@@ -327,7 +327,7 @@ export default class Thumbs {
         if (ScratchJr.stage.currentPage.id == pagename) {
             return;
         }
-        var page = gn(pagename).owner;
+        var page = gn(pagename)!.owner;
         ScratchJr.stage.setPage(page, false);
         Undo.record({
             action: 'changepage',
@@ -359,7 +359,7 @@ export default class Thumbs {
         var tb = newHTML('div', 'pagethumb', p);
         var c = newHTML('div', 'empty', tb);
         var img;
-        if (window.Settings.edition == 'PBS') {
+        if (window.Settings!.edition == 'PBS') {
             img = newImage(c, 'assets/ui/newpage.svg');
         } else {
             img = newImage(c, 'assets/ui/newpage.png', {
@@ -382,7 +382,7 @@ export default class Thumbs {
         e.preventDefault();
         ScratchJr.stage.currentPage.div.style.visibility = 'hidden';
         ScratchJr.stage.currentPage.setPageSprites('hidden');
-        var sc = gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts');
+        var sc = gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts')!;
         if (sc) {
             (sc.owner as Scripts).deactivate();
         }
@@ -407,14 +407,14 @@ export default class Thumbs {
     /////////////////////////////////////
 
     static updateSprites () {
-        var costumes = gn('spritecc');
+        var costumes = gn('spritecc')!;
         costumes.style.top = '0px';
         while (costumes.childElementCount > 0) {
             costumes.removeChild(costumes.childNodes[0]);
         }
         var sprites = JSON.parse(ScratchJr.stage.currentPage.sprites);
         for (var i = 0; i < sprites.length; i++) {
-            var s = gn(sprites[i]);
+            var s = gn(sprites[i])!;
             if (!s) {
                 continue;
             }
@@ -442,7 +442,7 @@ export default class Thumbs {
         if (spr.thumbnail) {
             spr.updateSpriteThumb();
         } else {
-            var costumes = gn('spritecc');
+            var costumes = gn('spritecc')!;
             if (spr.type != 'sprite') {
                 return;
             }
@@ -459,7 +459,7 @@ export default class Thumbs {
     static startDragThumb (e, tb) {
         if (ScratchJr.shaking && (e.target.id == 'deletespritethumb')) {
             ScratchJr.clearSelection();
-            ScratchJr.stage.removeSprite(gn(tb.owner).owner);
+            ScratchJr.stage.removeSprite(gn(tb.owner)!.owner);
         }
         if (ScratchJr.shaking) {
             ScratchJr.clearSelection();
@@ -496,7 +496,7 @@ export default class Thumbs {
     }
 
     static selectThisSprite (spr) {
-        var costumes = gn('spritecc');
+        var costumes = gn('spritecc')!;
         var el = spr.thumbnail;
         for (var i = 0; i < costumes.childElementCount; i++) {
             var th = costumes.childNodes[i];
@@ -511,16 +511,16 @@ export default class Thumbs {
     static clickOnSprite (e, el) {
         if (ScratchJr.shaking && (ScratchJr.shaking == el)) {
             ScratchJr.clearSelection();
-            ScratchJr.stage.removeSprite(gn(el.owner).owner);
+            ScratchJr.stage.removeSprite(gn(el.owner)!.owner);
             return;
         }
         var spritename = el.owner;
-        if (!gn(spritename)) {
+        if (!gn(spritename)!) {
             return;
         }
         ScratchJr.unfocus(e);
-        var spr = gn(spritename).owner as Sprite;
-        var page = spr.div.parentNode.owner as Page;
+        var spr = gn(spritename)!.owner as Sprite;
+        var page = spr.div.parentNode!.owner as Page;
         page.setCurrentSprite(spr);
         Thumbs.selectThisSprite(spr);
     }
@@ -532,11 +532,11 @@ export default class Thumbs {
         var pt = Events.getTargetPoint(e);
         Events.dragmousex = pt.x;
         Events.dragmousey = pt.y;
-        Events.dragthumbnail = Thumbs.getObjectFor(gn('spritecc'), Events.dragthumbnail.owner);
+        Events.dragthumbnail = Thumbs.getObjectFor(gn('spritecc')!, Events.dragthumbnail.owner);
         var mx = Events.dragmousex - frame.offsetLeft
-            - localx(Events.dragthumbnail, Events.dragmousex) - gn('topsection').offsetLeft;
+            - localx(Events.dragthumbnail, Events.dragmousex) - gn('topsection')!.offsetLeft;
         var my = Events.dragmousey - frame.offsetTop
-            - localy(Events.dragthumbnail, Events.dragmousey) - gn('topsection').offsetTop;
+            - localy(Events.dragthumbnail, Events.dragmousey) - gn('topsection')!.offsetTop;
         var sy = Events.dragthumbnail.parentNode.parentNode.scrollTop;
         var sx = Events.dragthumbnail.parentNode.parentNode.scrollLeft;
         my -= sy;
@@ -548,7 +548,7 @@ export default class Thumbs {
             zIndex: ScratchJr.dragginLayer,
             zoom: (100 / window.devicePixelRatio) + '%'
         };
-        var spr = gn(Events.dragthumbnail.owner).owner as Sprite;
+        var spr = gn(Events.dragthumbnail.owner)!.owner as Sprite;
         Events.dragcanvas = document.createElement('canvas');
         spr.drawMyImage(Events.dragcanvas,
             76 * scaleMultiplier * window.devicePixelRatio,
@@ -570,19 +570,19 @@ export default class Thumbs {
             Thumbs.removePagesCaret();
             return;
         }
-        var thumb = Palette.getHittedThumb(el, gn('pagecc'), window.devicePixelRatio);
+        var thumb = Palette.getHittedThumb(el, gn('pagecc')!, window.devicePixelRatio) as HTMLElement | null;
         if (thumb && !thumb.owner) {
-            thumb = undefined;
+            thumb = null;
         }
         if (thumb) {
             Thumbs.overpage(thumb);
         }
-        for (var i = 0; i < gn('pagecc').childElementCount; i++) {
-            var spr = gn('pagecc').childNodes[i] as HTMLElement;
+        for (var i = 0; i < gn('pagecc')!.childElementCount; i++) {
+            var spr = gn('pagecc')!.childNodes[i] as HTMLElement;
             if (!spr.owner) {
                 continue;
             }
-            var page = gn(spr.owner);
+            var page = gn(spr.owner)!;
             if (thumb && (thumb.id != spr.id)) {
                 const dragPage = page.owner as Page;
                 if (dragPage.id == ScratchJr.stage.currentPage.id) {
@@ -595,12 +595,12 @@ export default class Thumbs {
     }
 
     static removePagesCaret () {
-        for (var i = 0; i < gn('pagecc').childElementCount; i++) {
-            var spr = gn('pagecc').childNodes[i];
+        for (var i = 0; i < gn('pagecc')!.childElementCount; i++) {
+            var spr = gn('pagecc')!.childNodes[i];
             if (!spr.owner) {
                 continue;
             }
-            var page = gn(spr.owner);
+            var page = gn(spr.owner)!;
             const pageOwner = page.owner as Page;
             if (pageOwner.id == ScratchJr.stage.currentPage.id) {
                 Thumbs.highlighPage(spr);
@@ -614,7 +614,7 @@ export default class Thumbs {
         e.preventDefault();
         switch (Palette.getLandingPlace(el, e, window.devicePixelRatio)) {
         case 'pages':
-            var thumb = Palette.getHittedThumb(el, gn('pagecc'), window.devicePixelRatio);
+            var thumb = Palette.getHittedThumb(el, gn('pagecc')!, window.devicePixelRatio) as HTMLElement | null;
             if (thumb && thumb.id != 'emptypage') {
                 ScratchJr.stage.copySprite(el, thumb);
             }
@@ -648,7 +648,7 @@ export default class Thumbs {
 
     static unhighlighSprite (spr) {
         spr.setAttribute('class', 'spritethumb off');
-        var currentsc = gn(spr.owner + '_scripts');
+        var currentsc = gn(spr.owner + '_scripts')!;
         (currentsc.owner as Scripts).deactivate();
         for (var i = 0; i < currentsc.childElementCount; i++) {
             if (currentsc.childNodes[i].owner) {

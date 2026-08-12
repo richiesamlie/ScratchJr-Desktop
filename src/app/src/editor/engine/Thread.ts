@@ -21,7 +21,7 @@ export default class Thread {
     // Instance state assigned by the constructor and step loop
     firstBlock: BlockLike;
     thisblock: BlockLike;
-    oldblock: BlockLike | undefined;
+    oldblock: BlockLike | null;
     spr: Sprite;
     audio: { stop(): void } | undefined;
     stack: BlockLike[];

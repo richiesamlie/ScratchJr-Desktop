@@ -193,7 +193,7 @@ export default class Paint {
             Paint.initSprite(sw, sh);
         }
         window.onmousedown = Paint.detectGesture;
-        window.ondevicemotion = undefined;
+        window.ondevicemotion = null;
 
         // Set the back button callback
         ScratchJr.onBackButtonCallback.push(function () {
@@ -232,8 +232,8 @@ export default class Paint {
     }
 
     static clearEvents (e) {
-        window.onmousemove = undefined;
-        window.onmouseup = undefined;
+        window.onmousemove = null;
+        window.onmouseup = null;
         if (PaintAction.currentshape) {
             PaintAction.stopAction(e);
         }
@@ -276,7 +276,7 @@ export default class Paint {
     }
 
     static gestureStart (e) {
-        window.onmousemove = undefined;
+        window.onmousemove = null;
         var skipmodes = ['path', 'ellipse', 'rect'];
         if (skipmodes.indexOf(mode) > -1) {
             if (PaintAction.currentshape && PaintAction.currentshape.parentNode) {
@@ -297,7 +297,7 @@ export default class Paint {
         e.preventDefault();
         var scale = Math.min(maxZoom, Events.scaleStartsAt * Events.zoomScale(e));
         scale = Math.max(minZoom, scale);
-        var mc = gn('maincanvas');
+        var mc = gn('maincanvas')!;
         var w = mc.offsetWidth * scale;
         var h = mc.offsetHeight * scale;
         var size = Math.min(w, h);
@@ -312,8 +312,8 @@ export default class Paint {
 
     static gestureEnd (e) {
         e.preventDefault();
-        window.onmousemove = undefined;
-        window.onmouseup = undefined;
+        window.onmousemove = null;
+        window.onmouseup = null;
         var scale = Math.min(maxZoom, Events.scaleStartsAt * Events.zoomScale(e));
         scale = Math.max(minZoom, scale);
         Paint.updateZoomScale(scale);
@@ -328,8 +328,8 @@ export default class Paint {
     }
 
     static canvasFits () {
-        return ((gn('maincanvas').offsetWidth * currentZoom <= gn('workspacebkg').offsetWidth)
-            && (gn('maincanvas').offsetHeight * currentZoom <= gn('workspacebkg').offsetHeight));
+        return ((gn('maincanvas')!.offsetWidth * currentZoom <= gn('workspacebkg')!.offsetWidth)
+            && (gn('maincanvas')!.offsetHeight * currentZoom <= gn('workspacebkg')!.offsetHeight));
     }
 
     static mouseDown (e) {
@@ -337,7 +337,7 @@ export default class Paint {
             return;
         }
         var pt = Events.getTargetPoint(e);
-        if (hitRect(gn('donecheck'), pt)) {
+        if (hitRect(gn('donecheck')!, pt)) {
             Paint.backToProject(e);
         } else {
             if (e.target.parentNode && e.target.parentNode.getAttribute('key')) {
@@ -353,9 +353,9 @@ export default class Paint {
         paintFrame.className = 'paintframe disappear';
         frame.style.display = 'block';
         ScratchJr.editorEvents();
-        window.onmousemove = undefined;
-        window.onmouseup = undefined;
-        window.onmousemove = undefined;
+        window.onmousemove = null;
+        window.onmouseup = null;
+        window.onmousemove = null;
         Alert.close();
         Paint.clearWorkspace();
         PaintUndo.buffer = [];
@@ -433,12 +433,12 @@ export default class Paint {
     }
 
     static selectButton (str) {
-        Paint.selectButtonFromDiv(gn('painttools'), str);
-        Paint.selectButtonFromDiv(gn('selectortools'), str);
-        Paint.selectButtonFromDiv(gn('edittools'), str);
-        Paint.selectButtonFromDiv(gn('filltools'), str);
-        if (gn('stamps')) {
-            Paint.selectButtonFromDiv(gn('stamps'), str);
+        Paint.selectButtonFromDiv(gn('painttools')!, str);
+        Paint.selectButtonFromDiv(gn('selectortools')!, str);
+        Paint.selectButtonFromDiv(gn('edittools')!, str);
+        Paint.selectButtonFromDiv(gn('filltools')!, str);
+        if (gn('stamps')!) {
+            Paint.selectButtonFromDiv(gn('stamps')!, str);
         }
         mode = str;
         Paint.selectPenSize(pensizes.indexOf(strokewidth));
@@ -490,58 +490,58 @@ export default class Paint {
 
     static setCanvasTransform (value) {
         if (isAndroid) { // Use 3D translate to increase speed
-            gn('maincanvas').style.webkitTransform = 'translate3d(' + gn('maincanvas').dx + 'px,'
-                + gn('maincanvas').dy + 'px, 0px) scale(' + value + ',' + value + ')';
+            gn('maincanvas')!.style.webkitTransform = 'translate3d(' + gn('maincanvas')!.dx + 'px,'
+                + gn('maincanvas')!.dy + 'px, 0px) scale(' + value + ',' + value + ')';
         } else { // Use 2D translate to maintain sharpness
-            gn('maincanvas').style.webkitTransform = 'translate(' + gn('maincanvas').dx + 'px,'
-                + gn('maincanvas').dy + 'px) scale(' + value + ',' + value + ')';
+            gn('maincanvas')!.style.webkitTransform = 'translate(' + gn('maincanvas')!.dx + 'px,'
+                + gn('maincanvas')!.dy + 'px) scale(' + value + ',' + value + ')';
 
         }
     }
 
     static adjustPos (delta) {
-        gn('maincanvas').dx += delta.x;
-        gn('maincanvas').dy += delta.y;
+        gn('maincanvas')!.dx += delta.x;
+        gn('maincanvas')!.dy += delta.y;
         Paint.setCanvasTransform(currentZoom);
     }
 
     static bounceBack () {
-        var mx = Math.floor((gn('workspacebkg').offsetWidth - workspaceWidth) / 2);
-        var my = Math.floor((gn('workspacebkg').offsetHeight - workspaceHeight) / 2);
-        gn('maincanvas').dx = Paint.canvasFits() ? mx : Paint.getCoorx(20, mx);
-        gn('maincanvas').dy = Paint.canvasFits() ? my : Paint.getCoory(20, my);
+        var mx = Math.floor((gn('workspacebkg')!.offsetWidth - workspaceWidth) / 2);
+        var my = Math.floor((gn('workspacebkg')!.offsetHeight - workspaceHeight) / 2);
+        gn('maincanvas')!.dx = Paint.canvasFits() ? mx : Paint.getCoorx(20, mx);
+        gn('maincanvas')!.dy = Paint.canvasFits() ? my : Paint.getCoory(20, my);
     }
 
     static getCoorx (indent, val) {
-        if (gn('maincanvas').offsetWidth * currentZoom <= gn('workspacebkg').offsetWidth) {
+        if (gn('maincanvas')!.offsetWidth * currentZoom <= gn('workspacebkg')!.offsetWidth) {
             return val;
         }
-        var dx = gn('maincanvas').dx + gn('maincanvas').cx - gn('maincanvas').cx * currentZoom;
+        var dx = gn('maincanvas')!.dx! + gn('maincanvas')!.cx! - gn('maincanvas')!.cx! * currentZoom;
         if (dx > indent) {
-            return gn('maincanvas').dx + (indent - dx);
+            return gn('maincanvas')!.dx! + (indent - dx);
         }
-        val = ((dx / currentZoom) + gn('maincanvas').offsetWidth) * currentZoom;
-        var edge = gn('workspacebkg').offsetWidth - indent;
+        val = ((dx / currentZoom) + gn('maincanvas')!.offsetWidth) * currentZoom;
+        var edge = gn('workspacebkg')!.offsetWidth - indent;
         if (val < edge) {
-            return gn('maincanvas').dx + (edge - val);
+            return gn('maincanvas')!.dx! + (edge - val);
         }
-        return gn('maincanvas').dx;
+        return gn('maincanvas')!.dx!;
     }
 
     static getCoory (indent, val) {
-        if (gn('maincanvas').offsetHeight * currentZoom <= gn('workspacebkg').offsetHeight) {
+        if (gn('maincanvas')!.offsetHeight * currentZoom <= gn('workspacebkg')!.offsetHeight) {
             return val;
         }
-        var dy = gn('maincanvas').dy + gn('maincanvas').cy - gn('maincanvas').cy * currentZoom;
+        var dy = gn('maincanvas')!.dy! + gn('maincanvas')!.cy! - gn('maincanvas')!.cy! * currentZoom;
         if (dy > indent) {
-            return gn('maincanvas').dy + (indent - dy);
+            return gn('maincanvas')!.dy! + (indent - dy);
         }
-        val = ((dy / currentZoom) + gn('maincanvas').offsetHeight) * currentZoom;
-        var edge = gn('workspacebkg').offsetHeight - indent;
+        val = ((dy / currentZoom) + gn('maincanvas')!.offsetHeight) * currentZoom;
+        var edge = gn('workspacebkg')!.offsetHeight - indent;
         if (val < edge) {
-            return gn('maincanvas').dy + (edge - val);
+            return gn('maincanvas')!.dy! + (edge - val);
         }
-        return gn('maincanvas').dy;
+        return gn('maincanvas')!.dy!;
     }
 
     static scaleToFit () {
@@ -731,7 +731,7 @@ export default class Paint {
     }
 
     static updateStrokes () {
-        var div = gn('sizeSelector');
+        var div = gn('sizeSelector')!;
         if (!div) {
             return;
         }
@@ -742,7 +742,7 @@ export default class Paint {
     }
 
     static selectPenSize (str) {
-        var p = gn('sizeSelector');
+        var p = gn('sizeSelector')!;
         for (var i = 0; i < p.childElementCount; i++) {
             var elem = p.childNodes[i];
             if ((elem as HTMLElement).key == str) {
@@ -776,11 +776,11 @@ export default class Paint {
     }
 
     static cameraToolsOn () {
-        gn('backdrop').setAttribute('class', 'modal-backdrop fade dark');
-        setProps(gn('backdrop').style, {
+        gn('backdrop')!.setAttribute('class', 'modal-backdrop fade dark');
+        setProps(gn('backdrop')!.style, {
             display: 'block'
         });
-        var topbar = newHTML('div', 'phototopbar', gn('backdrop'));
+        var topbar = newHTML('div', 'phototopbar', gn('backdrop')!);
         topbar.setAttribute('id', 'photocontrols');
         //  var actions = newHTML("div",'actions', topbar);
         //  var buttons = newHTML('div', 'photobuttons', actions);
@@ -792,7 +792,7 @@ export default class Paint {
         }
 
         fc.onmousedown = Paint.setMode;
-        var captureContainer = newHTML('div', 'snapshot-container', gn('backdrop'));
+        var captureContainer = newHTML('div', 'snapshot-container', gn('backdrop')!);
         captureContainer.setAttribute('id', 'capture-container');
         var capture = newHTML('div', 'snapshot', captureContainer);
         capture.setAttribute('id', 'capture');
@@ -810,18 +810,18 @@ export default class Paint {
     }
 
     static cameraToolsOff () {
-        gn('backdrop').setAttribute('class', 'modal-backdrop fade');
-        setProps(gn('backdrop').style, {
+        gn('backdrop')!.setAttribute('class', 'modal-backdrop fade');
+        setProps(gn('backdrop')!.style, {
             display: 'none'
         });
-        if (gn('photocontrols')) {
-            gn('photocontrols').parentNode.removeChild(gn('photocontrols'));
+        if (gn('photocontrols')!) {
+            gn('photocontrols')!.parentNode!.removeChild(gn('photocontrols')!);
         }
-        if (gn('capture')) {
-            var captureContainer = gn('capture').parentNode;
-            var captureContainerParent = captureContainer.parentNode;
-            captureContainer.removeChild(gn('capture'));
-            captureContainerParent.removeChild(gn('capture-container'));
+        if (gn('capture')!) {
+            var captureContainer = gn('capture')!.parentNode!;
+            var captureContainerParent = captureContainer.parentNode!;
+            captureContainer.removeChild(gn('capture')!);
+            captureContainerParent.removeChild(gn('capture-container')!);
         }
     }
 
@@ -831,13 +831,13 @@ export default class Paint {
 
 
     static setUpCanvasArea () {
-        var workspace = gn('workspacebkg');
+        var workspace = gn('workspacebkg')!;
         var dx = Math.floor((workspace.offsetWidth - workspaceWidth) / 2);
         var dy = Math.floor((workspace.offsetHeight - workspaceHeight) / 2);
         var w = workspaceWidth;
         var h = workspaceHeight;
 
-        var div = gn('maincanvas');
+        var div = gn('maincanvas')!;
         div.style.background = '#F5F2F7';
         div.style.top = '0px';
         div.style.left = '0px';
@@ -876,7 +876,7 @@ export default class Paint {
             Paint.addImageUrl(sf, splashshade);
             colour.onmousedown = Paint.selectSwatch;
         }
-        Paint.setSwatchColor(gn('swatches').childNodes[swatchlist.indexOf('#1C1C1C')]);
+        Paint.setSwatchColor(gn('swatches')!.childNodes[swatchlist.indexOf('#1C1C1C')]);
     }
 
     static setSplashColor (p, str, color) {
@@ -924,8 +924,8 @@ export default class Paint {
             Paint.selectButton('paintbucket');
         }
         var c = t.childNodes[0].childNodes[0].style.backgroundColor;
-        for (var i = 0; i < gn('swatches').childElementCount; i++) {
-            const swatchNode = gn('swatches').childNodes[i] as HTMLElement;
+        for (var i = 0; i < gn('swatches')!.childElementCount; i++) {
+            const swatchNode = gn('swatches')!.childNodes[i] as HTMLElement;
             const swatchColor = swatchNode.childNodes[0].childNodes[0] as HTMLElement;
             var mycolor = swatchColor.style.backgroundColor;
             if (c == mycolor) {
@@ -978,8 +978,8 @@ export default class Paint {
         div.style.background = '#F5F2F7';
         div.style.top = '0px';
         div.style.left = '0px';
-        window.onmousemove = undefined;
-        window.onmouseup = undefined;
+        window.onmousemove = null;
+        window.onmouseup = null;
         root = SVGTools.create(div);
         root.setAttribute('class', 'active3d');
         window.xform = Transform.getTranslateTransform();
@@ -988,7 +988,7 @@ export default class Paint {
         layer.setAttribute('style', 'pointer-events:visiblePainted');
         SVGTools.createGroup(root, 'draglayer');
         SVGTools.createGroup(root, 'paintgrid');
-        gn('paintgrid').setAttribute('opacity', '0.5');
+        gn('paintgrid')!.setAttribute('opacity', '0.5');
     }
 
     static clearWorkspace () {
@@ -997,9 +997,9 @@ export default class Paint {
                 div.removeChild(div.childNodes[0]);
             }
         };
-        fcn(gn('layer1'));
-        fcn(gn('paintgrid'));
-        fcn(gn('draglayer'));
+        fcn(gn('layer1')!);
+        fcn(gn('paintgrid')!);
+        fcn(gn('draglayer')!);
         Path.quitEditMode();
     }
 
@@ -1014,7 +1014,7 @@ export default class Paint {
                 'fill': 'none',
                 'stroke-width': 0.5
             };
-            path = SVGTools.addChild(gn('paintgrid'), 'path', attr);
+            path = SVGTools.addChild(gn('paintgrid')!, 'path', attr);
             path.setAttribute('style', 'pointer-events:none;');
         }
         attr = {
@@ -1025,7 +1025,7 @@ export default class Paint {
             'fill': 'none',
             'stroke-width': 0.5
         };
-        path = SVGTools.addChild(gn('paintgrid'), 'path', attr);
+        path = SVGTools.addChild(gn('paintgrid')!, 'path', attr);
         path.setAttribute('style', 'pointer-events:none;');
     }
 
@@ -1075,7 +1075,7 @@ export default class Paint {
             };
             var cmds = [['M', 0, 0], ['L', 480, 0], ['L', 480, 360], ['L', 0, 360], ['L', 0, 0]];
             (attr as Record<string, unknown>).d = SVG2Canvas.arrayToString(cmds);
-            SVGTools.addChild(gn('layer1'), 'path', attr);
+            SVGTools.addChild(gn('layer1')!, 'path', attr);
             Ghost.drawOffscreen();
             PaintUndo.record(true);
         }
@@ -1122,15 +1122,15 @@ export default class Paint {
         var extxml = document.importNode(xmlDoc.documentElement, true);
         var flat = Paint.skipUnwantedElements(extxml, []);
         for (var i = 0; i < flat.length; i++) {
-            gn('layer1').appendChild(flat[i]);
+            gn('layer1')!.appendChild(flat[i]);
             if (flat[i].getAttribute('id') == 'fixed') {
                 flat[i].setAttribute('fixed', 'yes');
             }
             flat[i].setAttribute('file', 'yes');
         }
-        Paint.doAbsolute(gn('layer1'));
+        Paint.doAbsolute(gn('layer1')!);
         if (!nativeJr) {
-            Paint.reassingIds(gn('layer1'));
+            Paint.reassingIds(gn('layer1')!);
         } // make sure there are unique mask names
         //	gn("layer1").childNodes[0].setAttribute('id', "staticbkg");
         var dh = root.parentNode.parentNode.offsetHeight / (workspaceHeight + 10);
@@ -1145,7 +1145,7 @@ export default class Paint {
     static initSprite (ow, oh) {
         nativeJr = true;
         namedForms.spriteform.style.visibility = 'visible';
-        namedForms.spriteform.name.value = gn(currentName) ? (gn(currentName).owner as Sprite).name : currentName;
+        namedForms.spriteform.name.value = gn(currentName)! ? (gn(currentName)!.owner as Sprite).name : currentName;
         if (ow) {
             workspaceWidth = ow;
         }
@@ -1203,8 +1203,8 @@ export default class Paint {
     }
 
     static adjustShapePosition (dx, dy) {
-        window.xform.setTranslate(dx, dy);
-        Transform.translateTo(gn('layer1'), window.xform);
+        window.xform!.setTranslate(dx, dy);
+        Transform.translateTo(gn('layer1')!, window.xform!);
     }
 
     ///////////////////////////////////
@@ -1212,16 +1212,16 @@ export default class Paint {
     /////////////////////////////////
 
     static savePageImage (fcn?) {
-        var worthsaving = (gn('layer1').childElementCount > 0);
+        var worthsaving = (gn('layer1')!.childElementCount > 0);
         if (!worthsaving) {
             Paint.close();
         } else {
             saving = true;
             if (fcn) {
-                Alert.open(paintFrame, gn('donecheck'), Localization.localize('ALERT_SAVING'), '#28A5DA');
+                Alert.open(paintFrame, gn('donecheck')!, Localization.localize('ALERT_SAVING'), '#28A5DA');
                 Alert.balloon.style.zIndex = 12000;
             }
-            svgdata = SVGTools.saveBackground(gn('layer1'), workspaceWidth, workspaceHeight);
+            svgdata = SVGTools.saveBackground(gn('layer1')!, workspaceWidth, workspaceHeight);
             IO.setMedia(svgdata, 'svg', function (str) {
                 Paint.changeBackground(str, fcn);
             });
@@ -1284,14 +1284,14 @@ export default class Paint {
 
     static saveSprite (fcn?) {
         var cname = namedForms.spriteform.name.value;
-        var worthsaving = (gn('layer1').childElementCount > 0) && (PaintUndo.index > 0);
+        var worthsaving = (gn('layer1')!.childElementCount > 0) && (PaintUndo.index > 0);
         if (worthsaving) {
             saving = true;
             if (fcn) {
-                Alert.open(paintFrame, gn('donecheck'), 'Saving...', '#28A5DA');
+                Alert.open(paintFrame, gn('donecheck')!, 'Saving...', '#28A5DA');
                 Alert.balloon.style.zIndex = 12000;
             }
-            svgdata = SVGTools.saveShape(gn('layer1'), workspaceWidth, workspaceHeight);
+            svgdata = SVGTools.saveShape(gn('layer1')!, workspaceWidth, workspaceHeight);
             IO.setMedia(svgdata, 'svg', function (str) {
                 Paint.addOrModifySprite(str, fcn);
             });
@@ -1347,7 +1347,7 @@ export default class Paint {
         var scale = '0.5'; // always saves with 1/2 the size
         var cname = namedForms.spriteform.name.value;
         cname = ((unescape(cname)).replace(/[0-9]/g, '')).replace(/\s*/g, '');
-        var box = SVGTools.getBox(gn('layer1')).rounded();
+        var box = SVGTools.getBox(gn('layer1')!).rounded();
         box = box.expandBy(20);
         var w = box.width.toString();
         var h = box.height.toString();
@@ -1454,12 +1454,12 @@ export default class Paint {
         var extxml = document.importNode(xmlDoc.documentElement, true);
         var flat = Paint.skipUnwantedElements(extxml, []);
         for (var i = 0; i < flat.length; i++) {
-            gn('layer1').appendChild(flat[i]);
+            gn('layer1')!.appendChild(flat[i]);
         }
-        Paint.doAbsolute(gn('layer1'));
+        Paint.doAbsolute(gn('layer1')!);
         Paint.adjustShapePosition(dx, dy);
         if (!nativeJr) {
-            Paint.reassingIds(gn('layer1'));
+            Paint.reassingIds(gn('layer1')!);
         } // make sure there are unique mask names
         Paint.scaleToFit();
         minZoom = currentZoom < 1 ? currentZoom / 2 : 1;

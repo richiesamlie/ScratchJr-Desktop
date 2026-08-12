@@ -65,7 +65,7 @@ export default class BlockArg {
         case 'p':
             this.argValue = block.spec[4];
             this.div = this.pageIcon(this.argValue);
-            var ctx = block.blockshape.getContext('2d');
+            var ctx = block.blockshape.getContext('2d')!;
             const pageCanvas = this.div as HTMLCanvasElement;
             ctx.drawImage(pageCanvas, 0, 0, pageCanvas.width, pageCanvas.height, 0, 0, pageCanvas.width * block.scale, pageCanvas.height * block.scale);
             break;
@@ -99,7 +99,7 @@ export default class BlockArg {
             this.div.childNodes[0].textContent = String(this.argValue);
         }
         if (this.arg && (this.argType == 'p')) {
-            this.arg.updateIcon();
+            this.arg.updateIcon!();
         }
     }
 
@@ -111,7 +111,7 @@ export default class BlockArg {
     }
 
     addNumArg () {
-        var str = this.argValue.toString();
+        var str = String(this.argValue);
         if (this.daddy.inpalette) {
             return this.addLabel(str, false);
         } 
@@ -120,7 +120,7 @@ export default class BlockArg {
     }
 
     addTextArg () {
-        var str = this.argValue.toString();
+        var str = String(this.argValue);
         if (this.daddy.inpalette) {
             return this.addLabel(str, true);
         } 
@@ -149,7 +149,7 @@ export default class BlockArg {
             pointerEvents: 'all'
 
         });
-        var ctx = field.getContext('2d');
+        var ctx = field.getContext('2d')!;
         if (!img.complete) {
             img.onload = function () {
                 ctx.drawImage(img, 0, 0, w, h, 0, 0, w * window.devicePixelRatio, h * window.devicePixelRatio);
@@ -170,8 +170,8 @@ export default class BlockArg {
                 + 'scale(' + (1 / window.devicePixelRatio) + ') '
                 + 'translate(' + (w * window.devicePixelRatio / 2) + 'px, ' + (h * window.devicePixelRatio / 2) + 'px)'
         });
-        ctx = cnv.getContext('2d');
-        var font = (12 * window.devicePixelRatio) + 'px ' + window.Settings.blockArgFont;
+        ctx = cnv.getContext('2d')!;
+        var font = (12 * window.devicePixelRatio) + 'px ' + window.Settings!.blockArgFont;
         var lsize = getStringSize(ctx, font, str).width;
         writeText(ctx, font, '#77787b', str, h * window.devicePixelRatio - 3, Math.round((w * window.devicePixelRatio - lsize) / 2));
         return div;
@@ -259,7 +259,7 @@ export default class BlockArg {
     }
 
     drawChoice (cnv) {
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         ctx.clearRect(0, 0, cnv.width, cnv.height);
         var icon = BlockSpecs.getImageFrom('assets/blockicons/' + this.icon, 'svg');
         var scale = this.daddy.scale;
@@ -291,7 +291,7 @@ export default class BlockArg {
             pointerEvents: 'all',
             webkitTransform: 'translateZ(0)'
         });
-        var ctx = field.getContext('2d');
+        var ctx = field.getContext('2d')!;
         if (!img.complete) {
             img.onload = function () {
                 ctx.drawImage(img, 0, 0);
@@ -322,7 +322,7 @@ export default class BlockArg {
         e.preventDefault();
         var value = b.owner.arg.argValue;
         b.owner.arg.argValue = c.substring(c.indexOf('_') + 1, c.length);
-        var ctx = b.owner.blockicon.getContext('2d');
+        var ctx = b.owner.blockicon.getContext('2d')!;
         b.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
         ctx.clearRect(0, 0, 85 * scaleMultiplier * window.devicePixelRatio, 66 * scaleMultiplier * window.devicePixelRatio);
         if (!b.icon.complete) {
@@ -356,7 +356,7 @@ export default class BlockArg {
         e.preventDefault();
         var value = b.owner.arg.argValue;
         b.owner.arg.argValue = BlockSpecs.speeds.indexOf(c);
-        var ctx = b.owner.blockicon.getContext('2d');
+        var ctx = b.owner.blockicon.getContext('2d')!;
         b.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
         ctx.clearRect(0, 0, 64 * scaleMultiplier * window.devicePixelRatio, 64 * scaleMultiplier * window.devicePixelRatio);
         // On Android 4.2, clearRect does not work right away. Need to tickle the DOM
@@ -404,7 +404,7 @@ export default class BlockArg {
         }
         var canvas = document.createElement('canvas');
         setCanvasSize(canvas, 52 * dpr, 42 * dpr);
-        var mainctx = canvas.getContext('2d');
+        var mainctx = canvas.getContext('2d')!;
         mainctx.fillStyle = '#AE1F24';
         mainctx.fillRect(0, 0, canvas.width, canvas.height);
         mainctx.fillStyle = '#28A5DA';
@@ -413,7 +413,7 @@ export default class BlockArg {
         var w = (52 - 6) * dpr;
         var h = (42 - 6) * dpr;
         setCanvasSize(c, w, h);
-        var ctx = c.getContext('2d');
+        var ctx = c.getContext('2d')!;
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, c.width, c.height);
         if (page.bkg.childElementCount > 0) {
@@ -431,7 +431,7 @@ export default class BlockArg {
             page.stampSpriteAt(ctx, spr, scale);
         }
         mainctx.drawImage(c, 3 * dpr, 3 * dpr);
-        var ictx = icon.getContext('2d');
+        var ictx = icon.getContext('2d')!;
         ictx.fillStyle = '#AE1F24';
         ictx.beginPath();
         ictx.arc(63 * dpr, 19 * dpr, 10 * dpr, 0 * dpr, Math.PI * 2, true);
@@ -446,7 +446,7 @@ export default class BlockArg {
         ictx.stroke();
         ictx.fill();
         writeText(ictx, 'bold ' + (12 * dpr) + 'px '
-            + window.Settings.blockArgFont, 'white', page.num, 26 * dpr, 58 * dpr);
+            + window.Settings!.blockArgFont, 'white', page.num, 26 * dpr, 58 * dpr);
         return icon;
     }
 
@@ -456,7 +456,7 @@ export default class BlockArg {
         page.num = num;
         this.div = this.pageIcon(num);
         var block = this.daddy;
-        var ctx = block.blockshape.getContext('2d');
+        var ctx = block.blockshape.getContext('2d')!;
         const pageCanvas = this.div as HTMLCanvasElement;
         ctx.drawImage(pageCanvas, 0, 0, pageCanvas.width, pageCanvas.height, 0, 0, pageCanvas.width * block.scale, pageCanvas.height * block.scale);
     }

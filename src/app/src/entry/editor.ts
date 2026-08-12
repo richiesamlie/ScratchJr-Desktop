@@ -14,6 +14,6 @@ export function editorMain () { // eslint-disable-line import/prefer-default-exp
         if (list.length > 3) {
             Camera.available = (list[3] == 'YES');
         }
-        ScratchJr.appinit(window.Settings.scratchJrVersion);
+        ScratchJr.appinit(window.Settings!.scratchJrVersion);
     }
 }

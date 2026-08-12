@@ -18,12 +18,12 @@ import {newHTML, newDiv, gn,
 export default class Page {
     div: HTMLElement;
     bkg: HTMLElement;
-    currentSpriteName!: string;
+    currentSpriteName!: string | undefined;
     id: string;
-    md5!: string;
+    md5!: string | undefined;
     num: number;
     sprites: string;
-    svg!: Element;
+    svg!: Element | null;
     textstartat: number;
     thumbnail: unknown;
 
@@ -66,7 +66,7 @@ export default class Page {
             Project.recreateObject(this, list[j], data[list[j]], checkCount);
         }
         for (var i = 0; i < data.layers.length; i++) {
-            var obj = gn(data.layers[i]);
+            var obj = gn(data.layers[i])!;
             if (obj) {
                 this.div.appendChild(obj);
             }
@@ -104,12 +104,12 @@ export default class Page {
             this.currentSpriteName = spr.id;
             spr.div.style.visibility = 'visible';
             Palette.show();
-            gn('scripts').style.display = ScratchJr.inFullscreen ? 'none' : 'block';
+            gn('scripts')!.style.display = ScratchJr.inFullscreen ? 'none' : 'block';
             spr.activate();
         } else {
             this.currentSpriteName = undefined;
             Palette.hide();
-            gn('scripts').style.display = 'none';
+            gn('scripts')!.style.display = 'none';
         }
     }
 
@@ -191,7 +191,7 @@ export default class Page {
         this.bkg.img = img;
         if (!img.complete) {
             img.onload = function () {
-                if (gn('backdrop').className == 'modal-backdrop fade in') {
+                if (gn('backdrop')!.className == 'modal-backdrop fade in') {
                     Project.setProgress(Project.getMediaLoadRatio(70));
                 }
                 if (fcn) {
@@ -199,7 +199,7 @@ export default class Page {
                 }
             };
         } else {
-            if (gn('backdrop').className == 'modal-backdrop fade in') {
+            if (gn('backdrop')!.className == 'modal-backdrop fade in') {
                 Project.setProgress(Project.getMediaLoadRatio(70));
             }
             if (fcn) {
@@ -211,7 +211,7 @@ export default class Page {
     setPageSprites (showstate) {
         var list = JSON.parse(this.sprites);
         for (var i = 0; i < list.length; i++) {
-            gn(list[i]).style.visibility = showstate;
+            gn(list[i])!.style.visibility = showstate;
         }
     }
 
@@ -255,7 +255,7 @@ export default class Page {
 
     setPageThumb (c) {
         var w0, h0;
-        if (window.Settings.edition == 'PBS') {
+        if (window.Settings!.edition == 'PBS') {
             w0 = 136;
             h0 = 101;
         } else {
@@ -267,7 +267,7 @@ export default class Page {
         var h = c.height;
         var ctx = c.getContext('2d');
 
-        if (window.Settings.edition == 'PBS') {
+        if (window.Settings!.edition == 'PBS') {
 
             ctx.rect(0, 0, w, h);
             ctx.fillStyle = '#fff';
@@ -276,7 +276,7 @@ export default class Page {
             ctx.drawImage(BlockSpecs.canvasMask, 0, 0, w, h);
         }
         if (this.bkg.childElementCount > 0) {
-            var img = this.bkg.originalImg;
+            var img = this.bkg.originalImg!;
             var imgw = img.naturalWidth ? img.naturalWidth : img.width;
             var imgh = img.naturalHeight ? img.naturalHeight : img.height;
             ctx.drawImage(img, 0, 0, imgw, imgh, 0, 0, w, h);
@@ -289,7 +289,7 @@ export default class Page {
             }
             this.stampSpriteAt(ctx, spr, scale);
         }
-        if (window.Settings.edition != 'PBS') {
+        if (window.Settings!.edition != 'PBS') {
             ctx.save();
             ctx.globalCompositeOperation = 'destination-in';
             ctx.drawImage(BlockSpecs.canvasMask, 0, 0, w, h);
@@ -364,14 +364,14 @@ export default class Page {
             data.md5 = md5;
         }
         data.num = this.num;
-        const owner = this.currentSpriteName ? gn(this.currentSpriteName).owner : null;
+        const owner = this.currentSpriteName ? gn(this.currentSpriteName)!.owner : null;
         const isSpriteOwner = owner != null && typeof owner === 'object' && 'type' in owner && owner.type == 'sprite';
         this.currentSpriteName = !this.currentSpriteName ? undefined : isSpriteOwner ? this.currentSpriteName : this.getSprites()[0];
         data.lastSprite = this.currentSpriteName;
         for (var j = 0; j < spritelist.length; j++) {
             data[spritelist[j]] = Project.encodeSprite(spritelist[j]);
         }
-        var layers = [];
+        var layers: string[] = [];
         for (var i = 1; i < p.childElementCount; i++) {
             const layerNode = p.childNodes[i] as HTMLElement;
             var layerid = layerNode.id;
@@ -385,9 +385,9 @@ export default class Page {
 
     getSprites () {
         var spritelist = JSON.parse(this.sprites);
-        var res = [];
+        var res: string[] = [];
         for (var i = 0; i < spritelist.length; i++) {
-            const owner = gn(spritelist[i]).owner;
+            const owner = gn(spritelist[i])!.owner;
             if (owner && typeof owner === 'object' && 'type' in owner && owner.type == 'sprite') {
                 res.push(spritelist[i]);
             }
@@ -523,7 +523,7 @@ export default class Page {
     }
 
     modifySprite (md5, cid, sid) {
-        var sprite = gn(unescape(sid)).owner as Sprite;
+        var sprite = gn(unescape(sid))!.owner as Sprite;
         if (!sprite) {
             sprite = ScratchJr.getSprite() as Sprite;
         }
@@ -537,7 +537,7 @@ export default class Page {
     }
 
     modifySpriteName (cid, sid) {
-        var sprite = gn(unescape(sid)).owner as Sprite;
+        var sprite = gn(unescape(sid))!.owner as Sprite;
         if (!sprite) {
             sprite = ScratchJr.getSprite() as Sprite;
         }

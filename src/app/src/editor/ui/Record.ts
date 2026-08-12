@@ -7,15 +7,15 @@ import type Sprite from '../engine/Sprite';
 import type Page from '../engine/Page';
 import {frame, gn, newHTML, isAndroid, setProps} from '../../utils/lib';
 
-let interval = null;
-let recordedSound = null;
+let interval: NodeJS.Timeout | null = null;
+let recordedSound: string | null = null;
 let isRecording = false;
 let isPlaying = false;
 let available = true;
 let error = false;
 let dialogOpen = false;
-let timeLimit = null;
-let playTimeLimit = null;
+let timeLimit: NodeJS.Timeout | null = null;
+let playTimeLimit: NodeJS.Timeout | null = null;
 
 export default class Record {
     // Assigned by startRecording; retained for debugging
@@ -61,11 +61,11 @@ export default class Record {
 
     // Dialog box hide/show
     static appear () {
-        gn('backdrop').setAttribute('class', 'modal-backdrop fade in');
-        setProps(gn('backdrop').style, {
+        gn('backdrop')!.setAttribute('class', 'modal-backdrop fade in');
+        setProps(gn('backdrop')!.style, {
             display: 'block'
         });
-        gn('recorddialog').setAttribute('class', 'record fade in');
+        gn('recorddialog')!.setAttribute('class', 'record fade in');
         ScratchJr.stopStrips();
         dialogOpen = true;
         // Typo in original (pushed undefined); intent is the save handler
@@ -74,11 +74,11 @@ export default class Record {
 
     static disappear () {
         setTimeout(function () {
-            gn('backdrop').setAttribute('class', 'modal-backdrop fade');
-            setProps(gn('backdrop').style, {
+            gn('backdrop')!.setAttribute('class', 'modal-backdrop fade');
+            setProps(gn('backdrop')!.style, {
                 display: 'none'
             });
-            gn('recorddialog').setAttribute('class', 'record fade');
+            gn('recorddialog')!.setAttribute('class', 'record fade');
         }, 333);
         dialogOpen = false;
         ScratchJr.onBackButtonCallback.pop();
@@ -103,14 +103,14 @@ export default class Record {
         var element = 'id_' + button;
         var newStateStr = (newState) ? 'on' : 'off';
         var attrclass = button + 'snd';
-        const childNode = gn(element).childNodes[0] as HTMLElement;
+        const childNode = gn(element)!.childNodes[0] as HTMLElement;
         childNode.setAttribute('class', attrclass + ' ' + newStateStr);
     }
 
     // Volume UI updater
     static updateVolume (f) {
         var num = Math.round(f * 13);
-        var div = gn('soundvolume');
+        var div = gn('soundvolume')!;
         if (!isRecording) {
             num = 0;
         }
@@ -123,8 +123,8 @@ export default class Record {
     // Stop recording UI and turn off volume levels
     static recordUIoff () {
         Record.toggleButtonUI('record', false);
-        var div = gn('soundvolume');
-        for (var i = 0; i < gn('soundvolume').childElementCount; i++) {
+        var div = gn('soundvolume')!;
+        for (var i = 0; i < gn('soundvolume')!.childElementCount; i++) {
             const childNode = div.childNodes[i].childNodes[0] as HTMLElement;
             childNode.setAttribute('class', 'soundlevel off');
         }
@@ -153,7 +153,7 @@ export default class Record {
     static startRecording (filename) {
         if (parseInt(filename) < 0) {
             // Error in getting record filename - go back to editor
-            recordedSound = undefined;
+            recordedSound = null;
             isRecording = false;
             Record.killRecorder();
             Palette.selectCategory(3);
@@ -240,10 +240,10 @@ export default class Record {
 
     // Stop playing the sound and switch UI appropriately
     static stopPlayingSound (fcn?) {
-        iOS.stopplay(fcn);
+        iOS.stopplay(fcn!);
         Record.toggleButtonUI('play', false);
         isPlaying = false;
-        window.clearTimeout(playTimeLimit);
+        window.clearTimeout(playTimeLimit!);
         playTimeLimit = null;
     }
 
@@ -300,8 +300,8 @@ export default class Record {
         function whenDone (snd) {
             if (snd != 'error') {
                 var spr = ScratchJr.getSprite() as Sprite;
-                var page = spr.div.parentNode.owner as Page;
-                spr.sounds.push(recordedSound);
+                var page = spr.div.parentNode!.owner as Page;
+                spr.sounds.push(recordedSound!);
                 Undo.record({
                     action: 'recordsound',
                     who: spr.id,
@@ -314,10 +314,10 @@ export default class Record {
             Palette.selectCategory(3);
         }
         if (!isAndroid) {
-            ScratchAudio.loadFromLocal('Documents', recordedSound, whenDone);
+            ScratchAudio.loadFromLocal('Documents', recordedSound!, whenDone);
         } else {
             // On Android, just pass URL
-            ScratchAudio.loadFromLocal('', recordedSound, whenDone);
+            ScratchAudio.loadFromLocal('', recordedSound!, whenDone);
         }
     }
 

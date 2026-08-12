@@ -11,6 +11,7 @@ import Vector from '../../geom/Vector';
 import Page from './Page';
 import type Sprite from './Sprite';
 import type Scripts from '../ui/Scripts';
+import type Block from '../blocks/Block';
 
 // Named-form access: document.forms.activetextbox etc.
 const namedForms = document.forms as unknown as {
@@ -34,7 +35,7 @@ export default class Stage {
     deltaPoint: { x: number; y: number };
 
     constructor (div) {
-        this.currentPage = undefined;
+        this.currentPage = null as unknown as Page;
         this.div = newHTML('div', 'stage', div);
         this.div.setAttribute('id', 'stage');
         this.div.style.webkitTextSizeAdjust = '100%';
@@ -65,7 +66,7 @@ export default class Stage {
 
     setStageScaleAndPosition (scale, x, y) {
         this.stageScale = scale;
-        setProps(gn('stage').style, {
+        setProps(gn('stage')!.style, {
             webkitTransform: 'translate(' + (-this.width / 2) + 'px, ' + (-this.height / 2) + 'px) '
                 + 'scale(' + scale + ') '
                 + 'translate(' + (this.width / 2 + x) + 'px, ' + (this.height / 2 + y) + 'px)'
@@ -73,7 +74,7 @@ export default class Stage {
     }
 
     getPagesID () {
-        var res = [];
+        var res: string[] = [];
         for (var i = 0; i < this.pages.length; i++) {
             res.push(this.pages[i].id);
         }
@@ -127,7 +128,7 @@ export default class Stage {
 
     setPage (page, isOn) {
         ScratchJr.stopStrips();
-        var sc = ScratchJr.getSprite() ? gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts') : undefined;
+        var sc = ScratchJr.getSprite() ? gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts')! : undefined;
         if (sc) {
             const scriptsOwner = sc.owner as Scripts;
             scriptsOwner.deactivate();
@@ -158,7 +159,7 @@ export default class Stage {
                 continue;
             }
             spr.goHome();
-            var sc = gn(spr.id + '_scripts');
+            var sc = gn(spr.id + '_scripts')!;
             if (!sc) {
                 continue;
             }
@@ -179,7 +180,7 @@ export default class Stage {
         ScratchAudio.sndFX('copy.wav');
         Thumbs.overpage(thumb);
         var data = Project.encodeSprite(el.owner);
-        if (gn(thumb.owner).owner == this.currentPage) {
+        if (gn(thumb.owner)!.owner == this.currentPage) {
             data.xcoor = Number(data.xcoor) + 10;
             data.ycoor = Number(data.ycoor) + 10;
             data.homex = data.xcoor;
@@ -189,7 +190,7 @@ export default class Stage {
         if (Number(a[a.length - 1]).toString() != 'NaN') {
             a.pop();
         }
-        var page = gn(thumb.owner).owner as Page;
+        var page = gn(thumb.owner)!.owner as Page;
         var name = getIdFor(a.join(' '));
         data.id = name;
         var stg = this;
@@ -202,7 +203,7 @@ export default class Stage {
             }
             Thumbs.updateSprites();
             Thumbs.updatePages();
-            const ownerPage = gn(thumb.owner).owner as Page;
+            const ownerPage = gn(thumb.owner)!.owner as Page;
             Undo.record({
                 action: 'copy',
                 who: name,
@@ -229,14 +230,14 @@ export default class Stage {
         newp.lastSprite = catid;
         newp[catid] = sprAttr;
         newp.layers = [catid];
-        var page = gn(str).owner;
+        var page = gn(str)!.owner;
         var indx = this.getPagesID().indexOf(str);
         if (indx < 0) {
             return;
         }
         var form = namedForms.activetextbox;
         var cnv = form.textsprite;
-        if (cnv && gn(cnv.id)) {
+        if (cnv && gn(cnv.id)!) {
             ScratchJr.blur();
         }
         this.removePageBlocks(str);
@@ -291,25 +292,25 @@ export default class Stage {
                 if (!spr) {
                     continue;
                 }
-                var sc = gn(spr.id + '_scripts');
+                var sc = gn(spr.id + '_scripts')!;
                 if (!sc) {
                     continue;
                 }
                 const scriptsOwner = sc.owner as Scripts;
-                var gotoblocks = scriptsOwner.getBlocksType(['gotopage']);
+                var gotoblocks: Block[] = scriptsOwner.getBlocksType(['gotopage']);
                 for (var j = 0; j < gotoblocks.length; j++) {
                     var b = gotoblocks[j];
-                    var pageindex = b.getArgValue() - 1;
+                    var pageindex = (b.getArgValue() as number) - 1;
                     if (this.pages[pageindex].id == str) {
                         var prev = b.prev;
                         b.detachBlock();
-                        b.div.parentNode.removeChild(b.div);
+                        b.div.parentNode!.removeChild(b.div);
                         if (prev && prev.aStart) {
-                            prev.div.parentNode.removeChild(prev.div);
+                            prev.div.parentNode!.removeChild(prev.div);
                         }
-                    } else if ((b.getArgValue() - 1) > indx) {
-                        b.arg.argValue -= 1;
-                        this.pages[pageindex].num = b.arg.argValue;
+                    } else if (((b.getArgValue() as number) - 1) > indx) {
+                        (b.arg.argValue as number) -= 1;
+                        this.pages[pageindex].num = b.arg.argValue as number;
                         b.arg.updateIcon();
                     }
                 }
@@ -339,7 +340,7 @@ export default class Stage {
         }
         var pt = this.getStagePt(e);
         setCanvasSize(ScratchJr.workingCanvas, 480, 360);
-        var ctx = ScratchJr.workingCanvas.getContext('2d');
+        var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         var target = (e.target.nodeName == 'CANVAS') ? this.checkShaking(pt, e.target) : e.target;
         if (ScratchJr.shaking && (target.id == 'deletesprite')) {
             this.removeSprite(ScratchJr.shaking.owner);
@@ -349,7 +350,7 @@ export default class Stage {
         var hitobj = this.whoIsIt(ctx, pt);
         if (ScratchJr.shaking && hitobj && (hitobj.id == ScratchJr.shaking.id)) { // check grid case
             var sprname = ScratchJr.shaking.id;
-            const sprnameOwner = gn(sprname).owner as Sprite;
+            const sprnameOwner = gn(sprname)!.owner as Sprite;
         if (((pt.x - sprnameOwner.screenLeft()) < 45) && ((pt.y - sprnameOwner.screenTop()) < 45)) {
                 this.removeSprite(ScratchJr.shaking.owner);
                 return;
@@ -370,12 +371,12 @@ export default class Stage {
         if (!ScratchJr.shaking) {
             return target;
         }
-        var dx = globalx(gn('deletesprite')) - globalx(ScratchJr.stage.pagesdiv);
-        var dy = globaly(gn('deletesprite')) - globaly(ScratchJr.stage.pagesdiv);
-        var w = gn('deletesprite').offsetWidth;
-        var h = gn('deletesprite').offsetHeight;
+        var dx = globalx(gn('deletesprite')!) - globalx(ScratchJr.stage.pagesdiv);
+        var dy = globaly(gn('deletesprite')!) - globaly(ScratchJr.stage.pagesdiv);
+        var w = gn('deletesprite')!.offsetWidth;
+        var h = gn('deletesprite')!.offsetHeight;
         var rect = new Rectangle(dx, dy, w, h);
-        return rect.hitRect(pt) ? gn('deletesprite') : target;
+        return rect.hitRect(pt) ? gn('deletesprite')! : target;
     }
 
     mouseDownOnSprite (spr, pt) {
@@ -628,7 +629,7 @@ export default class Stage {
 
     removeFromPage (spr) {
         var id = spr.id;
-        var sc = gn(id + '_scripts');
+        var sc = gn(id + '_scripts')!;
         var page = this.currentPage;
         var list = JSON.parse(page.sprites);
         var n = list.indexOf(id);
@@ -640,13 +641,13 @@ export default class Stage {
         list.splice(n, 1);
         spr.div.parentNode.removeChild(spr.div);
         if (sc) {
-            sc.parentNode.removeChild(sc);
+            sc.parentNode!.removeChild(sc);
         }
         page.sprites = JSON.stringify(list);
         th.parentNode.removeChild(th);
         if (sprite && (sprite.id == spr.id)) {
             var sprites = page.getSprites();
-            page.setCurrentSprite((sprites.length > 0) ? gn(sprites[0]).owner : undefined);
+            page.setCurrentSprite((sprites.length > 0) ? gn(sprites[0])!.owner : undefined);
         }
     }
 
@@ -659,15 +660,15 @@ export default class Stage {
                 if (!spr) {
                     continue;
                 }
-                var sc = gn(spr.id + '_scripts');
+                var sc = gn(spr.id + '_scripts')!;
                 if (!sc) {
                     continue;
                 }
                 const scriptsOwner = sc.owner as Scripts;
-                var gotoblocks = scriptsOwner.getBlocksType(['gotopage']);
+                var gotoblocks: Block[] = scriptsOwner.getBlocksType(['gotopage']);
                 for (var j = 0; j < gotoblocks.length; j++) {
                     var b = gotoblocks[j];
-                    var indx = b.getArgValue() - 1;
+                    var indx = (b.getArgValue() as number) - 1;
                     if (indx < 0 || indx >= list.length) continue;
                     b.arg.argValue = pages.indexOf(list[indx]) + 1;
                     b.updateBlock();
@@ -704,12 +705,12 @@ export default class Stage {
         var list = JSON.parse(p.sprites);
         for (var j = 0; j < list.length; j++) {
             var name = list[j];
-            var sprite = gn(name);
-            var sc = gn(name + '_scripts');
+            var sprite = gn(name)!;
+            var sc = gn(name + '_scripts')!;
             if (sc) {
-                sc.parentNode.removeChild(sc);
+                sc.parentNode!.removeChild(sc);
             }
-            sprite.parentNode.removeChild(sprite);
+            sprite.parentNode!.removeChild(sprite);
         }
         p.div.parentNode.removeChild(p.div);
     }
@@ -719,8 +720,8 @@ export default class Stage {
     ///////////////////////////
 
     sd () {
-        var stg = gn('stage');
-        var mask = newDiv(gn('stageframe'), stg.offsetLeft + 1, stg.offsetTop + 1, 482, 362, {
+        var stg = gn('stage')!;
+        var mask = newDiv(gn('stageframe')!, stg.offsetLeft + 1, stg.offsetTop + 1, 482, 362, {
                 position: 'absolute',
                 zIndex: ScratchJr.layerTop + 20,
                 visibility: 'hidden'
@@ -730,18 +731,18 @@ export default class Stage {
     }
 
     on () {
-        gn('pagemask').style.visibility = 'visible';
+        gn('pagemask')!.style.visibility = 'visible';
     }
 
     off () {
-        gn('pagemask').style.visibility = 'hidden';
+        gn('pagemask')!.style.visibility = 'hidden';
     }
 
     sm (spr) {
-        var stg = gn('stage');
+        var stg = gn('stage')!;
         var w = spr.outline.width;
         var h = spr.outline.height;
-        var mask = newDiv(gn('stageframe'), stg.offsetLeft + 1, stg.offsetTop + 1, w, h, {
+        var mask = newDiv(gn('stageframe')!, stg.offsetLeft + 1, stg.offsetTop + 1, w, h, {
                 position: 'absolute',
                 zIndex: ScratchJr.layerTop + 20,
                 visibility: 'hidden'
@@ -751,10 +752,10 @@ export default class Stage {
     }
 
     son () {
-        gn('spritemask').style.visibility = 'visible';
+        gn('spritemask')!.style.visibility = 'visible';
     }
 
     soff () {
-        gn('spritemask').style.visibility = 'hidden';
+        gn('spritemask')!.style.visibility = 'hidden';
     }
 }

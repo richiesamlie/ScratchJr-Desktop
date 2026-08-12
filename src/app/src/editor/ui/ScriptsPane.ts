@@ -13,7 +13,7 @@ import {gn, localx, localy, newHTML, isTouch,
 import type Scripts from './Scripts';
 import type Sprite from '../engine/Sprite';
 
-let scroll = undefined;
+let scroll!: Scroll;
 let watermark;
 
 export default class ScriptsPane {
@@ -35,12 +35,12 @@ export default class ScriptsPane {
     }
 
     static setActiveScript (sprname) {
-        var currentsc = gn(sprname + '_scripts');
+        var currentsc = gn(sprname + '_scripts')!;
         if (!currentsc) {
             // Sprite not found
             return;
         }
-        ScratchJr.stage.currentPage.setCurrentSprite(gn(sprname).owner);
+        ScratchJr.stage.currentPage.setCurrentSprite(gn(sprname)!.owner);
         const scriptsOwner = currentsc.owner as Scripts;
         scriptsOwner.activate();
         const scriptsParent = currentsc.parentNode as HTMLElement;
@@ -134,7 +134,7 @@ export default class ScriptsPane {
 
     static blockFeedback (dx, dy, e) {
         var script = ScratchJr.getActiveScript().owner as Scripts;
-        const paletteParent = gn('palette').parentNode as HTMLElement;
+        const paletteParent = gn('palette')!.parentNode as HTMLElement;
         var limit = paletteParent.offsetTop + paletteParent.offsetHeight;
         var ycor = dy + Events.dragcanvas.offsetHeight;
         if (ycor < limit) {
@@ -146,14 +146,14 @@ export default class ScriptsPane {
         var thumb;
         switch (Palette.getLandingPlace(script.dragList[0].div, e)) {
         case 'library':
-            thumb = Palette.getHittedThumb(script.dragList[0].div, gn('spritecc'));
-            if (thumb && ((gn(thumb.owner).owner as Sprite).type == (ScratchJr.getSprite() as Sprite).type)) {
+            thumb = Palette.getHittedThumb(script.dragList[0].div, gn('spritecc')!);
+            if (thumb && ((gn(thumb.owner)!.owner as Sprite).type == (ScratchJr.getSprite() as Sprite).type)) {
                 Thumbs.quickHighlight(thumb);
             } else {
                 thumb = undefined;
             }
-            for (var i = 0; i < gn('spritecc').childElementCount; i++) {
-                var spr = gn('spritecc').childNodes[i];
+            for (var i = 0; i < gn('spritecc')!.childElementCount; i++) {
+                var spr = gn('spritecc')!.childNodes[i];
                 if (spr.nodeName == 'FORM') {
                     continue;
                 }
@@ -185,23 +185,23 @@ export default class ScriptsPane {
             ScriptsPane.blockDropped(sc, dx, dy);
             break;
         case 'library':
-            var thumb = Palette.getHittedThumb(el, gn('spritecc'));
+            var thumb = Palette.getHittedThumb(el, gn('spritecc')!) as HTMLElement | null;
             ScriptsPane.blockDropped(ScratchJr.getActiveScript(), el.startx, el.starty);
-            if (thumb && ((gn(thumb.owner).owner as Sprite).type == (gn(page.currentSpriteName).owner as Sprite).type)) {
+            if (thumb && ((gn(thumb.owner)!.owner as Sprite).type == (gn(page.currentSpriteName)!.owner as Sprite).type)) {
                 ScratchJr.storyStart('ScriptsPane.dropBlock:library');
                 ScratchAudio.sndFX('copy.wav');
                 Thumbs.quickHighlight(thumb);
                 setTimeout(function () {
                     Thumbs.quickRestore(thumb);
                 }, 300);
-                const scScripts = gn(thumb.owner + '_scripts').owner as Scripts;
+                const scScripts = gn(String(thumb.owner) + '_scripts')!.owner as Scripts;
                 var strip = Project.encodeStrip(el.owner);
                 var firstblock = strip[0];
                 var delta = scScripts.gettopblocks().length * 3;
-                firstblock[2] = firstblock[2] + delta;
-                firstblock[3] = firstblock[3] + delta;
+                firstblock[2] = (firstblock[2] as number) + delta;
+                firstblock[3] = (firstblock[3] as number) + delta;
                 scScripts.recreateStrip(strip);
-                spr = thumb.owner;
+                spr = String(thumb.owner);
             }
             break;
         default:
@@ -238,8 +238,8 @@ export default class ScriptsPane {
     }
 
     static removeLibCaret () {
-        for (var i = 0; i < gn('spritecc').childElementCount; i++) {
-            var spr = gn('spritecc').childNodes[i];
+        for (var i = 0; i < gn('spritecc')!.childElementCount; i++) {
+            var spr = gn('spritecc')!.childNodes[i];
             if (spr.nodeName == 'FORM') {
                 continue;
             }
@@ -307,10 +307,10 @@ export default class ScriptsPane {
 
     static updateScriptsPageBlocks (list) {
         for (var j = 0; j < list.length; j++) {
-            if (!gn(list[j] + '_scripts')) {
+            if (!gn(list[j] + '_scripts')!) {
                 continue;
             }
-            var sc = gn(list[j] + '_scripts').owner as Scripts;
+            var sc = gn(list[j] + '_scripts')!.owner as Scripts;
             if (!sc) {
                 continue;
             }

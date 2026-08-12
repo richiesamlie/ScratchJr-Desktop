@@ -22,10 +22,10 @@ export default class Scroll {
         this.hasHorizontal = true;
         this.hasVertical = true;
         this.arrowDistance = 6;
-        this.aleft = undefined;
-        this.aright = undefined;
-        this.aup = undefined;
-        this.adown = undefined;
+        this.aleft = null as unknown as HTMLElement;
+        this.aright = null as unknown as HTMLElement;
+        this.aup = null as unknown as HTMLElement;
+        this.adown = null as unknown as HTMLElement;
         this.contents = newDiv(div, 0, 0, w, h, {});
         this.contents.setAttribute('id', id);
         this.contents.owner = this;
@@ -128,8 +128,8 @@ export default class Scroll {
         var owner = this;
         var p = this.contents; // scriptscontainer
         var bc = this.getContent(); // blockcanvas
-        var valx = bc.left;
-        var valy = bc.top;
+        var valx = bc.left!;
+        var valy = bc.top!;
         var h = p.offsetHeight;
         var w = p.offsetWidth;
         var rect = {
@@ -286,14 +286,14 @@ export default class Scroll {
         }
         if (minx < 0) {
             minx -= padding;
-            minx += bc.left;
+            minx += bc.left!;
             w -= minx;
         } else {
             minx = 0;
         }
         if (miny < 0) {
             miny -= 20;
-            miny += bc.top;
+            miny += bc.top!;
             h -= miny;
         } else {
             miny = 0;
@@ -335,7 +335,7 @@ export default class Scroll {
         var p = this.contents;
         var sc = this.getContent();
         var h = p.offsetHeight;
-        var valy = sc.top + h;
+        var valy = sc.top! + h;
         if (valy > 0) {
             valy = 0;
         }
@@ -363,7 +363,7 @@ export default class Scroll {
         var p = this.contents;
         var sc = this.getContent();
         var h = p.offsetHeight;
-        var valy = sc.top - h;
+        var valy = sc.top! - h;
         if ((valy + sc.offsetHeight) < h) {
             valy = h - sc.offsetHeight;
         }
@@ -391,7 +391,7 @@ export default class Scroll {
         var p = this.contents;
         var sc = this.getContent();
         var w = p.offsetWidth;
-        var valx = sc.left + w;
+        var valx = sc.left! + w;
         if (valx > 0) {
             valx = 0;
         }
@@ -419,7 +419,7 @@ export default class Scroll {
         var p = this.contents;
         var sc = this.getContent();
         var w = p.offsetWidth;
-        var valx = sc.left - w;
+        var valx = sc.left! - w;
         if ((valx + sc.offsetWidth) < w) {
             valx = w - sc.offsetWidth;
         }

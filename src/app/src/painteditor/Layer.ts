@@ -25,8 +25,8 @@ export default class Layer {
         while (elem.parentNode && (elem.parentNode.id != 'layer1')) {
             elem = elem.parentNode;
         }
-        var index = Layer.groupStartsAt(gn('layer1'), elem);
-        var group = Layer.onTopOfBy(gn('layer1'), elem, 1, index, Layer.getRelated(elem));
+        var index = Layer.groupStartsAt(gn('layer1')!, elem);
+        var group = Layer.onTopOfBy(gn('layer1')!, elem, 1, index, Layer.getRelated(elem));
         var p = elem.parentNode;
         for (var i = 0; i < group.length; i++) {
             p.appendChild(group[i]);
@@ -37,24 +37,24 @@ export default class Layer {
     }
 
     static bringElementsToFront () {
-        var res = [];
-        for (let i = 0; i < gn('layer1').childElementCount; i++) {
-            var mt = gn('layer1').childNodes[i];
+        var res: Element[] = [];
+        for (let i = 0; i < gn('layer1')!.childElementCount; i++) {
+            var mt = gn('layer1')!.childNodes[i];
             if ((mt as HTMLElement).getAttribute('fixed') == 'yes') {
                 continue;
             }
             if ((mt as HTMLElement).getAttribute('stencil') == 'yes') {
                 continue;
             }
-            res.push(mt);
+            res.push(mt as Element);
         }
         for (let i = 0; i < res.length; i++) {
-            gn('layer1').appendChild(res[i]);
+            gn('layer1')!.appendChild(res[i]);
         }
     }
 
     static onTopOf (p, index) {
-        var res = [];
+        var res: Element[] = [];
         for (var i = index; i < p.childElementCount; i++) {
             res.push(p.childNodes[i]);
         }
@@ -62,10 +62,10 @@ export default class Layer {
     }
 
     static ordering (p, nl) {
-        var res = [];
+        var res: Element[] = [];
         for (var i = 0; i < p.childElementCount; i++) {
             if (nl.indexOf(p.childNodes[i]) > -1) {
-                res.push(p.childNodes[i]);
+                res.push(p.childNodes[i] as Element);
             }
         }
         return res;
@@ -170,12 +170,12 @@ export default class Layer {
     }
 
     static getRelated (elem) {
-        var res = [];
+        var res: Element[] = [];
         if (elem.id.indexOf('pathborder_image') > -1) {
             var imageid = elem.id.substring(String('pathborder_').length, elem.id.length);
-            var group = gn('group_' + imageid);
+            var group = gn('group_' + imageid)!;
             if (group) {
-                res.push(group);
+                res.push(group as Element);
             } else {
                 var img = SVGImage.getImage(elem);
                 if (img) {
@@ -183,7 +183,7 @@ export default class Layer {
                 }
                 var clip = SVGImage.getPathMask(elem);
                 if (clip) {
-                    res.push(clip);
+                    res.push(clip as Element);
                 }
             }
         }
@@ -192,7 +192,7 @@ export default class Layer {
     }
 
     static inContactWith (p, mt, factor, n) {
-        var res = [];
+        var res: Element[] = [];
         for (var i = n; i < p.childElementCount; i++) {
             var elem = p.childNodes[i];
             if (elem.id == mt.id) {
@@ -281,9 +281,9 @@ export default class Layer {
     }
 
     static findUnderMe (mt) {
-        var p = gn('layer1');
+        var p = gn('layer1')!;
         var n = Layer.groupStartsAt(p, mt);
-        var group = [];
+        var group: Element[] = [];
         var box = SVGTools.getBox(mt);
         for (var i = n - 1; i > -1; i--) {
             var elem = p.childNodes[i];
@@ -297,7 +297,7 @@ export default class Layer {
             if (!box.intersects(box2)) {
                 continue;
             }
-            group.push(elem);
+            group.push(elem as Element);
         }
         return group;
     }
@@ -342,7 +342,7 @@ export default class Layer {
         // write the other on the offscreen
         Layer.drawInOffscreen(other, offscreen);
         setCanvasSize(ScratchJr.workingCanvas, Paint.workspaceWidth, Paint.workspaceHeight);
-        var ctx = ScratchJr.workingCanvas.getContext('2d');
+        var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         ctx.clearRect(0, 0, Paint.workspaceWidth, Paint.workspaceHeight);
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
@@ -445,10 +445,10 @@ export default class Layer {
     }
 
     static on () {
-        gn('layermask').style.visibility = 'visible';
+        gn('layermask')!.style.visibility = 'visible';
     }
 
     static off () {
-        gn('layermask').style.visibility = 'hidden';
+        gn('layermask')!.style.visibility = 'hidden';
     }
 }

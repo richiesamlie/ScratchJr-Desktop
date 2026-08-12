@@ -17,8 +17,8 @@ let frame;
 
 export default class Samples {
     static init () {
-        frame = gn('htmlcontents');
-        gn('tabicon').onmousedown = Samples.playHowTo;
+        frame = gn('htmlcontents')!;
+        gn('tabicon')!.onmousedown = Samples.playHowTo;
         var div = newHTML('div', 'samples off', frame);
         div.setAttribute('id', 'samples');
         Samples.display('samples');
@@ -41,13 +41,13 @@ export default class Samples {
 
     static display (key) {
         var files = MediaLib[key];
-        var div = gn(key);
+        var div = gn(key)!;
         for (var i = 0; i < files.length; i++) {
             Samples.addLink(div, i, files[i]);
             Samples.requestFromServer(i, files[i], displayThumb);
         }
         function displayThumb (pos, str) {
-            var mt = gn('sample-' + pos);
+            var mt = gn('sample-' + pos)!;
             var data = IO.parseProjectData(JSON.parse(str)[0]);
             var name = mt.childNodes[1];
 
@@ -68,7 +68,7 @@ export default class Samples {
     static show () {
         Lobby.busy = false;
         frame.parentNode.scrollTop = 0;
-        gn('samples').className = 'samples on';
+        gn('samples')!.className = 'samples on';
     }
 
     static loadMe (e, mt) {
@@ -78,7 +78,7 @@ export default class Samples {
         iOS.analyticsEvent('samples', 'sample_opened', mt.textContent);
         var md5 = mt.md5;
         window.location.href = 'editor.html?pmd5=' + md5 + '&mode='
-            + ((window.Settings.useStoryStarters) ? 'storyStarter' : 'look');
+            + ((window.Settings!.useStoryStarters) ? 'storyStarter' : 'look');
     }
 
     static insertThumbnail (img, data) {

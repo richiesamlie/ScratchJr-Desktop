@@ -12,6 +12,7 @@ import SVGImage from './SVGImage';
 import SVGTools from './SVGTools';
 import Layer from './Layer';
 import Vector from '../geom/Vector';
+import type {Point} from '../geom/Vector';
 import Transform from './Transform';
 import Paint from './Paint';
 import PaintUndo from './PaintUndo';
@@ -64,7 +65,7 @@ export default class Path {
 
     static getPolyPoints (shape) {
         var points = shape.points;
-        var pp = [];
+        var pp: Point[] = [];
         for (var i = 0; i < points.numberOfItems; i++) {
             pp.push(points.getItem(i));
         }
@@ -73,7 +74,7 @@ export default class Path {
 
     static smoothPoints (points) {
         var n = points.length;
-        var plist = [];
+        var plist: Point[] = [];
         var interval = 3;
         var i;
         for (i = 0; i < (n - 1); i++) {
@@ -139,7 +140,7 @@ export default class Path {
         var n = points.length;
         var i = 1;
         var j = 0;
-        var plist = [];
+        var plist: Point[] = [];
         plist.push(points[0]);
         var dist = isTouch ? 40 : 30;
         var before, here, after;
@@ -171,7 +172,7 @@ export default class Path {
 
     static drawBezier (pointslist) {
         var first = pointslist[0];
-        var shape = SVGTools.addPath(gn('layer1'), first.x, first.y);
+        var shape = SVGTools.addPath(gn('layer1')!, first.x, first.y);
         if (pointslist.length < 2) {
             return shape;
         }
@@ -303,7 +304,7 @@ export default class Path {
         attr.d = d;
         attr.id = getIdFor('path');
         attr['stroke-miterlimit'] = shape.getAttribute('stroke-miterlimit');
-        var path = SVGTools.addChild(gn('layer1'), 'path', attr);
+        var path = SVGTools.addChild(gn('layer1')!, 'path', attr);
         shape.parentNode.removeChild(shape);
         return path;
     }
@@ -340,7 +341,7 @@ export default class Path {
         attr.d = SVG2Canvas.arrayToString(d);
         attr.id = getIdFor('path');
         attr['stroke-miterlimit'] = shape.getAttribute('stroke-miterlimit');
-        var elem = SVGTools.addChild(gn('layer1'), 'path', attr);
+        var elem = SVGTools.addChild(gn('layer1')!, 'path', attr);
         return elem;
     }
 
@@ -349,8 +350,8 @@ export default class Path {
     /////////////////////////////////////////////////////
 
     static getAnchorpoints (d) {
-        var list = SVG2Canvas.getCommandList(d);
-        var res = [];
+        var list = SVG2Canvas.getCommandList(d)!;
+        var res: Point[] = [];
         for (var i = 0; i < list.length; i++) {
             var cmd = SVG2Canvas.getAbsoluteCommand(list[i]);
             if (cmd[0] != 'z') {
@@ -365,8 +366,8 @@ export default class Path {
     }
 
     static getCommands (path) {
-        var list = SVG2Canvas.getCommandList(path);
-        var res = [];
+        var list = SVG2Canvas.getCommandList(path)!;
+        var res: Array<{cmd: string; pt: Point}> = [];
         var first;
         for (var i = 0; i < list.length; i++) {
             var cmd = SVG2Canvas.getAbsoluteCommand(list[i]);
@@ -389,7 +390,7 @@ export default class Path {
     }
 
     static getPointsForFirst (elem) {
-        var paths = elem.getAttribute('d').match(/[M][^M]*/g);
+        var paths = elem.getAttribute('d')!.match(/[M][^M]*/g);
         var d;
         if (!paths) {
             d = elem.getAttribute('d');
@@ -508,14 +509,14 @@ export default class Path {
 
     static importPath (elem) {
         var d = elem.getAttribute('d');
-        var list = SVG2Canvas.getCommandList(d);
+        var list = SVG2Canvas.getCommandList(d)!;
         var imported = Path.adaptPath(list);
         var path = SVG2Canvas.arrayToString(imported);
         elem.setAttribute('d', path);
     }
 
     static adaptPath (list) {
-        var res = [];
+        var res: (string | number)[][] = [];
         var lastpt = {
             x: list[0][1],
             y: list[0][2]
@@ -599,14 +600,14 @@ export default class Path {
         Transform.eliminateAll(shape);
         var list = Path.getPointsForFirst(shape);
         //	if (Vector.len (Vector.diff (list[0].pt, list[list.length -1].pt)) == 0) list[list.length -1].cmd = "Z";
-        var g = gn('pathdots');
+        var g = gn('pathdots')!;
         if (g != null) {
-            g.parentNode.removeChild(g);
+            g.parentNode!.removeChild(g);
         }
         g = document.createElementNS(Paint.xmlns, 'g') as HTMLElement;
         g.setAttribute('style', 'pointer-events:none');
         g.setAttribute('id', 'pathdots');
-        var p = document.getElementById('layer1').parentNode;
+        var p = document.getElementById('layer1')!.parentNode!;
         p.appendChild(g);
         var plist = Path.getPathDotsElem(g, list);
         for (var k = 0; k < plist.length; k++) {
@@ -614,9 +615,9 @@ export default class Path {
         }
         shape.setAttribute('style', 'pointer-events:visibleStroke;');
         var lastdot = plist[plist.length - 1];
-        var iscurve = SVG2Canvas.curveoptions.indexOf(lastdot.getAttribute('cmd')) > -1;
+        var iscurve = SVG2Canvas.curveoptions.indexOf(lastdot.getAttribute('cmd')!) > -1;
         lastdot.setAttribute('fill', iscurve ? curveDotColor : lineDotColor);
-        lastdot.setAttribute('opacity', 0.6);
+        lastdot.setAttribute('opacity', '0.6');
         var first = Path.getDotPoint(plist[0]);
         var lastpoint = Path.getDotPoint(lastdot);
         var farilyclose = (Vector.len(Vector.diff(lastpoint, first)) < 10) && (lastdot.getAttribute('cmd') != 'Z');
@@ -626,7 +627,7 @@ export default class Path {
     }
 
     static getPathDotsElem (g, list) {
-        var res = [];
+        var res: HTMLElement[] = [];
         var first;
         var cp;
         var pt; 
@@ -684,7 +685,7 @@ export default class Path {
         var cmds = Path.getPointsForFirst(shape);
         var dist = Vector.len(Vector.diff(list[0].pt, list[list.length - 1].pt));
         var valid = list[list.length - 1].cmd.toLowerCase() != 'x';
-        var res = [];
+        var res: Array<{cmd: string; pt: Point}> = [];
         for (var i = 0; i < cmds.length; i++) {
             if (list.length == 0) {
                 res.push(cmds[i]);
@@ -747,8 +748,8 @@ export default class Path {
     }
 
     static getDotPoint (dot) {
-        var rot = Transform.extract(gn(dot.getAttribute('parentid')), 4);
-        var mtx = Transform.getCombinedMatrices(gn(dot.getAttribute('parentid'))); // skips rotation matrices
+        var rot = Transform.extract(gn(dot.getAttribute('parentid'))!, 4);
+        var mtx = Transform.getCombinedMatrices(gn(dot.getAttribute('parentid'))!); // skips rotation matrices
         var pt = Transform.point(Number(dot.getAttribute('cx')), Number(dot.getAttribute('cy')), mtx.inverse());
         pt = Transform.point(pt.x, pt.y, rot.matrix.inverse());
         return pt;
@@ -762,7 +763,7 @@ export default class Path {
         if (indx == 0) {
             return true;
         }
-        return indx == (gn('pathdots').childElementCount - 1);
+        return indx == (gn('pathdots')!.childElementCount - 1);
     }
 
     static getDot (g, cmd, pt) {
@@ -805,19 +806,19 @@ export default class Path {
         if (shape) {
             shape.setAttribute('style', 'pointer-events:visiblePainted;');
         }
-        var g = gn('pathdots');
+        var g = gn('pathdots')!;
         if (!g) {
             return;
         }
-        g.parentNode.removeChild(g);
+        g.parentNode!.removeChild(g);
     }
 
     static getDotsCoodinates (shape?) {
-        var pointslist = [];
-        for (var i = 0; i < gn('pathdots').childElementCount; i++) {
-            var dot = gn('pathdots').childNodes[i];
+        var pointslist: Array<{cmd: string; pt: Point}> = [];
+        for (var i = 0; i < gn('pathdots')!.childElementCount; i++) {
+            var dot = gn('pathdots')!.childNodes[i];
             pointslist.push({
-                cmd: (dot as HTMLElement).getAttribute('cmd'),
+                cmd: (dot as HTMLElement).getAttribute('cmd')!,
                 pt: Path.getDotPoint(dot)
             });
         }
@@ -825,16 +826,16 @@ export default class Path {
     }
 
     static getDots () {
-        var pointslist = [];
-        for (var i = 0; i < gn('pathdots').childElementCount; i++) {
-            pointslist.push(gn('pathdots').childNodes[i]);
+        var pointslist: HTMLElement[] = [];
+        for (var i = 0; i < gn('pathdots')!.childElementCount; i++) {
+            pointslist.push(gn('pathdots')!.childNodes[i] as HTMLElement);
         }
         return pointslist;
     }
 
     static addDot (shape) {
-        var g = gn('pathdots');
-        g.parentNode.removeChild(g);
+        var g = gn('pathdots')!;
+        g.parentNode!.removeChild(g);
         var rot = Transform.extract(shape, 4);
         var newpt = Transform.point(Paint.initialPoint.x, Paint.initialPoint.y, rot.matrix.inverse());
         setCanvasSize(
@@ -842,7 +843,7 @@ export default class Path {
             Paint.root.getAttribute('width') * Paint.currentZoom,
             Paint.root.getAttribute('height') * Paint.currentZoom
         );
-        var ctx = ScratchJr.workingCanvas.getContext('2d');
+        var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         // uncomment for testing offscreen rendering for hit test
         //	Paint.root.parentNode.appendChild(ScratchJr.workingCanvas);
         //	setProps(ScratchJr.workingCanvas.style, {position: "absolute", left: "0px", top: "0px"});
@@ -917,7 +918,7 @@ export default class Path {
         var list1 = Path.getPointsForFirst(shape);
         var list = Path.getPointsAndCmds(shape);
         var mustdelteboth = (
-                (gn('pathdots').childNodes[gn('pathdots').childElementCount - 1] as HTMLElement).getAttribute('cmd') == 'x'
+                (gn('pathdots')!.childNodes[gn('pathdots')!.childElementCount - 1] as HTMLElement).getAttribute('cmd') == 'x'
             );
         if ((list.length != list1.length) && (list1.length < 5)) {
             return;
@@ -1005,7 +1006,7 @@ export default class Path {
     static getClosestDotTo (pt, range) {
         var list = Path.getDotsCoodinates(selector);
         var min = 99999;
-        var dot = null;
+        var dot: number | null = null;
         for (var i = 0; i < list.length; i++) {
             var pt2 = list[i].pt;
             var dist = Vector.len(Vector.diff(pt2, pt));
@@ -1015,7 +1016,7 @@ export default class Path {
             }
         }
         if (min <= range) {
-            return gn('grab ' + dot);
+            return gn('grab ' + dot)!;
         }
         return null;
     }
@@ -1028,7 +1029,7 @@ export default class Path {
         var rot = Transform.extract(shape, 4);
         var newpt = Transform.point(pt.x, pt.y, rot.matrix.inverse());
         setCanvasSize(ScratchJr.workingCanvas, Paint.root.getAttribute('width'), Paint.root.getAttribute('height'));
-        var ctx = ScratchJr.workingCanvas.getContext('2d');
+        var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         ctx.clearRect(0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height);
         ctx.fillStyle = 'rgba(0,0,0,0)';
         ctx.lineWidth = Ghost.linemask;
@@ -1100,7 +1101,7 @@ export default class Path {
                 res = mtlist.concat(cslist);
             }
         }
-        var d = Path.getDattribute(res);
+        var d = Path.getDattribute(res)!;
         if (Vector.len(Vector.diff(res[0].pt, res[res.length - 1].pt)) < 10) {
             var char = d.charAt(d.length - 1);
             if (char != 'z') {
@@ -1188,8 +1189,8 @@ export default class Path {
         var isimage = SVGImage.getImage(mt) != null;
         var list = Path.getPointsAndCmds(shape);
         var other = Path.getPointsAndCmds(mt);
-        var index = Layer.groupStartsAt(gn('layer1'), mt);
-        var group = Layer.onTopOf(gn('layer1'), index);
+        var index = Layer.groupStartsAt(gn('layer1')!, mt);
+        var group = Layer.onTopOf(gn('layer1')!, index);
         //Layer.onTopOfBy(gn("layer1"), mt, 0.1, index, [mt]);
         var p = mt.parentNode;
         for (var i = 0; i < group.length; i++) {
@@ -1206,7 +1207,7 @@ export default class Path {
         }
         var path = Path.makeAcut(shape, list, other, contatctPoints[0], contatctPoints[1], attr);
         path.setAttribute('stencil', 'yes');
-        gn('layer1').appendChild(path);
+        gn('layer1')!.appendChild(path);
         var attr2 = Path.getStylingFrom(shape);
         attr2.fill = isimage ? 'none' : mt.getAttribute('fill');
         attr2['stroke-width'] = isimage ? 0 : Paint.strokewidth;
@@ -1216,7 +1217,7 @@ export default class Path {
         attr2.id = getIdFor('path');
         attr2.d = mt.getAttribute('d');
         if (isimage) {
-            mt = SVGTools.addChild(gn('layer1'), 'path', attr2);
+            mt = SVGTools.addChild(gn('layer1')!, 'path', attr2);
         }
         mt.setAttribute('d', Path.getComplement(shape, mt, contatctPoints[0], contatctPoints[1]));
         mt.setAttribute('d', Path.flip(mt));
@@ -1225,7 +1226,7 @@ export default class Path {
             p.appendChild(group[j]);
         } // make sure to bring to front the old stuff
         if (contatctPoints.length > 2) {
-            Path.cutBoard(gn('layer1'), contatctPoints, shape, path, 2);
+            Path.cutBoard(gn('layer1')!, contatctPoints, shape, path, 2);
         }
         return !isimage;
     }
@@ -1242,12 +1243,12 @@ export default class Path {
         var seam1 = ptsincontact[n];
         var seam2 = ptsincontact[n + 1];
         var attr = Path.getStylingFrom(mt);
-        var hitpoints = Path.updateContactPoints(seam1, seam2, list, other);
+        var hitpoints = Path.updateContactPoints(seam1, seam2, list, other)!;
         if (Path.isValidSegment(hitpoints)) {
             var path = Path.makeAcut(shape, list, other, hitpoints[0], hitpoints[1], attr);
             p.appendChild(path);
             path.setAttribute('stencil', 'yes');
-            gn('layer1').appendChild(path);
+            gn('layer1')!.appendChild(path);
             var attr2 = Path.getStylingFrom(shape);
             attr2.fill = mt.getAttribute('fill');
             attr2['stroke-width'] = Paint.strokewidth;
@@ -1361,7 +1362,7 @@ export default class Path {
         };
         var cmds = [['M', -10, -10], ['L', 490, -10], ['L', 490, 370], ['L', -10, 370], ['L', -10, -10]];
         attr2.d = SVG2Canvas.arrayToString(cmds);
-        var mt = SVGTools.addChild(gn('layer1'), 'path', attr2);
+        var mt = SVGTools.addChild(gn('layer1')!, 'path', attr2);
         mt.setAttribute('stencil', 'yes');
         if (!Path.isClockWise(shape.getAttribute('d'))) {
             shape.setAttribute('d', Path.flip(shape));
@@ -1369,7 +1370,7 @@ export default class Path {
         if (Path.isClockWise(mt.getAttribute('d'))) {
             mt.setAttribute('d', Path.flip(mt));
         }
-        var attr = Path.getStylingFrom(gn('staticbkg'));
+        var attr = Path.getStylingFrom(gn('staticbkg')!);
         for (var val in attr) {
             mt.setAttribute(val, String(attr[val]));
         }
@@ -1437,7 +1438,7 @@ export default class Path {
         //	console.log ("getContactPoints", eraser.id, hitobj.id);
         var list = Path.getPointsAndCmds(eraser);
         var other = Path.getPointsAndCmds(hitobj);
-        var res = [];
+        var res: (number | Point)[][] = [];
         for (var i = 1; i < list.length; i++) {
             var v1 = list[i - 1].pt;
             var v2 = list[i].pt;
@@ -1457,7 +1458,7 @@ export default class Path {
         var epathdata = SVG2Canvas.getSVGcommands(eraser);
         attr.d = Path.chopSection(list, epathdata, other, goin, goout);
         attr.id = getIdFor('path');
-        var newpath = SVGTools.addChild(gn('layer1'), 'path', attr);
+        var newpath = SVGTools.addChild(gn('layer1')!, 'path', attr);
         newpath.setAttribute('d', Path.flip(newpath));
         return newpath;
     }
@@ -1473,7 +1474,7 @@ export default class Path {
     }
 
     static getShapeFromPoints (joinIn, joinOut, pt, other) {
-        var plist = [];
+        var plist: Array<{cmd: string; pt: Point}> = [];
         if (joinOut > joinIn) {
             var indx = other.length;
             //Vector.len (Vector.diff(other[0].pt, other[other.length - 1].pt)) == 0 ? other.length - 1 : other.length;
@@ -1524,7 +1525,7 @@ export default class Path {
     }
 
     static getComplement (eraser, hitobj, goin, goout) {
-        var edata = SVG2Canvas.getSVGcommands(eraser);
+        var edata = SVG2Canvas.getSVGcommands(eraser)!;
         var other = Path.getPointsAndCmds(hitobj);
         var d = 'M' + goin[2].x + ',' + goin[2].y;
         d += SVG2Canvas.arrayToString(edata.slice(goin[0], goout[0]));
@@ -1536,7 +1537,7 @@ export default class Path {
     }
 
     static getFromPoints (joinIn, joinOut, pt, other) {
-        var plist = [];
+        var plist: Array<{cmd: string; pt: Point}> = [];
         if (joinIn >= joinOut) {
             var indx = other.length;
             plist = other.slice(joinIn, indx);
@@ -1732,7 +1733,7 @@ export default class Path {
     ////////////////////////////////////////////
 
     static flip (elem) {
-        var paths = elem.getAttribute('d').match(/[M][^M]*/g);
+        var paths = elem.getAttribute('d')!.match(/[M][^M]*/g);
         var d = '';
         for (var i = 0; i < paths.length; i++) {
             d += Path.reverse(paths[i]);
@@ -1765,11 +1766,11 @@ export default class Path {
     }
 
     static breakRelationship (mt, family) {
-        var elem = gn(family);
+        var elem = gn(family)!;
         if (!elem) {
             return;
         }
-        var paths = elem.getAttribute('d').match(/[M][^M]*/g);
+        var paths = elem.getAttribute('d')!.match(/[M][^M]*/g)!;
         var findPlace = Path.getMatchPathIndex(mt, paths);
         if (findPlace < 0) {
             return;
@@ -1822,7 +1823,7 @@ export default class Path {
                 var b = SVGTools.getArea(l2);
                 return a > b ? -1 : (a < b ? 1 : 0);
             });
-            var res = [];
+            var res: Element[] = [];
 
             for (var i = 0; i < list.length; i++) {
                 if (list[i].getAttribute('fill') != 'none') {
@@ -1859,7 +1860,7 @@ export default class Path {
         rpos.width = box.width;
         rpos.height = box.height;
         var list = Paint.root.getIntersectionList(rpos, null);
-        var res = [];
+        var res: Element[] = [];
         if (list != null) {
             for (var i = 0; i < list.length; i++) {
                 if (list[i].parentNode.id == 'ghostlayer') {
@@ -1904,7 +1905,7 @@ export default class Path {
     static getPathCrossing (obj, mt) {
         var list = Path.getAllPoints(obj.getAttribute('d'));
         var other = Path.getAllPoints(mt.getAttribute('d'));
-        var res = [];
+        var res: (number | Point)[][] = [];
         for (var i = 1; i < list.length; i++) {
             var v1 = list[i - 1];
             var v2 = list[i];
@@ -1921,24 +1922,24 @@ export default class Path {
     }
 
     static getAllPoints (d) {
-        var list = SVG2Canvas.getCommandList(d);
+        var list = SVG2Canvas.getCommandList(d)!;
         if (list.length == 0) {
             return [];
         }
-        var res = [];
-        var lastpt = {
-            x: list[0][1],
-            y: list[0][2]
+        var res: Point[] = [];
+        var lastpt: Point = {
+            x: list[0][1] as number,
+            y: list[0][2] as number
         };
         res.push(lastpt);
         for (var i = 1; i < list.length; i++) {
             var pts = list[i];
-            var cmd = pts.shift();
+            var cmd = pts.shift() as string;
             switch (cmd.toLowerCase()) {
             case 'l':
                 lastpt = {
-                    x: pts[0],
-                    y: pts[1]
+                    x: pts[0] as number,
+                    y: pts[1] as number
                 };
                 res.push(lastpt);
                 break;
@@ -1947,8 +1948,8 @@ export default class Path {
                 pts.unshift(lastpt.x); // add last point y;
                 var l = pts.length;
                 lastpt = {
-                    x: pts[l - 2],
-                    y: pts[l - 1]
+                    x: pts[l - 2] as number,
+                    y: pts[l - 1] as number
                 };
                 var seg = Path.getBezierPoints(pts);
                 res = res.concat(seg);
@@ -1993,7 +1994,7 @@ export default class Path {
 
         var k = 1.1;
         //Array to hold all points on the bezier curve
-        var curvePoints = [];
+        var curvePoints: Point[] = [];
 
         while ((t <= 1) && (t >= 0)) { // t goes from 0 to 1
             x = 0;
@@ -2038,14 +2039,14 @@ export default class Path {
         el.setAttributeNS(null, 'ry', '4');
         el.setAttributeNS(null, 'fill', c);
     }
-    // Path.placePoint(gn("testlayer"), pt, c ? c : "#0093ff");
+    // Path.placePoint(gn("testlayer")!, pt, c ? c : "#0093ff");
 
 
     static cleanBezier (points, dist) {
         var n = points.length;
         var i = 1;
         var j = 0;
-        var plist = [];
+        var plist: Point[] = [];
         plist.push(points[0]);
         while (i < n - 1) {
             var before = points[j];

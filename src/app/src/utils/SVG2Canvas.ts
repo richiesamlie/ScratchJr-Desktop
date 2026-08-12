@@ -158,12 +158,12 @@ export default class SVG2Canvas {
             return;
         }
         if (elem.id.indexOf('pathborder_image') > -1) {
-            ctx.fillStyle = window.Settings.spriteOutlineColor;
+            ctx.fillStyle = window.Settings!.spriteOutlineColor;
         } else {
             ctx.fillStyle = (elem.getAttribute('fill') == 'none')
-                ? 'rgba(0, 0, 0,0)' : window.Settings.spriteOutlineColor;
+                ? 'rgba(0, 0, 0,0)' : window.Settings!.spriteOutlineColor;
         }
-        ctx.strokeStyle = window.Settings.spriteOutlineColor;
+        ctx.strokeStyle = window.Settings!.spriteOutlineColor;
         ctx.lineCap = 'round';
         ctx.lineWidth = elem.getAttribute('stroke-width') ? Number(elem.getAttribute('stroke-width')) + 12 : 12;
         ctx.miterLimit = 2;
@@ -509,7 +509,7 @@ export default class SVG2Canvas {
     }
 
     static splitNumericArgs (str) {
-        var res = [];
+        var res: number[] = [];
         if (!str) {
             return res;
         }
@@ -777,11 +777,11 @@ export default class SVG2Canvas {
         if (!commands) {
             return null;
         }
-        var res = [];
+        var res: (string | number)[][] = [];
         for (var i = 0; i < commands.length; i++) {
             var cmd = commands[i];
             var ct = cmd.charAt(0);
-            var cmddata = (ct.toLowerCase() == 'z') ? [] : SVG2Canvas.splitNumericArgs(cmd.substr(1, cmd.length));
+            var cmddata: (string | number)[] = (ct.toLowerCase() == 'z') ? [] : SVG2Canvas.splitNumericArgs(cmd.substr(1, cmd.length));
             cmddata.unshift(ct);
             res.push(cmddata);
         }
@@ -802,7 +802,7 @@ export default class SVG2Canvas {
     }
 
     static getAbsoluteCommands (list) {
-        var res = [];
+        var res: (string | number)[][] = [];
         for (var i = 0; i < list.length; i++) {
             res.push(SVG2Canvas.getAbsoluteCommand(list[i]));
         }

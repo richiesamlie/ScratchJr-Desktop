@@ -11,7 +11,7 @@ export default class Runtime {
 
     constructor () {
         this.threadsRunning = [];
-        this.thread = undefined;
+        this.thread = null as unknown as Thread;
         this.intervalId = undefined;
         this.yield = false;
     }
@@ -36,7 +36,7 @@ export default class Runtime {
         if (this.threadsRunning.length < 1) {
             return;
         }
-        var activeThreads = [];
+        var activeThreads: Thread[] = [];
         for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].isRunning) {
                 activeThreads.push(this.threadsRunning[i]);
@@ -121,7 +121,7 @@ export default class Runtime {
     }
 
     removeRunScript (spr) {
-        var res = [];
+        var res: Thread[] = [];
         for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].spr == spr) {
                 if (this.threadsRunning[i].isRunning) {
@@ -132,7 +132,7 @@ export default class Runtime {
                 }
                 this.threadsRunning[i].isRunning = false;
                 if (this.threadsRunning[i].oldblock != null) {
-                    this.threadsRunning[i].oldblock.unhighlight();
+                    this.threadsRunning[i].oldblock!.unhighlight();
                 }
             }
         }
@@ -144,12 +144,12 @@ export default class Runtime {
             this.thread.oldblock.unhighlight();
         }
         this.thread.oldblock = null;
-        var token = Prims.table[this.thread.thisblock.blocktype];
+        var token = Prims.table[this.thread.thisblock.blocktype!];
         if (token == null) {
             token = Prims.table.missing;
         } else {
             var noh = ['repeat', 'gotopage'];
-            if (noh.indexOf(this.thread.thisblock.blocktype) < 0) {
+            if (noh.indexOf(this.thread.thisblock.blocktype!) < 0) {
                 this.thread.thisblock.highlight();
                 this.thread.oldblock = this.thread.thisblock;
             }
@@ -166,7 +166,7 @@ export default class Runtime {
             Prims.Done(this.thread);
         } else {
             var thing = (this.thread.stack).pop();
-            this.thread.thisblock = thing;
+            this.thread.thisblock = thing!;
             this.runPrim();
         }
     }
@@ -179,7 +179,7 @@ export default class Runtime {
                 wasRunning = true;
                 if (b.blocktype != 'ontouch') { // on touch demons are special - they are not interruptable
                     if (this.threadsRunning[i].oldblock != null) {
-                        this.threadsRunning[i].oldblock.unhighlight();
+                        this.threadsRunning[i].oldblock!.unhighlight();
                     }
                     this.threadsRunning[i].stopping(active);
                     newThread = this.threadsRunning[i];

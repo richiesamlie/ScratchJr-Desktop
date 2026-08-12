@@ -2,32 +2,32 @@ import {gn} from '../utils/lib';
 import Localization from '../utils/Localization';
 
 export function inappAbout () {
-    gn('aboutScratchjrTitle').textContent = Localization.localize('ABOUT_SCRATCHJR');
-    gn('aboutWhatIs').textContent = Localization.localize('ABOUT_WHAT_IS');
-    gn('aboutDescription').innerHTML = Localization.localize('ABOUT_DESCRIPTION') + '<br/><br/>'
+    gn('aboutScratchjrTitle')!.textContent = Localization.localize('ABOUT_SCRATCHJR');
+    gn('aboutWhatIs')!.textContent = Localization.localize('ABOUT_WHAT_IS');
+    gn('aboutDescription')!.innerHTML = Localization.localize('ABOUT_DESCRIPTION') + '<br/><br/>'
         + Localization.localize('ABOUT_INSPIRED_BY');
-    gn('aboutWhyCreate').textContent = Localization.localize('ABOUT_WHY_CREATE');
-    gn('aboutWhyCreateDescription').innerHTML = Localization.localize('ABOUT_WHY_CREATE_DESCRIPTION');
-    gn('aboutWhoCreated').textContent = Localization.localize('ABOUT_WHO_CREATED');
-    gn('aboutWhoCreatedDescription').innerHTML = (
+    gn('aboutWhyCreate')!.textContent = Localization.localize('ABOUT_WHY_CREATE');
+    gn('aboutWhyCreateDescription')!.innerHTML = Localization.localize('ABOUT_WHY_CREATE_DESCRIPTION');
+    gn('aboutWhoCreated')!.textContent = Localization.localize('ABOUT_WHO_CREATED');
+    gn('aboutWhoCreatedDescription')!.innerHTML = (
         Localization.localize('ABOUT_WHO_CREATED_DESCRIPTION'));
-    gn('aboutWhoSupported').textContent = Localization.localize('ABOUT_WHO_SUPPORTED');
-    gn('aboutWhoSupportedDescription').innerHTML = (
+    gn('aboutWhoSupported')!.textContent = Localization.localize('ABOUT_WHO_SUPPORTED');
+    gn('aboutWhoSupportedDescription')!.innerHTML = (
         Localization.localize('ABOUT_WHO_SUPPORTED_DESCRIPTION')
     );
 
     // PBS-only
-    if (window.Settings.edition == 'PBS') {
-        gn('aboutWhatIsPbs').innerHTML = Localization.localize('ABOUT_WHAT_IS_PBS');
-        gn('aboutWhatIsPbsDescription').innerHTML = Localization.localize('ABOUT_WHAT_IS_PBS_DESCRIPTION');
-        gn('aboutPbsShows').innerHTML = Localization.localize('ABOUT_PBS_SHOWS');
-        gn('aboutPbsShowsDescription').innerHTML = Localization.localize('ABOUT_PBS_SHOWS_DESCRIPTION');
+    if (window.Settings!.edition == 'PBS') {
+        gn('aboutWhatIsPbs')!.innerHTML = Localization.localize('ABOUT_WHAT_IS_PBS');
+        gn('aboutWhatIsPbsDescription')!.innerHTML = Localization.localize('ABOUT_WHAT_IS_PBS_DESCRIPTION');
+        gn('aboutPbsShows')!.innerHTML = Localization.localize('ABOUT_PBS_SHOWS');
+        gn('aboutPbsShowsDescription')!.innerHTML = Localization.localize('ABOUT_PBS_SHOWS_DESCRIPTION');
     }
 }
 
 export function inappInterfaceGuide () {
-    var interfaceKeyHeaderNode = gn('interface-key-header');
-    var interfaceKeyDescriptionNode = gn('interface-key-description');
+    var interfaceKeyHeaderNode = gn('interface-key-header')!;
+    var interfaceKeyDescriptionNode = gn('interface-key-description')!;
 
     interfaceKeyHeaderNode.textContent = Localization.localize('INTERFACE_GUIDE_SAVE', {N: 1});
     interfaceKeyDescriptionNode.textContent = Localization.localize('INTERFACE_GUIDE_SAVE_DESCRIPTION');
@@ -51,7 +51,7 @@ export function inappInterfaceGuide () {
         'CHARACTERS'
     ];
 
-    var interfaceDescriptions = [];
+    var interfaceDescriptions: string[][] = [];
     for (var i = 0; i < interfaceKeys.length; i++) {
         var key = interfaceKeys[i];
         interfaceDescriptions.push([
@@ -69,18 +69,18 @@ export function inappInterfaceGuide () {
             var descriptionId = parseInt(target.innerText, 10) - 1;
             interfaceKeyHeaderNode.textContent = interfaceDescriptions[descriptionId][0];
             interfaceKeyDescriptionNode.textContent = interfaceDescriptions[descriptionId][1];
-            currentButton.className = 'interface-button';
+            currentButton!.className = 'interface-button';
             currentButton = target.parentNode;
-            currentButton.className = currentButton.className + ' interface-button-selected';
-            window.parent.ScratchAudio.sndFXWithVolume('keydown.wav', 0.3);
+            currentButton!.className = currentButton!.className + ' interface-button-selected';
+            window.parent.ScratchAudio!.sndFXWithVolume('keydown.wav', 0.3);
         }
     };
     document.addEventListener('mousedown', switchHelp, false);
 }
 
 export function inappPaintEditorGuide () {
-    var paintKeyHeaderNode = gn('paint-key-header');
-    var paintKeyDescriptionNode = gn('paint-key-description');
+    var paintKeyHeaderNode = gn('paint-key-header')!;
+    var paintKeyDescriptionNode = gn('paint-key-description')!;
 
     paintKeyHeaderNode.textContent = Localization.localize('PAINT_GUIDE_UNDO', { N: 1 });
     paintKeyDescriptionNode.textContent = Localization.localize('PAINT_GUIDE_UNDO_DESCRIPTION');
@@ -101,7 +101,7 @@ export function inappPaintEditorGuide () {
         'LINE_WIDTH'
     ];
 
-    var paintDescriptions = [];
+    var paintDescriptions: string[][] = [];
     for (var i = 0; i < paintKeys.length; i++) {
         var key = paintKeys[i];
         paintDescriptions.push([
@@ -119,10 +119,10 @@ export function inappPaintEditorGuide () {
             var descriptionId = parseInt(target.innerText, 10) - 1;
             paintKeyHeaderNode.textContent = paintDescriptions[descriptionId][0];
             paintKeyDescriptionNode.textContent = paintDescriptions[descriptionId][1];
-            currentButton.className = 'paint-button';
+            currentButton!.className = 'paint-button';
             currentButton = target.parentNode;
-            currentButton.className = currentButton.className + ' paint-button-selected';
-            window.parent.ScratchAudio.sndFXWithVolume('keydown.wav', 0.3);
+            currentButton!.className = currentButton!.className + ' paint-button-selected';
+            window.parent.ScratchAudio!.sndFXWithVolume('keydown.wav', 0.3);
         }
     };
     document.addEventListener('mousedown', switchHelp, false);
@@ -130,12 +130,12 @@ export function inappPaintEditorGuide () {
 
 export function inappBlocksGuide () {
     // Localized category names
-    gn('yellow-block-category-header').textContent = Localization.localize('BLOCKS_TRIGGERING_BLOCKS');
-    gn('blue-block-category-header').textContent = Localization.localize('BLOCKS_MOTION_BLOCKS');
-    gn('purple-block-category-header').textContent = Localization.localize('BLOCKS_LOOKS_BLOCKS');
-    gn('green-block-category-header').textContent = Localization.localize('BLOCKS_SOUND_BLOCKS');
-    gn('orange-block-category-header').textContent = Localization.localize('BLOCKS_CONTROL_BLOCKS');
-    gn('red-block-category-header').textContent = Localization.localize('BLOCKS_END_BLOCKS');
+    gn('yellow-block-category-header')!.textContent = Localization.localize('BLOCKS_TRIGGERING_BLOCKS');
+    gn('blue-block-category-header')!.textContent = Localization.localize('BLOCKS_MOTION_BLOCKS');
+    gn('purple-block-category-header')!.textContent = Localization.localize('BLOCKS_LOOKS_BLOCKS');
+    gn('green-block-category-header')!.textContent = Localization.localize('BLOCKS_SOUND_BLOCKS');
+    gn('orange-block-category-header')!.textContent = Localization.localize('BLOCKS_CONTROL_BLOCKS');
+    gn('red-block-category-header')!.textContent = Localization.localize('BLOCKS_END_BLOCKS');
 
     var blockDescriptionKeys = [
         'BLOCKS_GREEN_FLAG',
@@ -197,6 +197,6 @@ export function inappBlocksGuide () {
     ];
 
     for (let i = 0; i < blockDescriptionKeys.length; i++) {
-        gn(blockDescriptionKeys[i]).textContent = Localization.localize(blockDescriptionKeys[i]);
+        gn(blockDescriptionKeys[i])!.textContent = Localization.localize(blockDescriptionKeys[i]);
     }
 }

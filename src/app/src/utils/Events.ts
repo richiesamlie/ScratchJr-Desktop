@@ -101,7 +101,7 @@ export default class Events {
         dragDiv.style.width = '0px'; // size doesn't matter since children float
         dragDiv.style.height = '0px';
         dragDiv.style.zIndex = 7001; // slightly higher than ScratchJr.dragginLayer
-        var frameDiv = gn('frame');
+        var frameDiv = gn('frame')!;
         frameDiv.appendChild(dragDiv);
         window.addEventListener('blur', function () {
             if (dragged || dragthumbnail) {
@@ -227,13 +227,13 @@ export default class Events {
 
     static clearEvents () {
         if (isTouch) { // clearEvents
-            window.onmousemove = undefined;
-            window.onmouseup = undefined;
+            window.onmousemove = null;
+            window.onmouseup = null;
         } else {
             window.onmousemove = function (e) {
                 e.preventDefault();
             };
-            window.onmouseup = undefined;
+            window.onmouseup = null;
         }
     }
 

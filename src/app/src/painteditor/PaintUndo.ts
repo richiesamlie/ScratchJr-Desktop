@@ -9,7 +9,7 @@ import ScratchAudio from '../utils/ScratchAudio';
 // Undo / Redo Functions
 //////////////////////////////////
 
-let buffer = [];
+let buffer: string[] = [];
 let index = 0;
 
 export default class PaintUndo {
@@ -57,10 +57,10 @@ export default class PaintUndo {
 
     static runUndo () {
         Path.quitEditMode();
-        Paint.root.removeChild(gn('layer1'));
+        Paint.root.removeChild(gn('layer1')!);
         Paint.root.appendChild(SVGTools.toObject(buffer[index]));
-        Paint.root.appendChild(gn('draglayer'));
-        Paint.root.appendChild(gn('paintgrid'));
+        Paint.root.appendChild(gn('draglayer')!);
+        Paint.root.appendChild(gn('paintgrid')!);
         Paint.setZoomTo(Paint.currentZoom);
     }
 
@@ -71,7 +71,7 @@ export default class PaintUndo {
         }
         buffer.push(PaintUndo.getCanvas());
         index++;
-        if (gn('id_pundo')) {
+        if (gn('id_pundo')!) {
             PaintUndo.updateActiveUndo();
         }
         if (!dontStartStories) {
@@ -80,7 +80,7 @@ export default class PaintUndo {
     }
 
     static getCanvas () {
-        return SVGTools.svg2string(gn('layer1'));
+        return SVGTools.svg2string(gn('layer1')!);
     }
 
     //////////////////////////////////
@@ -131,20 +131,20 @@ export default class PaintUndo {
     }
 
     static updateActiveUndo () {
-        if (gn('id_pundo')) {
+        if (gn('id_pundo')!) {
             if (buffer.length == 1) {
-                PaintUndo.tunOffButton(gn('id_pundo'));
+                PaintUndo.tunOffButton(gn('id_pundo')!);
             } else {
                 if (index < 1) {
-                    PaintUndo.tunOffButton(gn('id_pundo'));
+                    PaintUndo.tunOffButton(gn('id_pundo')!);
                 } else {
-                    PaintUndo.tunOnButton(gn('id_pundo'));
+                    PaintUndo.tunOnButton(gn('id_pundo')!);
                 }
             }
             if (index >= buffer.length - 1) {
-                PaintUndo.tunOffButton(gn('id_predo'));
+                PaintUndo.tunOffButton(gn('id_predo')!);
             } else {
-                PaintUndo.tunOnButton(gn('id_predo'));
+                PaintUndo.tunOnButton(gn('id_predo')!);
             }
         }
     }

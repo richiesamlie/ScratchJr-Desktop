@@ -24,10 +24,10 @@ import {frame, gn, localx, newHTML, scaleMultiplier, isTouch, newDiv,
 
 let blockscale = 0.75;
 let numcat = 0; // getter
-let betweenblocks = undefined; // Set in setup()
+let betweenblocks: number | null = null; // Set in setup()
 let blockdy = 5;
-let timeoutid = undefined;
-let helpballoon = undefined;
+let timeoutid: NodeJS.Timeout | null = null;
+let helpballoon: (HTMLCanvasElement & { icon?: unknown }) | null = null;
 let dxblocks = 10;
 
 export default class Palette {
@@ -81,7 +81,7 @@ export default class Palette {
         }
         e.preventDefault();
         ScratchJr.blur();
-        var pal = gn('palette');
+        var pal = gn('palette')!;
         var spt = Events.getTargetPoint(e);
         var pt = {
             x: localx(pal, spt.x),
@@ -115,7 +115,7 @@ export default class Palette {
         if (!spr) {
             return;
         }
-        var page = spr.div.parentNode.owner as Page;
+        var page = spr.div.parentNode!.owner as Page;
         var sounds = spr.sounds.concat();
         if (indx >= sounds.length) {
             return;
@@ -124,7 +124,7 @@ export default class Palette {
         spr.sounds = sounds;
         // recreate the sprite scripts to make sure deleted sound is properly treated
         var sprdata = spr.getData();
-        var div = gn(spr.id + '_scripts');
+        var div = gn(spr.id + '_scripts')!;
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
         }
@@ -202,34 +202,34 @@ export default class Palette {
             position: 'absolute',
             zIndex: 1000
         });
-        helpballoon.icon = obj;
-        var ctx = helpballoon.getContext('2d');
+        helpballoon!.icon = obj;
+        var ctx = helpballoon!.getContext('2d');
         w = 16 * window.devicePixelRatio * scaleMultiplier
-            + getStringSize(ctx, 'bold ' + fontSize + 'px ' + window.Settings.paletteBalloonFont, label).width;
+            + getStringSize(ctx, 'bold ' + fontSize + 'px ' + window.Settings!.paletteBalloonFont, label).width;
         if (w < 36 * scaleMultiplier) {
             w = 36 * scaleMultiplier;
         }
         var dx = (globalx(obj) + (obj.offsetWidth / 2)) * window.devicePixelRatio - (w / 2);
         setCanvasSize(helpballoon, w, h);
-        setProps(helpballoon.style, {
+        setProps(helpballoon!.style, {
             position: 'absolute',
             webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
                 + 'scale(' + (1 / window.devicePixelRatio) + ') translate(' + (dx + (w / 2)) + 'px, ' + (h / 2) + 'px)'
         });
-        Palette.drawBalloon(helpballoon.getContext('2d'), w, h);
-        writeText(ctx, 'bold ' + fontSize + 'px ' + window.Settings.paletteBalloonFont, 'white', label, 21 * window.devicePixelRatio * scaleMultiplier, 8 * window.devicePixelRatio * scaleMultiplier);
+        Palette.drawBalloon(helpballoon!.getContext('2d'), w, h);
+        writeText(ctx, 'bold ' + fontSize + 'px ' + window.Settings!.paletteBalloonFont, 'white', label, 21 * window.devicePixelRatio * scaleMultiplier, 8 * window.devicePixelRatio * scaleMultiplier);
     }
 
     static hide () {
-        const blocksPaletteFirst = gn('blockspalette').childNodes[0] as HTMLElement;
-        const blocksPaletteSecond = gn('blockspalette').childNodes[1] as HTMLElement;
+        const blocksPaletteFirst = gn('blockspalette')!.childNodes[0] as HTMLElement;
+        const blocksPaletteSecond = gn('blockspalette')!.childNodes[1] as HTMLElement;
         blocksPaletteFirst.style.display = 'none';
         blocksPaletteSecond.style.display = 'none';
     }
 
     static show () {
-        const showFirst = gn('blockspalette').childNodes[0] as HTMLElement;
-        const showSecond = gn('blockspalette').childNodes[1] as HTMLElement;
+        const showFirst = gn('blockspalette')!.childNodes[0] as HTMLElement;
+        const showSecond = gn('blockspalette')!.childNodes[1] as HTMLElement;
         showFirst.style.display = 'inline-block';
         showSecond.style.display = 'inline-block';
     }
@@ -240,10 +240,10 @@ export default class Palette {
             clearTimeout(timeoutid);
         }
         if (helpballoon) {
-            helpballoon.parentNode.removeChild(helpballoon);
+            helpballoon.parentNode!.removeChild(helpballoon);
         }
-        helpballoon = undefined;
-        timeoutid = undefined;
+        helpballoon = null;
+        timeoutid = null;
     }
 
     static drawBalloon (ctx, w, h) {
@@ -294,7 +294,7 @@ export default class Palette {
     }
 
     static getBlockNamed (str) {
-        var pal = gn('palette');
+        var pal = gn('palette')!;
         for (var i = 0; i < pal.childElementCount; i++) {
             const owner = pal.childNodes[i].owner as Block;
             if (owner.blocktype == str) {
@@ -336,8 +336,8 @@ export default class Palette {
     }
 
     static getPaletteSize () {
-        var first = gn('palette').childNodes[0] as HTMLElement;
-        var last = gn('palette').childNodes[gn('palette').childElementCount - 1] as HTMLElement;
+        var first = gn('palette')!.childNodes[0] as HTMLElement;
+        var last = gn('palette')!.childNodes[gn('palette')!.childElementCount - 1] as HTMLElement;
         return last.offsetLeft + last.offsetWidth - first.offsetLeft;
     }
 
@@ -354,7 +354,7 @@ export default class Palette {
     }
 
     static selectCategory (n) {
-        var div = gn('selectors');
+        var div = gn('selectors')!;
         // set the icons for text or sprite
         numcat = n;
         var currentSel = div.childNodes[n + 1];
@@ -365,8 +365,8 @@ export default class Palette {
             selFirst.style.visibility = (sel.index != n) ? 'visible' : 'hidden';
             selSecond.style.visibility = (sel.index == n) ? 'visible' : 'hidden';
         }
-        var pal = gn('palette');
-        gn('blockspalette').style.background = (currentSel as HTMLElement).bkg;
+        var pal = gn('palette')!;
+        gn('blockspalette')!.style.background = (currentSel as HTMLElement).bkg!;
         while (pal.childElementCount > 0) {
             pal.removeChild(pal.childNodes[0]);
         }
@@ -382,7 +382,7 @@ export default class Palette {
                 var newb = Palette.newScaledBlock(pal, list[k],
                     ((list[k] == 'repeat') ? 0.65 * scaleMultiplier : blockscale), dx, blockdy);
                 newb.lift();
-                dx += betweenblocks;
+                dx += betweenblocks!;
             }
         }
         dx += 30;
@@ -405,7 +405,7 @@ export default class Palette {
 
     static showSelectors (b) {
         var n = numcat;
-        var div = gn('selectors');
+        var div = gn('selectors')!;
         for (var i = 0; i < div.childElementCount; i++) {
             var sel = div.childNodes[i] as HTMLElement;
             const selFirst = sel.childNodes[0] as HTMLElement;
@@ -420,8 +420,8 @@ export default class Palette {
     }
 
     static addPagesBlocks (dx) {
-        var pal = gn('palette');
-        var spec = BlockSpecs.defs.gotopage;
+        var pal = gn('palette')!;
+        var spec = BlockSpecs.defs.gotopage as unknown[];
         for (var i = 0; i < ScratchJr.stage.pages.length; i++) {
             if (ScratchJr.stage.pages[i].id == ScratchJr.stage.currentPage.id) {
                 continue;
@@ -429,12 +429,12 @@ export default class Palette {
             spec[4] = i + 1;
             var newb = Palette.newScaledBlock(pal, 'gotopage', blockscale, dx, blockdy);
             newb.lift();
-            dx += betweenblocks + 5;
+            dx += betweenblocks! + 5;
         }
     }
 
     static addSoundsBlocks (dx) {
-        var pal = gn('palette');
+        var pal = gn('palette')!;
         var spr = ScratchJr.getSprite() as Sprite;
         var list = spr ? spr.sounds : [];
         var newb;
@@ -444,7 +444,7 @@ export default class Palette {
             var val = (MediaLib.sounds.indexOf(list[i]) < 0) ? i : list[i];
             newb = Palette.addBlockSound(pal, op, val, dx, blockdy);
             newb.lift();
-            dx += betweenblocks;
+            dx += betweenblocks!;
         }
         if ((list.length < 6) && Record.available && newb) {
             Palette.drawRecordSound(newb.div.offsetWidth, newb.div.offsetHeight, dx);
@@ -452,7 +452,7 @@ export default class Palette {
     }
 
     static addBlockSound (parent, op, val, dx, dy) {
-        var spec = BlockSpecs.defs[op];
+        var spec = BlockSpecs.defs[op] as unknown[];
         var old = spec[4];
         spec[4] = val;
         var newb = Palette.newScaledBlock(parent, op, blockscale, dx, dy);
@@ -461,7 +461,7 @@ export default class Palette {
     }
 
     static drawRecordSound (w, h, dx) {
-        var pal = gn('palette');
+        var pal = gn('palette')!;
         var div = newDiv(pal, dx, 0, w, h, {
             top: (6 * scaleMultiplier) + 'px'
         });
@@ -494,7 +494,7 @@ export default class Palette {
     }
 
     static inStatesPalette () {
-        var div = gn('selectors');
+        var div = gn('selectors')!;
         var sel = div.childNodes[div.childElementCount - 1];
         return (sel.childNodes[0] as HTMLElement).style.visibility == 'hidden';
     }
@@ -508,7 +508,7 @@ export default class Palette {
             pt = null;
         }
         var box = new Rectangle(el.left / scale, el.top / scale, el.offsetWidth / scale, el.offsetHeight / scale);
-        var box2 = new Rectangle(globalx(gn('palette')), globaly(gn('palette')), gn('palette').offsetWidth, gn('palette').offsetHeight);
+        var box2 = new Rectangle(globalx(gn('palette')!), globaly(gn('palette')!), gn('palette')!.offsetWidth, gn('palette')!.offsetHeight);
         if ((sc.flowCaret != null) && ((sc.flowCaret.prev != null)
             || (sc.flowCaret.next != null) || (sc.flowCaret.inside != null))) {
             return 'scripts';
@@ -519,16 +519,16 @@ export default class Palette {
         if (pt && box2.hitRect(pt)) {
             return 'palette';
         }
-        if (Palette.overlapsWith(gn('blockspalette'), box)) { /*bugfix - returning to blocks palette should delete block*/
+        if (Palette.overlapsWith(gn('blockspalette')!, box)) { /*bugfix - returning to blocks palette should delete block*/
             return 'palette';
         }
-        if (Palette.overlapsWith(gn('scripts'), box)) {
+        if (Palette.overlapsWith(gn('scripts')!, box)) {
             return 'scripts';
         }
-        if (Palette.overlapsWith(gn('library'), box)) {
+        if (Palette.overlapsWith(gn('library')!, box)) {
             return 'library';
         }
-        if (Palette.overlapsWith(gn('pages'), box)) {
+        if (Palette.overlapsWith(gn('pages')!, box)) {
             return 'pages';
         }
         return null;
@@ -603,7 +603,7 @@ export default class Palette {
             ScriptsPane.blockDropped(sc, dx, dy);
             const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
             var spr = activeScripts.spr;
-            const parentPage = spr.div.parentNode.owner as Page;
+            const parentPage = spr.div.parentNode!.owner as Page;
             Undo.record({
                 action: 'scripts',
                 where: parentPage.id,

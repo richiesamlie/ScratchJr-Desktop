@@ -17,7 +17,7 @@ let path;
 let camera;
 let database = 'projects';
 let mediacounter = 0;
-let tabletInterface = null;
+let tabletInterface: TabletBridge | null = null;
 
 export default class iOS {
     // Referenced by ScratchJr.stopServer but never defined anywhere in the
@@ -51,7 +51,7 @@ export default class iOS {
 
         // Android device
         if (typeof AndroidInterface !== 'undefined') {
-            tabletInterface = AndroidInterface;
+            tabletInterface = AndroidInterface as unknown as TabletBridge;
             if (fcn) {
                 fcn();
             }
@@ -75,14 +75,14 @@ export default class iOS {
 
     // Database functions
     static async stmt(json, fcn) {
-        var result = await tabletInterface.database_stmt(JSON.stringify(json));
+        var result = await tabletInterface!.database_stmt(JSON.stringify(json));
         if (typeof (fcn) !== 'undefined') {
             fcn(result);
         }
     }
 
     static async query(json, fcn) {
-        var result = await tabletInterface.database_query(JSON.stringify(json));
+        var result = await tabletInterface!.database_query(JSON.stringify(json));
         if (typeof (fcn) !== 'undefined') {
             fcn(result);
         }
@@ -99,20 +99,20 @@ export default class iOS {
     // IO functions
 
     static async cleanassets(ft, fcn) {
-        await tabletInterface.io_cleanassets(ft); fcn();
+        await tabletInterface!.io_cleanassets(ft); fcn();
     }
 
     static async getmedia(file, fcn) {
         mediacounter++;
         var nextStep = async function (file, key, whenDone) {
-            var result = await tabletInterface.io_getmedialen(file, key);
+            var result = await tabletInterface!.io_getmedialen(file, key);
             iOS.processdata(key, 0, result, '', whenDone);
         };
         nextStep(file, mediacounter, fcn);
     }
 
     static async getmediadata(key, offset, len, fcn) {
-        var result = await tabletInterface.io_getmediadata(key, offset, len);
+        var result = await tabletInterface!.io_getmediadata(key, offset, len);
         if (fcn) {
             fcn(result);
         }
@@ -131,7 +131,7 @@ export default class iOS {
     }
 
     static async getsettings(fcn) {
-        var result = await tabletInterface.io_getsettings();
+        var result = await tabletInterface!.io_getsettings();
         if (fcn) {
             fcn(result);
         }
@@ -139,7 +139,7 @@ export default class iOS {
 
 	
     static async getmediadone(file, fcn?) {
-        var result = await tabletInterface.io_getmediadone(file);
+        var result = await tabletInterface!.io_getmediadone(file);
         if (fcn) {
             fcn(result);
         }
@@ -148,35 +148,35 @@ export default class iOS {
 	
 
     static async setmedia(str, ext, fcn) {
-        var result = await tabletInterface.io_setmedia(str, ext);
+        var result = await tabletInterface!.io_setmedia(str, ext);
         if (fcn) {
             fcn(result);
         }
     }
 
     static async setmedianame(str, name, ext, fcn) {
-        var result = await tabletInterface.io_setmedianame(str, name, ext);
+        var result = await tabletInterface!.io_setmedianame(str, name, ext);
         if (fcn) {
             fcn(result);
         }
     }
 
     static async getmd5(str, fcn) {
-        var result = await tabletInterface.io_getmd5(str);
+        var result = await tabletInterface!.io_getmd5(str);
         if (fcn) {
             fcn(result);
         }
     }
 
     static async remove(str, fcn) {
-        var result = await tabletInterface.io_remove(str);
+        var result = await tabletInterface!.io_remove(str);
         if (fcn) {
             fcn(result);
         }
     }
 
     static async getfile(str, fcn) {
-        var result = await tabletInterface.io_getfile(str);
+        var result = await tabletInterface!.io_getfile(str);
         if (fcn) {
             fcn(result);
         }
@@ -184,14 +184,14 @@ export default class iOS {
 
 		
 	static async gettextresource(filename, fcn) {
-        var result = await tabletInterface.io_gettextresource(filename);
+        var result = await tabletInterface!.io_gettextresource(filename);
         if (fcn) {
             fcn(result);
         }
     }
 
     static async setfile(name, str, fcn) {
-        var result = await tabletInterface.io_setfile(name, btoa(str));
+        var result = await tabletInterface!.io_setfile(name, btoa(str));
         if (fcn) {
             fcn(result);
         }
@@ -200,21 +200,21 @@ export default class iOS {
     // Sound functions
 
     static registerSound (dir, name, fcn) {
-        var result = tabletInterface.io_registersound(dir, name);
+        var result = tabletInterface!.io_registersound(dir, name);
         if (fcn) {
             fcn(result);
         }
     }
 
     static playSound (name, fcn?) {
-        var result = tabletInterface.io_playsound(name);
+        var result = tabletInterface!.io_playsound(name);
         if (fcn) {
             fcn(result);
         }
     }
 
     static stopSound (name, fcn?) {
-        var result = tabletInterface.io_stopsound(name);
+        var result = tabletInterface!.io_stopsound(name);
         if (fcn) {
             fcn(result);
         }
@@ -227,42 +227,42 @@ export default class iOS {
     }
 
     static sndrecord (fcn) {
-        var result = tabletInterface.recordsound_recordstart();
+        var result = tabletInterface!.recordsound_recordstart();
         if (fcn) {
             fcn(result);
         }
     }
 
     static recordstop (fcn) {
-        var result = tabletInterface.recordsound_recordstop();
+        var result = tabletInterface!.recordsound_recordstop();
         if (fcn) {
             fcn(result);
         }
     }
 
     static volume (fcn, err?) {
-        var result = tabletInterface.recordsound_volume();
+        var result = tabletInterface!.recordsound_volume();
         if (fcn) {
             fcn(result);
         }
     }
 
     static startplay (fcn) {
-        var result = tabletInterface.recordsound_startplay();
+        var result = tabletInterface!.recordsound_startplay();
         if (fcn) {
             fcn(result);
         }
     }
 
     static stopplay (fcn) {
-        var result = tabletInterface.recordsound_stopplay();
+        var result = tabletInterface!.recordsound_stopplay();
         if (fcn) {
             fcn(result);
         }
     }
 
     static recorddisappear (b, fcn) {
-        var result = tabletInterface.recordsound_recordclose(b);
+        var result = tabletInterface!.recordsound_recordclose(b);
         if (fcn) {
             fcn(result);
         }
@@ -271,45 +271,45 @@ export default class iOS {
     // Record state
     static askpermission () {
         if (isiOS) {
-            tabletInterface.askForPermission();
+            tabletInterface!.askForPermission();
         }
     }
 
     // camera functions
 
     static hascamera () {
-        camera = tabletInterface.scratchjr_cameracheck();
+        camera = tabletInterface!.scratchjr_cameracheck();
     }
 
     static startfeed (data, fcn) {
         var str = JSON.stringify(data);
-        var result = tabletInterface.scratchjr_startfeed(str);
+        var result = tabletInterface!.scratchjr_startfeed(str);
         if (fcn) {
             fcn(result);
         }
     }
 
     static stopfeed (fcn?) {
-        var result = tabletInterface.scratchjr_stopfeed();
+        var result = tabletInterface!.scratchjr_stopfeed();
         if (fcn) {
             fcn(result);
         }
     }
 
     static choosecamera (mode, fcn) {
-        var result = tabletInterface.scratchjr_choosecamera(mode);
+        var result = tabletInterface!.scratchjr_choosecamera(mode);
         if (fcn) {
             fcn(result);
         }
     }
 
     static captureimage (fcn) {
-        tabletInterface.scratchjr_captureimage(fcn);
+        tabletInterface!.scratchjr_captureimage(fcn);
     }
 
     static hidesplash (fcn) {
         if (isiOS) {
-            tabletInterface.hideSplash();
+            tabletInterface!.hideSplash();
         }
         if (fcn) {
             fcn();
@@ -344,7 +344,10 @@ export default class iOS {
     // b64data: base-64 encoded .SJR file to share
 
     static sendSjrToShareDialog (fileName, emailSubject, emailBody, shareType, b64data) {
-        tabletInterface.sendSjrUsingShareDialog(fileName, emailSubject, emailBody, shareType, b64data);
+        const bridge = tabletInterface as unknown as {
+            sendSjrUsingShareDialog: (fileName: string, emailSubject: string, emailBody: string, shareType: string, b64data: string) => void;
+        };
+        bridge.sendSjrUsingShareDialog(fileName, emailSubject, emailBody, shareType, b64data);
     }
 
     // Called on the Objective-C side.  The argument is a base64-encoded .SJR file,
@@ -354,7 +357,7 @@ export default class iOS {
             IO.loadProjectFromSjr(b64data);
         } catch (err) {
             var errorMessage = 'Couldn\'t load share -- project data corrupted. ' + (err as Error).message;
-            Alert.open(gn('frame'), gn('frame'), errorMessage, '#ff0000');
+            Alert.open(gn('frame')!, gn('frame')!, errorMessage, '#ff0000');
             console.log(err); // eslint-disable-line no-console
             return 0;
         }
@@ -364,7 +367,7 @@ export default class iOS {
     // Name of the device/iPad to display on the sharing dialog page
     // fcn is called with the device name as an arg
     static deviceName (fcn) {
-        fcn(tabletInterface.deviceName());
+        fcn(tabletInterface!.deviceName());
     }
 
     static analyticsEvent (category, action, label?, value?) {
@@ -372,7 +375,7 @@ export default class iOS {
             value = 1;
         }
         let usageLabel = label ? AppUsage.currentUsage + label : AppUsage.currentUsage;
-        tabletInterface.analyticsEvent(category, action, usageLabel, value);
+        tabletInterface!.analyticsEvent(category, action, usageLabel, value);
     }
 
     // Web Wiew delegate call backs

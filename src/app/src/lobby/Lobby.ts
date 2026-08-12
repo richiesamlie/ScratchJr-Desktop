@@ -43,47 +43,47 @@ export default class Lobby {
         ScratchAudio.init();
         Lobby.setPage(place ? place : 'home');
 
-        if (window.Settings.settingsPageDisabled) {
-            gn('settings').style.visibility = 'hidden';
+        if (window.Settings!.settingsPageDisabled) {
+            gn('settings')!.style.visibility = 'hidden';
         }
 
-        gn('hometab').onmousedown = function () {
-            if (gn('hometab').className != 'home on') {
+        gn('hometab')!.onmousedown = function () {
+            if (gn('hometab')!.className != 'home on') {
                 Lobby.setPage('home');
             }
         };
-        gn('helptab').onmousedown = function () {
-            if (gn('helptab').className != 'help on') {
+        gn('helptab')!.onmousedown = function () {
+            if (gn('helptab')!.className != 'help on') {
                 Lobby.setPage('help');
             }
         };
-        gn('booktab').onmousedown = function () {
-            if (gn('booktab').className != 'book on') {
+        gn('booktab')!.onmousedown = function () {
+            if (gn('booktab')!.className != 'book on') {
                 Lobby.setPage('book');
             }
         };
-        gn('geartab').onmousedown = function () {
-            if (gn('geartab').className != 'gear on') {
+        gn('geartab')!.onmousedown = function () {
+            if (gn('geartab')!.className != 'gear on') {
                 Lobby.setPage('gear');
             }
         };
-        gn('abouttab').onmousedown = function () {
-            if (gn('abouttab').className != 'tab on') {
+        gn('abouttab')!.onmousedown = function () {
+            if (gn('abouttab')!.className != 'tab on') {
                 Lobby.setSubMenu('about');
             }
         };
-        gn('interfacetab').onmousedown = function () {
-            if (gn('interfacetab').className != 'tab on') {
+        gn('interfacetab')!.onmousedown = function () {
+            if (gn('interfacetab')!.className != 'tab on') {
                 Lobby.setSubMenu('interface');
             }
         };
-        gn('painttab').onmousedown = function () {
-            if (gn('painttab').className != 'tab on') {
+        gn('painttab')!.onmousedown = function () {
+            if (gn('painttab')!.className != 'tab on') {
                 Lobby.setSubMenu('paint');
             }
         };
-        gn('blockstab').onmousedown = function () {
-            if (gn('blockstab').className != 'tab2 on') {
+        gn('blockstab')!.onmousedown = function () {
+            if (gn('blockstab')!.className != 'tab2 on') {
                 Lobby.setSubMenu('blocks');
             }
         };
@@ -96,11 +96,11 @@ export default class Lobby {
         if (busy) {
             return;
         }
-        if (gn('hometab').className == 'home on') {
+        if (gn('hometab')!.className == 'home on') {
             var doNext = function (page) {
                 Lobby.changePage(page);
             };
-            iOS.setfile('homescroll.sjr', gn('wrapc').scrollTop, function () {
+            iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
                 doNext(page);
             });
         } else {
@@ -111,7 +111,7 @@ export default class Lobby {
     static changePage (page) {
         Lobby.selectButton(page);
         document.documentElement.scrollTop = 0;
-        var div = gn('wrapc');
+        var div = gn('wrapc')!;
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
         }
@@ -140,25 +140,25 @@ export default class Lobby {
     }
 
     static loadProjects (p) {
-        document.onmousemove = undefined;
-        gn('topsection').className = 'topsection home';
-        gn('tabheader').textContent = Localization.localize('MY_PROJECTS');
-        gn('subtitle').textContent = '';
-        gn('footer').className = 'footer off';
-        gn('wrapc').scrollTop = 0;
-        gn('wrapc').className = 'contentwrap scroll';
+        document.onmousemove = null;
+        gn('topsection')!.className = 'topsection home';
+        gn('tabheader')!.textContent = Localization.localize('MY_PROJECTS');
+        gn('subtitle')!.textContent = '';
+        gn('footer')!.className = 'footer off';
+        gn('wrapc')!.scrollTop = 0;
+        gn('wrapc')!.className = 'contentwrap scroll';
         var div = newHTML('div', 'htmlcontents home', p);
         div.setAttribute('id', 'htmlcontents');
         Home.init();
     }
 
     static loadSamples (p) {
-        gn('topsection').className = 'topsection help';
-        gn('tabheader').textContent = Localization.localize('QUICK_INTRO');
-        gn('subtitle').textContent = Localization.localize('SAMPLE_PROJECTS');
-        gn('footer').className = 'footer off';
-        gn('wrapc').scrollTop = 0;
-        gn('wrapc').className = 'contentwrap noscroll';
+        gn('topsection')!.className = 'topsection help';
+        gn('tabheader')!.textContent = Localization.localize('QUICK_INTRO');
+        gn('subtitle')!.textContent = Localization.localize('SAMPLE_PROJECTS');
+        gn('footer')!.className = 'footer off';
+        gn('wrapc')!.scrollTop = 0;
+        gn('wrapc')!.className = 'contentwrap noscroll';
         var div = newHTML('div', 'htmlcontents help', p);
         div.setAttribute('id', 'htmlcontents');
         document.onmousemove = function (e) {
@@ -168,8 +168,8 @@ export default class Lobby {
     }
 
     static loadGuide (p) {
-        gn('topsection').className = 'topsection book';
-        gn('footer').className = 'footer on';
+        gn('topsection')!.className = 'topsection book';
+        gn('footer')!.className = 'footer on';
         var div = newHTML('div', 'htmlcontents home', p);
         div.setAttribute('id', 'htmlcontents');
         setTimeout(function () {
@@ -179,10 +179,10 @@ export default class Lobby {
 
     static loadSettings (p) {
         // loadProjects without the header
-        gn('topsection').className = 'topsection book';
-        gn('footer').className = 'footer off';
-        gn('wrapc').scrollTop = 0;
-        gn('wrapc').className = 'contentwrap scroll';
+        gn('topsection')!.className = 'topsection book';
+        gn('footer')!.className = 'footer off';
+        gn('wrapc')!.scrollTop = 0;
+        gn('wrapc')!.className = 'contentwrap scroll';
         var div = newHTML('div', 'htmlcontents settings', p);
         div.setAttribute('id', 'htmlcontents');
 
@@ -193,9 +193,9 @@ export default class Lobby {
         var languageButtons = newHTML('div', 'languagebuttons', div);
 
         var languageButton;
-        for (var l in window.Settings.supportedLocales) {
+        for (var l in window.Settings!.supportedLocales) {
             var selected = '';
-            if (window.Settings.supportedLocales[l] == Localization.currentLocale) {
+            if (window.Settings!.supportedLocales[l] == Localization.currentLocale) {
                 selected = ' selected';
             }
             languageButton = newHTML('div', 'localizationselect' + selected, languageButtons);
@@ -203,7 +203,7 @@ export default class Lobby {
 
             languageButton.onmousedown = function (e) {
                 ScratchAudio.sndFX('tap.wav');
-                let newLocale = window.Settings.supportedLocales[e.target.textContent];
+                let newLocale = window.Settings!.supportedLocales[e.target.textContent];
                 Cookie.set('localization', newLocale);
                 iOS.analyticsEvent('lobby', 'language_changed', newLocale);
                 window.location.href = '?place=gear';
@@ -215,13 +215,13 @@ export default class Lobby {
         if (busy) {
             return;
         }
-        document.onmousemove = undefined;
+        document.onmousemove = null;
         busy = true;
         ScratchAudio.sndFX('tap.wav');
         Lobby.selectSubButton(page);
         document.documentElement.scrollTop = 0;
-        gn('wrapc').scrollTop = 0;
-        var div = gn('wrapc');
+        gn('wrapc')!.scrollTop = 0;
+        var div = gn('wrapc')!;
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
         }
@@ -259,7 +259,7 @@ export default class Lobby {
     static selectSubButton (str) {
         var list = ['about', 'interface', 'paint', 'blocks'];
         for (var i = 0; i < list.length; i++) {
-            var kid = gn(list[i] + 'tab');
+            var kid = gn(list[i] + 'tab')!;
             var cls = kid.className.split(' ')[0];
             kid.className = cls + ((list[i] == str) ? ' on' : ' off');
         }
@@ -269,9 +269,9 @@ export default class Lobby {
         var list = ['home', 'help', 'book', 'gear'];
         for (var i = 0; i < list.length; i++) {
             if (str == list[i]) {
-                gn(list[i] + 'tab').className = list[i] + ' on';
+                gn(list[i] + 'tab')!.className = list[i] + ' on';
             } else {
-                gn(list[i] + 'tab').className = list[i] + ' off';
+                gn(list[i] + 'tab')!.className = list[i] + ' off';
             }
         }
     }
@@ -283,12 +283,12 @@ export default class Lobby {
 	// loading the help pages into a div instead.
 	static async loadLink (p, url, css, css2) {
         document.documentElement.scrollTop = 0;
-        gn('wrapc').scrollTop = 0;
-        gn('wrapc').className = css;
+        gn('wrapc')!.scrollTop = 0;
+        gn('wrapc')!.className = css;
         var div = newHTML('div', 'htmlsubpagecontents', p);
         
         div.setAttribute('id', 'htmlsubpagecontents');
-        gn('htmlsubpagecontents').className = css2;
+        gn('htmlsubpagecontents')!.className = css2;
         //gn('htmlcontents').src = url;
         
         // use the id of the element with class=inappSubpage
@@ -311,7 +311,7 @@ export default class Lobby {
             clearTimeout(errorTimer);
         }
         errorTimer = undefined;
-        var wc = gn('wrapc');
+        var wc = gn('wrapc')!;
         while (wc.childElementCount > 0) {
             wc.removeChild(wc.childNodes[0]);
         }
@@ -324,7 +324,7 @@ export default class Lobby {
     }
 
     static missing (page, p) {
-        gn('wrapc').className = 'contentwrap scroll';
+        gn('wrapc')!.className = 'contentwrap scroll';
         var div = newHTML('div', 'htmlcontents', p);
         div.setAttribute('id', 'htmlcontents');
         div = newHTML('div', 'errormsg', div);

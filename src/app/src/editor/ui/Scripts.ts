@@ -23,7 +23,7 @@ export default class Scripts {
         this.flowCaret = null;
         this.spr = spr;
         this.dragList = [];
-        var dc = gn('scriptscontainer');
+        var dc = gn('scriptscontainer')!;
         this.sc = newHTML('div', 'look', dc);
         setCanvasSize(this.sc, dc.offsetWidth, dc.offsetHeight);
         this.sc.setAttribute('id', spr.id + '_scripts');
@@ -123,7 +123,7 @@ export default class Scripts {
         b.owner.moveBlock(dx, dy);
         for (var i = 1; i < this.dragList.length; i++) {
             var piece = this.dragList[i].div;
-            piece.parentNode.removeChild(piece);
+            piece.parentNode!.removeChild(piece);
             this.sc.appendChild(piece);
         //   piece.owner.drop();
         }
@@ -255,12 +255,12 @@ export default class Scripts {
         }
         var you = choice[0];
         var yourn = choice[1];
-        var bestxy;
+        var bestxy: number[];
         if (me.cShape && (place == 1)) {
             var res = this.getDockDxDy(you, yourn, me, place);
-            bestxy = [res[0], res[1]];
+            bestxy = [res![0], res![1]];
         } else {
-            bestxy = this.getDockDxDy(you, yourn, me, place);
+            bestxy = this.getDockDxDy(you, yourn, me, place)!;
         }
         if (me.isCaret) {
             me.div.style.visibility = 'visible';
@@ -272,9 +272,9 @@ export default class Scripts {
     }
 
     available (myn, me, drag) {
-        var thisxy = null;
-        var res = [];
-        var you = null;
+        var thisxy: number[] | null = null;
+        var res: Array<[Block, number, number]> = [];
+        var you: Block | null = null;
         var allblocks = this.getBlocks();
         for (var i = 0; i < allblocks.length; i++) {
             you = allblocks[i];
@@ -392,7 +392,7 @@ export default class Scripts {
     }
 
     adjustPos (me, myn, you, yourn) {
-        var bestxy = this.getDockDxDy(you, yourn, me, myn);
+        var bestxy = this.getDockDxDy(you, yourn, me, myn)!;
         me.moveBlock(me.div.left + bestxy[0], me.div.top + bestxy[1]);
     }
 
@@ -423,7 +423,7 @@ export default class Scripts {
     }
 
     getBlocks () {
-        var res = [];
+        var res: Block[] = [];
         var sc = this.sc;
         for (var i = 0; i < sc.childElementCount; i++) {
             var b = sc.childNodes[i].owner;
@@ -436,7 +436,7 @@ export default class Scripts {
             if ((b as Block).isCaret) {
                 continue;
             }
-            res.push(b);
+            res.push(b as Block);
         }
         return res;
     }
@@ -445,7 +445,7 @@ export default class Scripts {
         if ((b as Block).type != 'block') {
             return [];
         }
-        var res = [];
+        var res: Block[] = [];
         return this.findingGroup(res, b);
     }
 
@@ -462,7 +462,7 @@ export default class Scripts {
 
     gettopblocks () {
         var list = this.getBlocks();
-        var res = [];
+        var res: Block[] = [];
         for (var n = 0; n < list.length; n++) {
             if ((list[n].prev == null) && !list[n].isReporter) {
                 res.push(list[n]);
@@ -477,17 +477,17 @@ export default class Scripts {
     // A version of gettopblocks that also returns strips which
     // may be currently starting with a caret and blocks in the dragDiv
     getEncodableBlocks () {
-        var list = [];
+        var list: Block[] = [];
         var sc = this.sc;
         for (var i = 0; i < sc.childElementCount; i++){
             var b = sc.childNodes[i].owner;
             if (!b || (b as Block).type != 'block') {
                 continue;
             }
-            list.push(b);
+            list.push(b as Block);
         }
 
-        var res = [];
+        var res: Block[] = [];
         for (var n = 0; n < list.length; n++) {
             if (list[n].prev == null) res.push(list[n]);
         }
@@ -502,7 +502,7 @@ export default class Scripts {
     }
 
     getBlocksType (list) {
-        var res = [];
+        var res: Block[] = [];
         var blocks = this.getBlocks();
         for (var i = 0; i < list.length; i++) {
             var key = list[i];
@@ -572,9 +572,9 @@ export default class Scripts {
         var before = this.flowCaret.prev;
         var after = this.flowCaret.next;
         var inside = this.flowCaret.inside;
-        this.flowCaret.prev = null;
-        this.flowCaret.next = null;
-        this.flowCaret.inside = null;
+        this.flowCaret.prev = null as unknown as Block;
+        this.flowCaret.next = null as unknown as Block;
+        this.flowCaret.inside = null as unknown as Block;
         var n;
         if (after != null) {
             n = after.getMyDockNum(this.flowCaret);
@@ -632,13 +632,13 @@ export default class Scripts {
             if (b.blocktype == undefined) {
                 continue;
             }
-            b.div.parentNode.removeChild(b.div);
+            b.div.parentNode!.removeChild(b.div);
         }
     }
 
     recreateStrip (list) {
-        var res = [];
-        var b = null;
+        var res: Block[] = [];
+        var b: Block | null = null;
         var loops = ['repeat'];
         for (var i = 0; i < list.length; i++) {
             if (!BlockSpecs.defs[list[i][0]]) {

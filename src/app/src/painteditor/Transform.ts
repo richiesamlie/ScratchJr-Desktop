@@ -142,7 +142,7 @@ export default class Transform {
                 var trnsf = tl.getItem(i);
                 tl.removeItem(i);
                 if (elem.nodeName == 'image') {
-                    var clip = gn('clip_' + elem.id);
+                    var clip = gn('clip_' + elem.id)!;
                     if (clip) {
                         Transform.translateTo(clip.childNodes[0], trnsf);
                     }
@@ -346,7 +346,7 @@ export default class Transform {
     static applyToCmds (shape, mtx) {
         var d = shape.getAttribute('d');
         var list = SVG2Canvas.getCommandList(d);
-        var plist = [];
+        var plist: (string | number)[][] = [];
         if (!list) {
             return;
         }
@@ -427,7 +427,7 @@ export default class Transform {
             node.setAttribute('x', pt.x);
             node.setAttribute('y', pt.y);
             if ((pname == 'image') && (Vector.len(imgdelta) > 0)) {
-                var clip = gn('pathmask_' + node.id);
+                var clip = gn('pathmask_' + node.id)!;
                 if (clip) {
                     if (clip.getAttribute('transform')) {
                         clip.removeAttribute('transform');

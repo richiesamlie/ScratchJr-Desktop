@@ -100,40 +100,40 @@ export default class SVGImage {
     static removeClip (img, keepmt?) {
         var imageid = img.getAttribute('id');
         var isbkg = imageid.indexOf('staticbkg') > -1;
-        var clip = gn('clip_' + imageid);
-        var group = gn('group_' + imageid);
-        var pathborder = gn('pathborder_' + imageid);
+        var clip = gn('clip_' + imageid)!;
+        var group = gn('group_' + imageid)!;
+        var pathborder = gn('pathborder_' + imageid)!;
         if (isbkg && !keepmt) {
             var path = clip.childNodes[0];
             (path as HTMLElement).id = 'staticbkg';
-            gn('layer1').appendChild(path);
+            gn('layer1')!.appendChild(path);
         } else {
             if (group) {
-                group.parentNode.removeChild(group);
+                group.parentNode!.removeChild(group);
             } else {
                 if (clip) {
-                    clip.parentNode.removeChild(clip);
+                    clip.parentNode!.removeChild(clip);
                 }
                 img.parentNode.removeChild(img);
             }
         }
         if (pathborder && !keepmt) {
-            pathborder.parentNode.removeChild(pathborder);
+            pathborder.parentNode!.removeChild(pathborder);
         }
     }
 
     static paint (img) {
         var imageid = img.getAttribute('id');
         var isbkg = img.id.indexOf('staticbkg') > -1;
-        var pathborder = gn('pathborder_' + imageid);
+        var pathborder = gn('pathborder_' + imageid)!;
         pathborder.setAttribute('id', isbkg ? 'staticbkg' : getIdFor('path'));
-        var clip = gn('clip_' + imageid);
-        var group = gn('group_' + imageid);
+        var clip = gn('clip_' + imageid)!;
+        var group = gn('group_' + imageid)!;
         if (group) {
-            group.parentNode.removeChild(group);
+            group.parentNode!.removeChild(group);
         } else {
             if (clip) {
-                clip.parentNode.removeChild(clip);
+                clip.parentNode!.removeChild(clip);
             }
             img.parentNode.removeChild(img);
         }
@@ -197,7 +197,7 @@ export default class SVGImage {
         }
         if (mt.nodeName == 'g') {
             var str = mt.id;
-            var elem = str.indexOf('group_image_') > -1 ? gn(str.substr(6, str.length)) : null;
+            var elem = str.indexOf('group_image_') > -1 ? gn(str.substr(6, str.length))! : null;
             return !elem ? null : (elem.tagName == 'image') ? elem : null;
         }
         if ((mt.id.indexOf('pathborder_image') < 0) && (mt.id.indexOf('pathmask_image') < 0)) {
@@ -206,7 +206,7 @@ export default class SVGImage {
         var imageid = (mt.id.indexOf('pathborder_image') < 0)
             ? mt.id.substring(String('pathmask_').length, mt.id.length)
             : mt.id.substring(String('pathborder_').length, mt.id.length);
-        return gn(imageid);
+        return gn(imageid)!;
     }
 
     static getPathMask (mt) {
@@ -214,16 +214,16 @@ export default class SVGImage {
             return null;
         }
         var imageid = mt.id.substring(String('pathborder_').length, mt.id.length);
-        return gn('pathmask_' + imageid);
+        return gn('pathmask_' + imageid)!;
     }
 
     static getPathBorder (mt) {
         if (mt.id.indexOf('image_') == 0) {
-            return gn('pathborder_' + mt.id);
+            return gn('pathborder_' + mt.id)!;
         }
         if (mt.id.indexOf('pathmask_') > -1) {
             var imageid = mt.id.substring(String('pathmask_').length, mt.id.length);
-            return gn('pathborder_' + imageid);
+            return gn('pathborder_' + imageid)!;
         }
         return mt;
     }
@@ -248,14 +248,14 @@ export default class SVGImage {
         function renderImage (img) {
             var cnv = document.createElement('canvas');
             setCanvasSize(cnv, Number(img.getAttribute('width')), Number(img.getAttribute('height')));
-            var ctx = cnv.getContext('2d');
+            var ctx = cnv.getContext('2d')!;
             ctx.drawImage(html5img, 0, 0);
             var imgdata = cnv.toDataURL('image/png');
             img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imgdata);
         }
 
         // Make the clip Path
-        var pathmask = SVGTools.getCopy(gn('pathmask_' + elem.id));
+        var pathmask = SVGTools.getCopy(gn('pathmask_' + elem.id)!);
         var maskattr = {
             'id': 'pathmask_' + imageid
         };
@@ -270,7 +270,7 @@ export default class SVGImage {
         clippath.appendChild(pathmask);
         img.setAttribute('clip-path', 'url(#clip_' + imageid + ')');
         g.appendChild(img);
-        var pathborder = SVGTools.getCopy(gn('pathborder_' + elem.id));
+        var pathborder = SVGTools.getCopy(gn('pathborder_' + elem.id)!);
         var borderattr = {
             'id': 'pathborder_' + imageid
         };

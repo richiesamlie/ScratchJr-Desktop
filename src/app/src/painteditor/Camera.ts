@@ -43,16 +43,16 @@ export default class Camera {
         var data: Record<string, unknown> = {};
         var x = Math.floor((viewbox.x + (viewbox.width / 2)) * Paint.currentZoom - (viewbox.width / 2));
         var y = Math.floor((viewbox.y + (viewbox.height / 2)) * Paint.currentZoom - (viewbox.height / 2));
-        data.x = globalx(gn('workspacebkg')) + x + gn('maincanvas').dx
-            + gn('maincanvas').cx - gn('maincanvas').cx * Paint.currentZoom;
-        data.y = globaly(gn('workspacebkg')) + y + gn('maincanvas').dy
-            + gn('maincanvas').cy - gn('maincanvas').cy * Paint.currentZoom;
+        data.x = globalx(gn('workspacebkg')!) + x + gn('maincanvas')!.dx!
+            + gn('maincanvas')!.cx! - gn('maincanvas')!.cx! * Paint.currentZoom;
+        data.y = globaly(gn('workspacebkg')!) + y + gn('maincanvas')!.dy!
+            + gn('maincanvas')!.cy! - gn('maincanvas')!.cy! * Paint.currentZoom;
         data.width = viewbox.width;
         data.height = viewbox.height;
         data.scale = Paint.currentZoom;
         data.devicePixelRatio = devicePixelRatio;
-        data.mx = globalx(gn('workspacebkg')) + gn('maincanvas').dx;
-        data.my = globaly(gn('workspacebkg')) + gn('maincanvas').dy;
+        data.mx = globalx(gn('workspacebkg')!) + gn('maincanvas')!.dx!;
+        data.my = globaly(gn('workspacebkg')!) + gn('maincanvas')!.dy!;
         data.mw = Paint.workspaceWidth;
         data.mh = Paint.workspaceHeight;
         data.image = mask.toDataURL('image/png');
@@ -63,7 +63,7 @@ export default class Camera {
     static prepareForLandscapeMode (cnv) {
         var result = document.createElement('canvas');
         setCanvasSize(result, cnv.height, cnv.width);
-        var finalctx = result.getContext('2d');
+        var finalctx = result.getContext('2d')!;
         var min = Math.min(cnv.width, cnv.height);
         var max = Math.max(cnv.width, cnv.height);
         var delta = (max - min) / 2;
@@ -119,7 +119,7 @@ export default class Camera {
         // draw background
         var w, h;
         if (isAndroid) {
-            var mainCanvas = gn('maincanvas');
+            var mainCanvas = gn('maincanvas')!;
             var mainCanvasRect = mainCanvas.getBoundingClientRect();
             w = mainCanvasRect.width;
             h = mainCanvasRect.height;
@@ -129,19 +129,19 @@ export default class Camera {
         }
         var cnv = document.createElement('canvas');
         setCanvasSize(cnv, w, h);
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         ctx.fillStyle = ScratchJr.stagecolor;
         ctx.fillRect(0, 0, cnv.width, cnv.height);
         if (isAndroid) {
             ctx.save();
             ctx.scale(Paint.currentZoom, Paint.currentZoom);
         }
-        SVG2Canvas.drawImage(gn('paintgrid'), ctx);
+        SVG2Canvas.drawImage(gn('paintgrid')!, ctx);
 
         var isgroup = (elem.parentNode && (elem.parentNode.id != 'layer1'));
-        var index = (isgroup ? Layer.groupStartsAt(gn('layer1'), elem.parentNode)
-            : Layer.groupStartsAt(gn('layer1'), elem));
-        Camera.drawLayers(gn('layer1'), ctx, 0, index);
+        var index = (isgroup ? Layer.groupStartsAt(gn('layer1')!, elem.parentNode)
+            : Layer.groupStartsAt(gn('layer1')!, elem));
+        Camera.drawLayers(gn('layer1')!, ctx, 0, index);
         let localindex;
         
         if (isgroup) {
@@ -152,7 +152,7 @@ export default class Camera {
         if (isgroup) {
             Camera.drawLayers(elem.parentNode, ctx, localindex + 1, elem.parentNode.childElementCount);
         }
-        Camera.drawLayers(gn('layer1'), ctx, index + 1, gn('layer1').childElementCount);
+        Camera.drawLayers(gn('layer1')!, ctx, index + 1, gn('layer1')!.childElementCount);
         if (isAndroid) {
             ctx.restore();
         }

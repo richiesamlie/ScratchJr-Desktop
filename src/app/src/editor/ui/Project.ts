@@ -13,12 +13,12 @@ import type Scripts from './Scripts';
 import {frame, gn, newHTML, scaleMultiplier, getIdFor,
     isAndroid, setProps, setCanvasSize} from '../../utils/lib';
 
-let metadata = undefined;
+let metadata: Record<string, unknown> | null = null;
 let mediaCount = -1;
 let saving = false;
-let interval = undefined;
+let interval: number | null = null;
 let pageid;
-let loadIcon = undefined;
+let loadIcon: HTMLImageElement | null = null;
 let error = false;
 let projectbarsize = 66;
 let mediaCountBase = 1;
@@ -92,7 +92,7 @@ export default class Project {
         var data = JSON.parse(str)[0];
         metadata = IO.parseProjectData(data);
         mediaCount = -1;
-        if (metadata.json) {
+        if (metadata!.json) {
             Project.loadData(metadata.json, doneProjectLoad);
         } else {
             mediaCount = 0;
@@ -106,9 +106,9 @@ export default class Project {
         }
         function doneProjectLoad () {
             // Clear gift flag
-            if ('id' in metadata) {
-                metadata.isgift = '0';
-                IO.setProjectIsGift(metadata);
+            if ('id' in metadata!) {
+                metadata!.isgift = '0';
+                IO.setProjectIsGift(metadata!);
             }
             Palette.selectCategory(1);
             // On Android 4.2, this comes up blank the first time, so try again in 100ms.
@@ -134,23 +134,23 @@ export default class Project {
         ScratchJr.log('Project init', ScratchJr.getTime(), 'sec');
         var bd = newHTML('div', 'modal-backdrop fade', frame.parentNode);
         bd.setAttribute('id', 'backdrop');
-        setProps(gn('backdrop').style, {
+        setProps(gn('backdrop')!.style, {
             display: 'none'
         });
         var modalOuter = newHTML('div', 'modal-outer', frame.parentNode);
         var modalMiddle = newHTML('div', 'modal-middle', modalOuter);
         var modal = newHTML('div', 'modal hide fade', modalMiddle);
         modal.setAttribute('id', 'modaldialog');
-        setProps(gn('modaldialog').style, {});
+        setProps(gn('modaldialog')!.style, {});
         var body = newHTML('div', 'modal-body', modal);
         body.setAttribute('id', 'modalbody');
         setProps(body.style, {
             zoom: scaleMultiplier
         });
-        if (loadIcon.complete) {
+        if (loadIcon!.complete) {
             Project.addFeedback();
         } else {
-            loadIcon.onload = function () {
+            loadIcon!.onload = function () {
                 Project.addFeedback();
             };
         }
@@ -158,7 +158,7 @@ export default class Project {
     }
 
     static addFeedback () {
-        var body = gn('modalbody');
+        var body = gn('modalbody')!;
         newHTML('div', 'loadscreenfill', body);
         newHTML('div', 'topfill', body);
         var cover = newHTML('div', 'loadscreencover', body);
@@ -172,28 +172,28 @@ export default class Project {
     }
 
     static setProgress (perc) {
-        if (!gn('progressbar')) {
+        if (!gn('progressbar')!) {
             return;
         }
         var h = projectbarsize - Math.round(projectbarsize * perc / 100);
         ScratchJr.log('setProgress', perc, h, mediaCount, mediaCountBase);
-        gn('progressbar').style.height = h + 'px';
+        gn('progressbar')!.style.height = h + 'px';
         if (h == 0) {
-            gn('progressbar2').style.height = '0px';
-            gn('topcover').style.background = '#F9A737';
+            gn('progressbar2')!.style.height = '0px';
+            gn('topcover')!.style.background = '#F9A737';
         }
 
     }
 
     static drawBlind () {
-        gn('backdrop').setAttribute('class', 'modal-backdrop fade in');
-        setProps(gn('backdrop').style, {
+        gn('backdrop')!.setAttribute('class', 'modal-backdrop fade in');
+        setProps(gn('backdrop')!.style, {
             display: 'block'
         });
-        setProps(gn('modaldialog').style, {
+        setProps(gn('modaldialog')!.style, {
             display: 'block'
         });
-        gn('modaldialog').setAttribute('class', 'modal fade in');
+        gn('modaldialog')!.setAttribute('class', 'modal fade in');
     }
 
     static loadwait (whenDone) {
@@ -239,12 +239,12 @@ export default class Project {
     }
 
     static liftCurtain () {
-        gn('backdrop').setAttribute('class', 'modal-backdrop fade');
-        setProps(gn('backdrop').style, {
+        gn('backdrop')!.setAttribute('class', 'modal-backdrop fade');
+        setProps(gn('backdrop')!.style, {
             display: 'none'
         });
-        gn('modaldialog').setAttribute('class', 'modal fade');
-        setProps(gn('modaldialog').style, {
+        gn('modaldialog')!.setAttribute('class', 'modal fade');
+        setProps(gn('modaldialog')!.style, {
             display: 'none'
         });
     }
@@ -282,11 +282,11 @@ export default class Project {
             var errorMessage = 'Error -- project data corrupted.';
 
             if (window.reloadDebug) {
-                document.write((e as Error).message + '\n' + metadata.json);
+                document.write((e as Error).message + '\n' + metadata!.json);
                 return;
             }
 
-            Alert.open(frame, gn('flip'), errorMessage, '#ff0000');
+            Alert.open(frame, gn('flip')!, errorMessage, '#ff0000');
             if (interval) {
                 window.clearInterval(interval);
             }
@@ -342,7 +342,7 @@ export default class Project {
 
     static substractCount () {
         mediaCount--;
-        if ((gn('backdrop').className != 'modal-backdrop fade in') || (mediaCountBase == 0)) {
+        if ((gn('backdrop')!.className != 'modal-backdrop fade in') || (mediaCountBase == 0)) {
             return;
         }
         Project.setProgress(Project.getMediaLoadRatio(70));
@@ -358,7 +358,7 @@ export default class Project {
             var fcn = function (spr) {
                 spr.setPos(data.xcoor, data.ycoor);
                 mediaCount--;
-                if (gn('backdrop').className == 'modal-backdrop fade in') {
+                if (gn('backdrop')!.className == 'modal-backdrop fade in') {
                     Project.setProgress(Project.getMediaLoadRatio(70));
                 }
                 ScratchJr.log(spr.name, ScratchJr.getTime(), 'sec');
@@ -371,7 +371,7 @@ export default class Project {
             }
             spr = new Sprite(data, fcn);
             // load scripts
-            var sc = gn(name + '_scripts').owner as Scripts;
+            var sc = gn(name + '_scripts')!.owner as Scripts;
             for (var j = 0; j < list.length; j++) {
                 sc.recreateStrip(list[j]);
             }
@@ -393,10 +393,10 @@ export default class Project {
 
     static prepareToSave (id, whenDone) {
         if (saving) {
-            Alert.open(frame, gn('flip'), 'Waiting', '#28A5DA');
+            Alert.open(frame, gn('flip')!, 'Waiting', '#28A5DA');
             Project.waitUntilSaved(id, whenDone);
         } else {
-            Alert.open(frame, gn('flip'), 'Saving', '#28A5DA');
+            Alert.open(frame, gn('flip')!, 'Saving', '#28A5DA');
             Project.save(id, whenDone);
         }
     }
@@ -439,7 +439,7 @@ export default class Project {
 
     static save (id, whenDone?) {
         saving = true;
-        var th = metadata.thumbnail;
+        var th = metadata!.thumbnail;
         if (th && ScratchJr.editmode != 'storyStarter') { // Don't try to delete the thumbnail in a sample project
             var thumb = (typeof th === 'string') ? JSON.parse(th) : th;
             if (thumb && thumb.md5.indexOf('samples/') < 0) { // In case we've exited story-starter mode
@@ -450,8 +450,8 @@ export default class Project {
                 });
             }
         }
-        metadata.id = id;
-        metadata.json = Project.getProject(ScratchJr.stage.pages[0].id);
+        metadata!.id = id;
+        metadata!.json = Project.getProject(ScratchJr.stage.pages[0].id);
         Project.getThumbnailPNG(ScratchJr.stage.pages[0], 192, 144, getMD5);
         function getMD5 (dataurl) {
             var pngBase64 = dataurl.split(',')[1];
@@ -466,11 +466,11 @@ export default class Project {
         }
 
         function doNext (md5) {
-            metadata.thumbnail = {
+            metadata!.thumbnail = {
                 'pagecount': ScratchJr.stage.pages.length,
                 'md5': md5
             };
-            metadata.mtime = (new Date()).getTime().toString();
+            metadata!.mtime = (new Date()).getTime().toString();
             IO.saveProject(metadata, saveDone);
         }
 
@@ -497,11 +497,11 @@ export default class Project {
     }
 
     static encodeSprite (name) {
-        return (gn(name).owner as Sprite).getData();
+        return (gn(name)!.owner as Sprite).getData();
     }
 
     static encodeStrip (b) {
-        var res = [];
+        var res: Array<Array<string | number | Array<Array<string | number>>>> = [];
         var hasargs = ['playsnd', 'gotopage', 'playusersnd', 'setcolor', 'onmessage', 'message', 'setspeed'];
         var loops = ['repeat'];
         var carets = ['caretcmd', 'caretend', 'caretstart'];
@@ -543,9 +543,9 @@ export default class Project {
         data.pagecount = ScratchJr.stage.pages.length;
         var c = document.createElement('canvas');
         setCanvasSize(c, w, h);
-        var ctx = c.getContext('2d');
+        var ctx = c.getContext('2d')!;
         var md5 = page.md5;
-        ctx.fillStyle = window.Settings.stageColor;
+        ctx.fillStyle = window.Settings!.stageColor;
         ctx.fillRect(0, 0, w, h);
         if (!md5) {
             Project.drawSprites(page, scale, c, w, h, fcn);
@@ -564,7 +564,7 @@ export default class Project {
     static drawPNGInCanvas (png, w, h) {
         var srccnv = document.createElement('canvas');
         setCanvasSize(srccnv, w, h);
-        var ctx = srccnv.getContext('2d');
+        var ctx = srccnv.getContext('2d')!;
         ctx.drawImage(png, 0, 0, w, h);
         return srccnv;
     }
@@ -572,7 +572,7 @@ export default class Project {
     static drawSVGinCanvas (extxml, w, h) {
         var srccnv = document.createElement('canvas');
         setCanvasSize(srccnv, w, h);
-        var ctx = srccnv.getContext('2d');
+        var ctx = srccnv.getContext('2d')!;
         for (var i = 0; i < extxml.childElementCount; i++) {
             SVG2Canvas.drawLayer(extxml.childNodes[i], ctx, SVG2Canvas.drawLayer);
         }
@@ -582,18 +582,18 @@ export default class Project {
     static maskBorders (ctx, w, h) {
         ctx.save();
         ctx.globalCompositeOperation = 'destination-in';
-        if (window.Settings.edition != 'PBS') {
+        if (window.Settings!.edition != 'PBS') {
             ctx.drawImage(BlockSpecs.projectThumb, 0, 0, w, h);
         }
         ctx.restore();
     }
 
     static drawSprites (page, scale, c, w, h, fcn) {
-        var ctx = c.getContext('2d');
+        var ctx = c.getContext('2d')!;
         doNext(1);
         function doNext (n) {
             if (!(n < page.div.childElementCount)) {
-                Project.maskBorders(c.getContext('2d'), w, h);
+                Project.maskBorders(c.getContext('2d')!, w, h);
                 fcn(c.toDataURL('image/png'));
             } else {
                 var spr = page.div.childNodes[n].owner;
