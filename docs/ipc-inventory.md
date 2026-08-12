@@ -1,78 +1,75 @@
-
 # IPC Channel Inventory
 
-Complete map of all IPC channels between main process (`src/main.js`) and renderer (`src/electronClient.js`).
+Complete map of IPC between the main process (`src/main/ipc-handlers.js`) and
+the renderer. The renderer never touches `ipcRenderer` directly — it goes
+through the preload bridge exposed as `window.scratchjr` (`src/preload.js`,
+adapter in `src/electronClient.js`).
 
-Generated from codebase audit. Each channel documents: name, direction, sync/async pattern, payload, return value, and migration batch.
+## Transport model (current)
+
+- **17 request/response channels** — `ipcRenderer.invoke` / `ipcMain.handle` (async, Promise-based)
+- **2 push channels** — `ipcRenderer.send` / `ipcMain.on` (fire-and-forget)
+- **0 `sendSync`** — the old synchronous transport is fully removed
+- Renderer access is restricted to the named bridge methods; no raw `ipcRenderer` is exposed
 
 ## Main → Renderer (push)
 
-| Channel | Trigger | Payload | Notes |
-|---------|---------|---------|-------|
-| `app-close` | Window close event | none | Tells renderer to flush data before exit |
-| `databaseRestored` | DB restored from backup | none | Renderer reloads `index.html?back=yes` |
-| `keyboard-shortcut` | Global shortcut | `string` (save/undo/new/redo) | Registered on `did-finish-load` |
+| Channel | Direction | Payload | Notes |
+|---------|-----------|---------|-------|
+| `app-close` | main → renderer (`ipcMain.on` in preload) | none | Tells renderer to flush data before exit; renderer replies `app-closed-acked` |
+| `databaseRestored` | main → renderer | none | DB restored from backup; renderer reloads `index.html?back=yes` |
+| `keyboard-shortcut` | main → renderer | `string` (save/undo/new/redo) | Registered on `did-finish-load` |
 
-## Renderer → Main (request/response)
+## Renderer → Main (request/response, async invoke)
 
-### Settings & Resources (Batch B1)
+### Settings & Resources
 
-| Channel | Sync | Args | Return | Renderer method |
-|---------|------|------|--------|-----------------|
-| `io_getsettings` | `sendSync` | `null` | `string` (csv: documentsPath,debug,soundPerm,cameraPerm) | `io_getsettings()` |
-| `io_gettextresource` | `sendSync` | `filename: string` | `string\|null` (file contents) | `io_gettextresource(filename)` |
-| `io_getIsDebug` | `sendSync` | unused | `boolean` | (not in ElectronDesktopInterface) |
+| Channel | Args | Return | Bridge method |
+|---------|------|--------|---------------|
+| `io_getsettings` | `null` | `string` (csv: documentsPath,debug,soundPerm,cameraPerm) | `scratchjr.io_getsettings()` |
+| `io_gettextresource` | `filename: string` | `string \| null` (file contents) | `scratchjr.io_gettextresource(filename)` |
+| `io_getIsDebug` | unused | `boolean` | `scratchjr.io_getIsDebug()` |
 
-### File I/O (Batch B2)
+### File I/O
 
-| Channel | Sync | Args | Return | Renderer method |
-|---------|------|------|--------|-----------------|
-| `io_setfile` | `sendSync` | `{name, contents}` | `boolean` | `io_setfile(name, btoa_str)` |
-| `io_getfile` | `sendSync` | `filename: string` | `string\|null` (base64) | `io_getfile(str)` |
-| `io_remove` | `sendSync` | `filename: string` | `boolean` | `io_remove(str)` |
-| `io_cleanassets` | `sendSync` | `fileType: string` | `true` (always) | `io_cleanassets(str)` |
-| `io_getmd5` | `sendSync` | `data: string` | `string\|null` (hex md5) | `io_getmd5(str)` |
+| Channel | Args | Return | Bridge method |
+|---------|------|--------|---------------|
+| `io_setfile` | `{name, contents}` | `boolean` | `scratchjr.io_setfile(name, btoa_str)` |
+| `io_getfile` | `filename: string` | `string \| null` (base64) | `scratchjr.io_getfile(str)` |
+| `io_remove` | `filename: string` | `boolean` | `scratchjr.io_remove(str)` |
+| `io_cleanassets` | `fileType: string` | `true` | `scratchjr.io_cleanassets(str)` |
+| `io_getmd5` | `data: string` | `string \| null` (hex md5) | `scratchjr.io_getmd5(str)` |
 
-### Media I/O (Batch B2)
+### Media I/O
 
-| Channel | Sync | Args | Return | Renderer method |
-|---------|------|------|--------|-----------------|
-| `io_getmedia` | `sendSync` | `filename: string` | `string\|null` (base64) | `io_getmedia(file)` |
-| `io_getmediadata` | `sendSync` | `key, offset, length` | `string\|null` (substring) | `io_getmediadata(key, offset, length)` |
-| `io_getmediadone` | `sendSync` | `key: string` | `true` | `io_getmediadone(key)` |
-| `io_getmedialen` | `sendSync` | `file, key` | `number` | `io_getmedialen(file, key)` |
-| `io_setmedia` | `sendSync` | `base64ContentStr, ext` | `string\|null` (filename) | `io_setmedia(str, ext)` |
-| `io_setmedianame` | `sendSync` | `encodedData, key, ext` | `string\|null` (filename) | `io_setmedianame(str, name, ext)` |
-| `io_getAudioData` | `sendSync` | `audioName: string` | `string\|null` (data URI) | `io_registersound(dir, name)` |
+| Channel | Args | Return | Bridge method |
+|---------|------|--------|---------------|
+| `io_getmedia` | `filename: string` | `string \| null` (base64) | `scratchjr.io_getmedia(file)` |
+| `io_getmediadata` | `key, offset, length` | `string \| null` (substring) | `scratchjr.io_getmediadata(key, offset, length)` |
+| `io_getmediadone` | `key: string` | `true` | `scratchjr.io_getmediadone(key)` |
+| `io_getmedialen` | `file, key` | `number` | `scratchjr.io_getmedialen(file, key)` |
+| `io_setmedia` | `base64ContentStr, ext` | `string \| null` (filename) | `scratchjr.io_setmedia(str, ext)` |
+| `io_setmedianame` | `encodedData, key, ext` | `string \| null` (filename) | `scratchjr.io_setmedianame(str, name, ext)` |
+| `io_getAudioData` | `audioName: string` | `string \| null` (data URI) | `scratchjr.io_getAudioData(name)` |
 
-### Database (Batch B3)
+### Database
 
-| Channel | Sync | Args | Return | Renderer method |
-|---------|------|------|--------|-----------------|
-| `database_stmt` | `sendSync` | `{stmt, values}` | `any` (stmt result) | `database_stmt(json)` |
-| `database_query` | `sendSync` | `{stmt, values}` | `string` (JSON array) | `database_query(json)` |
+| Channel | Args | Return | Bridge method |
+|---------|------|--------|---------------|
+| `database_stmt` | `{stmt, values}` | `any` (stmt result) | `scratchjr.database_stmt(json)` |
+| `database_query` | `{stmt, values}` | `string` (JSON array) | `scratchjr.database_query(json)` |
 
-### Debug
+## Push (renderer → main)
 
-| Channel | Sync | Args | Return | Renderer method |
-|---------|------|------|--------|-----------------|
-| `debugWriteLog` | `sendSync` | `args: any` | `true` | (called directly via ipcRenderer) |
+| Channel | Args | Notes |
+|---------|------|-------|
+| `debugWriteLog` | `args: any` | `scratchjr.debugWriteLog(args)` |
+| `app-closed-acked` | none | `scratchjr.sendAppClosedAcked()` — renderer ack after `app-close`; main saves DB and exits |
 
-### Lifecycle (not in ElectronDesktopInterface)
+## Adding a new channel
 
-| Channel | Sync | Args | Return | Notes |
-|---------|------|------|--------|-------|
-| `app-closed-acked` | `sendSync` | none | none | Renderer ack after receiving `app-close`; triggers DB save + app.exit() |
-
-## Migration batches
-
-- **B1** (settings/resources): `io_getsettings`, `io_gettextresource`, `io_getIsDebug`
-- **B2** (file/media): `io_setfile`, `io_getfile`, `io_remove`, `io_cleanassets`, `io_getmd5`, `io_getmedia`, `io_getmediadata`, `io_getmediadone`, `io_getmedialen`, `io_setmedia`, `io_setmedianame`, `io_getAudioData`
-- **B3** (database): `database_stmt`, `database_query`
-
-## Critical constraints
-
-1. `database_stmt` accepts raw SQL — security risk when `nodeIntegration: true`.
-2. `app-closed-acked` must stay synchronous until Phase C (renderer needs to ack before main exits).
-3. `io_getAudioData` does multi-path lookup (samples/ → sounds/ → DB) — must preserve this logic.
-4. `io_getmediadata`/`io_getmediadone`/`io_getmedialen` form a chunked-read protocol — migrate as a unit.
+1. `src/main/ipc-handlers.js` — add `ipcMain.handle('name', ...)` (or `ipcMain.on` for push)
+2. `src/preload.js` — expose a named bridge method
+3. `src/electronClient.js` — call `window.scratchjr.<method>` (do NOT use `ipcRenderer` in renderer code — it is sandboxed away)
+4. Add a vitest case in `tests/unit/preload-bridge.test.js` / `layout-bootstrap-ipc-contract.test.js`
+5. Update this inventory
