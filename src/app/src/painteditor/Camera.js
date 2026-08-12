@@ -1,6 +1,6 @@
 import ScratchJr from '../editor/ScratchJr.js';
 import iOS from '../iPad/iOS.js';
-import ScratchAudio from '../utils/ScratchAudio.js';
+import ScratchAudio from '../utils/ScratchAudio';
 import Paint from './Paint.js';
 import PaintUndo from './PaintUndo.js';
 import SVGImage from './SVGImage.js';

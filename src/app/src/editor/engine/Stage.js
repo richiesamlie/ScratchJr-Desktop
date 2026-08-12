@@ -6,7 +6,7 @@ import Undo from '../ui/Undo.js';
 import ScriptsPane from '../ui/ScriptsPane.js';
 import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events.js';
-import ScratchAudio from '../../utils/ScratchAudio.js';
+import ScratchAudio from '../../utils/ScratchAudio';
 import Vector from '../../geom/Vector';
 import Page from './Page.js';
 import {newHTML, newDiv, gn,

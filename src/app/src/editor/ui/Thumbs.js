@@ -9,7 +9,7 @@ import ScriptsPane from './ScriptsPane.js';
 import Undo from './Undo.js';
 import UI from './UI.js';
 import Events from '../../utils/Events.js';
-import ScratchAudio from '../../utils/ScratchAudio.js';
+import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, localx, newHTML, scaleMultiplier, getIdFor,
     isTouch, newImage, localy, setProps} from '../../utils/lib.js';
 

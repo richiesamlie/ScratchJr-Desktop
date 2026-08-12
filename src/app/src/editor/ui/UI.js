@@ -19,7 +19,7 @@ import MediaLib from '../../iPad/MediaLib.js';
 import Paint from '../../painteditor/Paint.js';
 import Events from '../../utils/Events.js';
 import Localization from '../../utils/Localization';
-import ScratchAudio from '../../utils/ScratchAudio.js';
+import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, CSSTransition, localx, newHTML, scaleMultiplier, getIdFor, isTouch, newDiv,
     newTextInput, isAndroid, getDocumentWidth, getDocumentHeight, setProps, globalx} from '../../utils/lib.js';
 

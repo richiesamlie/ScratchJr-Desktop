@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////
 
 import {libInit, getUrlVars, gn, isAndroid, newHTML, preprocessAndLoad} from '../utils/lib.js';
-import ScratchAudio from '../utils/ScratchAudio.js';
+import ScratchAudio from '../utils/ScratchAudio';
 import iOS from '../iPad/iOS.js';
 import Localization from '../utils/Localization';
 import Cookie from '../utils/Cookie';

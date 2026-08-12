@@ -4,7 +4,7 @@ import Paint from './Paint.js';
 import Camera from './Camera.js';
 import SVGTools from './SVGTools.js';
 import {newHTML, gn} from '../utils/lib.js';
-import ScratchAudio from '../utils/ScratchAudio.js';
+import ScratchAudio from '../utils/ScratchAudio';
 //////////////////////////////////
 // Undo / Redo Functions
 //////////////////////////////////

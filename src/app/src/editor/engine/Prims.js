@@ -1,5 +1,5 @@
 import ScratchJr from '../ScratchJr.js';
-import ScratchAudio from '../../utils/ScratchAudio.js';
+import ScratchAudio from '../../utils/ScratchAudio';
 import Grid from '../ui/Grid.js';
 import Vector from '../../geom/Vector';
 import {gn} from '../../utils/lib.js';

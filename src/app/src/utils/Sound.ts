@@ -8,7 +8,7 @@ export default class Sound {
     time;
     playing;
 
-    constructor (name, time) {
+    constructor (name: string, time?: string) {
         if (isAndroid) {
             this.url = name;
             this.soundPlayId = null;

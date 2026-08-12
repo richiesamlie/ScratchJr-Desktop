@@ -1,4 +1,4 @@
-import ScratchAudio from '../utils/ScratchAudio.js';
+import ScratchAudio from '../utils/ScratchAudio';
 import {gn, getUrlVars, isAndroid, isiOS} from '../utils/lib.js';
 import iOS from '../iPad/iOS.js';
 import UI from '../editor/ui/UI.js';

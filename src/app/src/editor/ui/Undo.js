@@ -7,7 +7,7 @@ import Thumbs from './Thumbs.js';
 import Project from './Project.js';
 import Palette from './Palette.js';
 import UI from './UI.js';
-import ScratchAudio from '../../utils/ScratchAudio.js';
+import ScratchAudio from '../../utils/ScratchAudio';
 import {newHTML, isTouch, gn} from '../../utils/lib.js';
 
 let buffer = [];

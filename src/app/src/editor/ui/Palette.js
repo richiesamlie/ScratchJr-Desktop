@@ -12,7 +12,7 @@ import MediaLib from '../../iPad/MediaLib.js';
 import Events from '../../utils/Events.js';
 import Rectangle from '../../geom/Rectangle';
 import DrawPath from '../../utils/DrawPath';
-import ScratchAudio from '../../utils/ScratchAudio.js';
+import ScratchAudio from '../../utils/ScratchAudio';
 import Record from './Record.js';
 import {frame, gn, localx, newHTML, scaleMultiplier, isTouch, newDiv,
     setProps, globalx, localy, globaly, drawScaled, newCanvas,

@@ -2,7 +2,7 @@ import {isiOS, gn} from '../utils/lib.js';
 import IO from './IO.js';
 import Lobby from '../lobby/Lobby.js';
 import Alert from '../editor/ui/Alert.js';
-import ScratchAudio from '../utils/ScratchAudio.js';
+import ScratchAudio from '../utils/ScratchAudio';
 import AppUsage from '../utils/AppUsage';
 
 //////////////////////////////////////////////////

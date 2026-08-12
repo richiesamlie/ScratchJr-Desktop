@@ -9,7 +9,7 @@ import MediaLib from '../iPad/MediaLib.js';
 import Localization from '../utils/Localization';
 import Alert from '../editor/ui/Alert.js';
 import PaintAction from './PaintAction.js';
-import ScratchAudio from '../utils/ScratchAudio.js';
+import ScratchAudio from '../utils/ScratchAudio';
 import Path from './Path.js';
 import PaintUndo from './PaintUndo.js';
 import Camera from './Camera.js';

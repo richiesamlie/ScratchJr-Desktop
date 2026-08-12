@@ -50,7 +50,7 @@ export default class ScratchAudio {
         ScratchAudio.addSound(prefix, 'pop.mp3', projectSounds);
     }
 
-    static addSound (url, snd, dict, fcn) {
+    static addSound (url: string, snd: string, dict: Record<string, Sound>, fcn?: (name: string) => void) {
         var name = snd;
         if (!isAndroid) {
             var whenDone =  function (str) {
