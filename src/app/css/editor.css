@@ -76,6 +76,15 @@ div.frame {
     overflow-y: auto;
 }
 
+/* The add-page button stays visible at the bottom of the strip even when
+   the page list overflows (same treatment as the left character panel). */
+#emptypage {
+    position: sticky;
+    bottom: 0;
+    background: url('../assets/ui/pageOff.png');
+    background-size: 100% 100%;
+}
+
 .pagethumb {
     background: none;
     display: inline-block;
