@@ -1,7 +1,7 @@
 {
     "name": "ScratchJr",
     "productName": "ScratchJr",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "ScratchJr Desktop Edition",
     "main": "src/main.js",
     "scripts": {
@@ -157,7 +157,11 @@
         "settings": {
             "import/resolver": {
                 "node": {
-                    "extensions": [".js", ".ts", ".d.ts"]
+                    "extensions": [
+                        ".js",
+                        ".ts",
+                        ".d.ts"
+                    ]
                 }
             }
         },
