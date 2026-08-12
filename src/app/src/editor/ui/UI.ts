@@ -22,7 +22,7 @@ import Paint from '../../painteditor/Paint';
 import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio';
-import {frame, gn, CSSTransition, localx, newHTML, scaleMultiplier, getIdFor, isTouch, newDiv,
+import {frame, gn, localx, newHTML, scaleMultiplier, getIdFor, isTouch, newDiv,
     newTextInput, isAndroid, getDocumentWidth, getDocumentHeight, setProps, globalx} from '../../utils/lib';
 
 // Named-form access: document.forms.projectname.myproject
@@ -612,22 +612,6 @@ export default class UI {
         var thumb = gn('sbthumb')!;
         thumb.style.height = size + 'px';
         thumb.style.top = top + 'px';
-    }
-
-    static scrollContents (dy: number) {
-        var sc = gn('spritecc')!;
-        var valy = sc.offsetTop - dy;
-        if (valy > 0) {
-            valy = 0;
-        }
-        var transition = {
-            duration: 0.5,
-            transition: 'ease-out',
-            style: {
-                top: valy + 'px'
-            }
-        };
-        CSSTransition(sc, transition);
     }
 
     static spriteInView (spr: Sprite) {

@@ -17,7 +17,7 @@
         "test": "vitest run",
         "typecheck": "tsc --noEmit",
         "build:renderer": "node scripts/build-renderer.js",
-        "postinstall": "node scripts/patch-for-node26.js"
+        "postinstall": "node scripts/patch-for-node26.js && node scripts/build-renderer.js"
     },
     "keywords": [],
     "author": "ScratchJr - Open Source Community Port",

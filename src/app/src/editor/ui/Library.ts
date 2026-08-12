@@ -102,6 +102,19 @@ export default class Library {
         e.stopPropagation();
         ScratchAudio.sndFX('tap.wav');
         ScratchJr.blur();
+        // Reset selection state and detach the picker's mouse handlers so a
+        // closed picker can never re-add via stale handlers.
+        selectedOne = null;
+        clickThumb = null;
+        window.onmouseup = null;
+        window.onmousemove = null;
+        if (libFrame) {
+            const thumbs = libFrame.querySelectorAll('.assetbox');
+            for (let i = 0; i < thumbs.length; i++) {
+                (thumbs[i] as HTMLElement).onmouseup = null;
+                (thumbs[i] as HTMLElement).onmousemove = null;
+            }
+        }
         libFrame!.className = 'libframe disappear';
         document.body.scrollTop = 0;
         frame.style.display = 'block';
@@ -532,6 +545,11 @@ export default class Library {
     static closeSpriteSelection (e: Event) {
         e.preventDefault();
         e.stopPropagation();
+        // Guard against re-entrant adds while a previous sprite is still
+        // loading (onHold stays true until spriteAdded fires).
+        if (ScratchJr.onHold) {
+            return;
+        }
         var id = selectedOne ? clickThumb!.fieldname! : Localization.localize('LIBRARY_CHARACTER');
         if (selectedOne && (selectedOne != 'none')) {
             ScratchJr.stage.currentPage.addSprite(clickThumb!.scale!, selectedOne, id);
