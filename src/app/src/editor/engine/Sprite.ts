@@ -31,6 +31,7 @@ import {newHTML, newDiv, newP, gn,
     globaly, globalx, rgbToHex} from '../../utils/lib';
 import type Stage from './Stage';
 import type Page from './Page';
+import type Thread from './Thread';
 
 // Named-form access: namedForms.activetextbox etc.
 const namedForms = document.forms as unknown as {
@@ -49,6 +50,7 @@ export default class Sprite {
     name!: string;
     type!: string;
     sounds!: string[];
+    threads!: Thread[];
     borderOn!: boolean;
     outline!: HTMLCanvasElement;
     scale!: number;

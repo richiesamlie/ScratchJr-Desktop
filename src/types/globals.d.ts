@@ -169,8 +169,8 @@ interface HTMLElement {
     active?: unknown;
     index?: number;
     bkg?: string;
-    next?: unknown;
-    prev?: unknown;
+    next?: ChildNode;
+    prev?: ChildNode;
     byme?: number;
     scale?: number;
     fieldname?: string;
@@ -181,8 +181,6 @@ interface HTMLElement {
     dx?: number;
     dy?: number;
     key?: unknown;
-    next?: unknown;
-    prev?: unknown;
 }
 
 interface ChildNode {

@@ -367,7 +367,7 @@ export default class ScratchJr {
             // Get the new project name
             IO.uniqueProjectName({
                 name: sampleName
-            }, function (jsonData: any) {
+            }, function (jsonData) {
                 var newName = jsonData.name;
                 Project.metadata!.name = newName;
                 // Create the new project

@@ -204,14 +204,14 @@ export default class Record {
     }
 
     // Gets the sound duration from iOS and changes play UI state after time
-    static timeOutPlay (timeout: any) { // duration from the native audio bridge (may be numeric string)
-        if (parseInt(timeout) < 0) {
+    static timeOutPlay (timeout: number | string) { // duration from the native audio bridge (may be numeric string)
+        if (parseInt(String(timeout)) < 0) {
             timeout = 0.1; // Error - stop playing immediately
         }
         playTimeLimit = setTimeout(function () {
             Record.toggleButtonUI('play', false);
             isPlaying = false;
-        }, timeout * 1000);
+        }, Number(timeout) * 1000);
     }
 
     // Press on stop

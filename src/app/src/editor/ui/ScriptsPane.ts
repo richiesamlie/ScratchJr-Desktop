@@ -77,18 +77,18 @@ export default class ScriptsPane {
         ScriptsPane.cleanCarets();
         ScratchJr.unfocus(e);
         var sc = ScratchJr.getActiveScript().owner as Scripts;
-        sc.dragList = sc.findGroup(Events.dragthumbnail.owner);
+        sc.dragList = sc.findGroup(Events.dragthumbnail.owner as Block);
         sc.flowCaret = null;
-        var sy = Events.dragthumbnail.parentNode.scrollTop;
-        var sx = Events.dragthumbnail.parentNode.scrollLeft;
+        var sy = (Events.dragthumbnail.parentNode as HTMLElement).scrollTop;
+        var sx = (Events.dragthumbnail.parentNode as HTMLElement).scrollLeft;
         Events.dragmousex = x;
         Events.dragmousey = y;
         var lpt = {
-            x: localx(Events.dragthumbnail.parentNode, x),
-            y: localy(Events.dragthumbnail.parentNode, y)
+            x: localx(Events.dragthumbnail.parentNode as HTMLElement, x),
+            y: localy(Events.dragthumbnail.parentNode as HTMLElement, y)
         };
-        var mx = Events.dragmousex - globalx(Events.dragDiv) - lpt.x + Events.dragthumbnail.left;
-        var my = Events.dragmousey - globaly(Events.dragDiv) - lpt.y + Events.dragthumbnail.top;
+        var mx = Events.dragmousex - globalx(Events.dragDiv) - lpt.x + Events.dragthumbnail.left!;
+        var my = Events.dragmousey - globaly(Events.dragDiv) - lpt.y + Events.dragthumbnail.top!;
         var mtx = new WebKitCSSMatrix(window.getComputedStyle(Events.dragthumbnail).webkitTransform);
         my -= sy;
         mx -= sx;
@@ -100,9 +100,9 @@ export default class ScriptsPane {
             Events.dragcanvas.parentNode.removeChild(Events.dragcanvas);
         }
         Events.move3D(Events.dragcanvas, mx, my);
-        Events.dragcanvas.style.zIndex = ScratchJr.dragginLayer;
+        Events.dragcanvas.style.zIndex = String(ScratchJr.dragginLayer);
         Events.dragDiv.appendChild(Events.dragcanvas);
-        var b = Events.dragcanvas.owner;
+        var b = Events.dragcanvas.owner as Block;
         b.detachBlock();
         //	b.lift();
         if (Events.dragcanvas.isReporter) {
@@ -130,7 +130,7 @@ export default class ScriptsPane {
         var dx = pt.x - Events.dragmousex;
         var dy = pt.y - Events.dragmousey;
         Events.move3D(Events.dragcanvas, dx, dy);
-        ScriptsPane.blockFeedback(Events.dragcanvas.left, Events.dragcanvas.top, e);
+        ScriptsPane.blockFeedback(Events.dragcanvas.left!, Events.dragcanvas.top!, e);
     }
 
     static blockFeedback (dx: number, dy: number, e: MouseEvent) {
@@ -225,7 +225,7 @@ export default class ScriptsPane {
         var script = ScratchJr.getActiveScript().owner as Scripts;
         ScriptsPane.cleanCarets();
         script.addBlockToScripts(Events.dragcanvas, dx, dy);
-        script.layout(Events.dragcanvas.owner);
+        script.layout(Events.dragcanvas.owner as Block);
         if (sc.id == ScratchJr.getActiveScript().id) {
             scroll.adjustCanvas();
             scroll.refresh();

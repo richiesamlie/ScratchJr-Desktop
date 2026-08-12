@@ -25,7 +25,37 @@ let projectbarsize = 66;
 let mediaCountBase = 1;
 
 // Recursive strip encoding: [blocktype, arg, dx, dy, (nested strips)?]
-type EncodedStrip = Array<Array<string | number | EncodedStrip>>;
+export type EncodedStrip = Array<Array<string | number | EncodedStrip>>;
+
+// Project file format (Project.getProject / undo snapshots): pages list,
+// current page, then one bag per page id. Action-descriptor fields
+// (action/who/where/sound) are merged in by Undo.record.
+export type ProjectData = {
+    pages: string[];
+    currentPage: string;
+    projectsounds?: unknown;
+    action?: string;
+    who?: string;
+    where?: string;
+    sound?: string;
+    [pageId: string]: unknown;
+};
+
+// One page bag: sprite id list + sprite data bags keyed by id.
+export type PageData = {
+    lastSprite: string;
+    sprites: string[];
+    [spriteId: string]: unknown;
+};
+
+// One sprite bag: sprite attributes (Sprite.getSpriteData) plus script strips.
+export type SpriteData = {
+    id: string;
+    type: string;
+    scripts: EncodedStrip[];
+    sounds: string[];
+    [key: string]: unknown;
+};
 
 export default class Project {
     static get metadata () {
@@ -353,7 +383,7 @@ export default class Project {
     }
 
     static recreateObject (page: Page, name: string, data: Record<string, unknown>, callBack: (spr: Sprite) => void, active?: boolean) {
-        var list = data.scripts as unknown[];
+        var list = data.scripts as EncodedStrip[];
         //delete data.scripts;
         var spr;
         data.page = page;
@@ -488,9 +518,10 @@ export default class Project {
     }
 
     static getProject (pageid: string) {
-        var obj: Record<string, unknown> = {};
-        obj.pages = ScratchJr.stage.getPagesID();
-        obj.currentPage = pageid;
+        var obj: ProjectData = {
+            pages: ScratchJr.stage.getPagesID(),
+            currentPage: pageid
+        };
         for (var i = 0; i < ScratchJr.stage.pages.length; i++) {
             obj[ScratchJr.stage.pages[i].id] = ScratchJr.stage.pages[i].encodePage();
         }

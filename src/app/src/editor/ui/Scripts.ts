@@ -11,6 +11,7 @@ import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, newHTML, setCanvasSize, setProps,
     localx, localy, scaleMultiplier, hit3DRect, isTouch} from '../../utils/lib';
 import type Sprite from '../engine/Sprite';
+import type {EncodedStrip} from './Project';
 
 export default class Scripts {
     // Instance state
@@ -636,32 +637,32 @@ export default class Scripts {
         }
     }
 
-    recreateStrip (list: any) {
+    recreateStrip (list: EncodedStrip) {
         var res: Block[] = [];
         var b: Block | null = null;
         var loops = ['repeat'];
         for (var i = 0; i < list.length; i++) {
-            if (!BlockSpecs.defs[list[i][0]]) {
+            if (!BlockSpecs.defs[list[i][0] as string]) {
                 continue;
             }
             switch (list[i][0]) {
             case 'say':
-                list[i][1] = unescape(list[i][1]);
+                list[i][1] = unescape(String(list[i][1]));
                 break;
             case 'gotopage':
                 var n = ScratchJr.stage.pages.indexOf(this.spr.page);
-                if ((list[i][1] - 1) == n) {
+                if (((list[i][1] as number) - 1) == n) {
                     list[i][1] = ((n + 1) % ScratchJr.stage.pages.length) + 1;
                 }
                 break;
             case 'playusersnd':
-                if (this.spr.sounds.length <= list[i][1]) {
+                if (this.spr.sounds.length <= (list[i][1] as number)) {
                     list[i][0] = 'playsnd';
                     list[i][1] = this.spr.sounds[0];
                 }
                 break;
             case 'playsnd':
-                var snd = this.spr.sounds.indexOf(list[i][1]);
+                var snd = this.spr.sounds.indexOf(list[i][1] as string);
                 if (snd < 0) {
                     list[i][0] = 'playsnd';
                     list[i][1] = this.spr.sounds[0];
@@ -671,7 +672,7 @@ export default class Scripts {
             var cb = this.recreateBlock(list[i]);
             res.push(cb);
             if (loops.indexOf(cb.blocktype) > -1) {
-                var strip = this.recreateStrip(list[i][4]);
+                var strip = this.recreateStrip(list[i][4] as EncodedStrip);
                 if (strip.length > 0) {
                     cb.inside = strip[0];
                     strip[0].prev = cb;
@@ -695,7 +696,7 @@ export default class Scripts {
     // Load
     ////////////////////////////////
 
-    recreateBlock (data: Array<string | number | Array<Array<string | number>>>) {
+    recreateBlock (data: Array<string | number | EncodedStrip>) {
         var op = data[0];
         var val = data[1] == 'null' ? null : data[1];
         var dx = data[2];

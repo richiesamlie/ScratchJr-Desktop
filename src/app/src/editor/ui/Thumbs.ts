@@ -33,7 +33,7 @@ export default class Thumbs {
             var page = ScratchJr.stage.pages[i];
             page.num = i + 1;
             th = page.pageThumbnail(pthumbs);
-            th.prev = prev;
+            th.prev = prev!;
             if (prev) {
                 prev.next = th;
             }
@@ -55,7 +55,7 @@ export default class Thumbs {
             return;
         }
         var ep = Thumbs.emptyPage(pthumbs);
-        ep.prev = prev;
+        ep.prev = prev!;
         th!.next = ep;
     }
 
@@ -141,7 +141,7 @@ export default class Thumbs {
             (Events.dragthumbnail.next).prev = caret;
         }
         Thumbs.layoutPages();
-        Events.dragthumbnail.pos = Thumbs.getPagePos(Events.dragcanvas.top);
+        Events.dragthumbnail.pos = Thumbs.getPagePos(Events.dragcanvas.top!);
     }
 
     static layoutPages () {
@@ -290,7 +290,7 @@ export default class Thumbs {
         Events.dragthumbnail.style.webkitTransform = '';
         var oldpos = Number(Events.dragthumbnail.childNodes[1].childNodes[0].textContent) - 1;
         var oldpage = Events.dragthumbnail.owner;
-        Thumbs.repositionThumb(Events.dragthumbnail, Events.dragthumbnail.top);
+        Thumbs.repositionThumb(Events.dragthumbnail, Events.dragthumbnail.top!);
         var oldlist = ScratchJr.stage.getPagesID();
         ScratchJr.stage.pages = Thumbs.getPageOrder();
         Thumbs.layoutPages();
@@ -310,9 +310,9 @@ export default class Thumbs {
 
     static clickPage (e: MouseEvent | TouchEvent) {
         ScratchJr.clearSelection();
-        Thumbs.clickOnPage(e, Events.dragthumbnail.owner);
+        Thumbs.clickOnPage(e, Events.dragthumbnail.owner as string);
         Events.clearEvents();
-        Events.dragthumbnail = undefined;
+        Events.dragthumbnail = null;
     }
 
     static clickOnPage (e: MouseEvent | TouchEvent, pagename: string) {
@@ -532,13 +532,13 @@ export default class Thumbs {
         var pt = Events.getTargetPoint(e);
         Events.dragmousex = pt.x;
         Events.dragmousey = pt.y;
-        Events.dragthumbnail = Thumbs.getObjectFor(gn('spritecc')!, Events.dragthumbnail.owner);
+        Events.dragthumbnail = Thumbs.getObjectFor(gn('spritecc')!, Events.dragthumbnail.owner) as HTMLElement;
         var mx = Events.dragmousex - frame.offsetLeft
             - localx(Events.dragthumbnail, Events.dragmousex) - gn('topsection')!.offsetLeft;
         var my = Events.dragmousey - frame.offsetTop
             - localy(Events.dragthumbnail, Events.dragmousey) - gn('topsection')!.offsetTop;
-        var sy = Events.dragthumbnail.parentNode.parentNode.scrollTop;
-        var sx = Events.dragthumbnail.parentNode.parentNode.scrollLeft;
+        var sy = (Events.dragthumbnail.parentNode!.parentNode as HTMLElement).scrollTop;
+        var sx = (Events.dragthumbnail.parentNode!.parentNode as HTMLElement).scrollLeft;
         my -= sy;
         mx -= sx;
         var mstyle = {
@@ -548,9 +548,9 @@ export default class Thumbs {
             zIndex: ScratchJr.dragginLayer,
             zoom: (100 / window.devicePixelRatio) + '%'
         };
-        var spr = gn(Events.dragthumbnail.owner)!.owner as Sprite;
+        var spr = gn(Events.dragthumbnail.owner as string)!.owner as Sprite;
         Events.dragcanvas = document.createElement('canvas');
-        spr.drawMyImage(Events.dragcanvas,
+        spr.drawMyImage(Events.dragcanvas as HTMLCanvasElement,
             76 * scaleMultiplier * window.devicePixelRatio,
             (76 - 12) * scaleMultiplier * window.devicePixelRatio
         );
@@ -623,9 +623,9 @@ export default class Thumbs {
             break;
         }
         if (Events.dragcanvas) {
-            Events.dragcanvas.parentNode.removeChild(Events.dragcanvas);
+            Events.dragcanvas.parentNode!.removeChild(Events.dragcanvas);
         }
-        Events.dragcanvas = undefined;
+        Events.dragcanvas = null;
     }
 
     static click (e: MouseEvent | TouchEvent, el: HTMLElement) {

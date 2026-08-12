@@ -13,6 +13,7 @@ import Events from '../../utils/Events';
 import type Scripts from '../ui/Scripts.js';
 import type Sprite from '../engine/Sprite';
 import type Page from '../engine/Page';
+import type {EncodedStrip} from './Project';
 import Rectangle from '../../geom/Rectangle';
 import DrawPath from '../../utils/DrawPath';
 import ScratchAudio from '../../utils/ScratchAudio';
@@ -129,7 +130,7 @@ export default class Palette {
             div.removeChild(div.childNodes[0]);
         }
         var sc = div.owner as Scripts;
-        var list = sprdata.scripts as unknown[];
+        var list = sprdata.scripts as EncodedStrip[];
         for (var j = 0; j < list.length; j++) {
             sc.recreateStrip(list[j]);
         }
@@ -276,7 +277,7 @@ export default class Palette {
         Events.dragmousex = pt.x;
         Events.dragmousey = pt.y;
         if (!Events.dragthumbnail.parentNode) { // palette has been removed programatically
-            Events.dragthumbnail = Palette.getBlockNamed(Events.dragthumbnail.owner.blocktype);
+            Events.dragthumbnail = Palette.getBlockNamed((Events.dragthumbnail.owner as Block).blocktype) as HTMLElement;
             if (!Events.dragthumbnail) {
                 Events.cancelAll();
                 return;
@@ -286,11 +287,11 @@ export default class Palette {
         var my = Events.dragmousey - frame.offsetTop - localy(Events.dragthumbnail, Events.dragmousey);
         const dragOwner = Events.dragthumbnail.owner as Block;
         Events.dragcanvas = dragOwner.duplicateBlock(mx, my, sc.spr).div;
-        Events.dragcanvas.style.zIndex = ScratchJr.dragginLayer;
+        Events.dragcanvas.style.zIndex = String(ScratchJr.dragginLayer);
         Events.dragDiv.appendChild(Events.dragcanvas);
         // Events.dragcanvas.owner.lift();
-        sc.dragList = [Events.dragcanvas.owner];
-        sc.prepareCaret(Events.dragcanvas.owner);
+        sc.dragList = [Events.dragcanvas.owner as Block];
+        sc.prepareCaret(Events.dragcanvas.owner as Block);
     }
 
     static getBlockNamed (str: string) {

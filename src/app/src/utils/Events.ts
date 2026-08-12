@@ -4,12 +4,22 @@ the caller should define the window event and call startDrag with the appropiate
 
 import {gn, scaleMultiplier, isTouch} from './lib';
 
+// Drag elements are DOM nodes (block/thumb divs, canvases) carrying
+// drag-session expando state. While a drag is active they are treated as
+// always present; the accessors below assert that for external readers.
+type DragElement = HTMLElement & {
+    origin?: string;
+    startx?: number;
+    starty?: number;
+    isReporter?: boolean;
+};
+
 let dragged = false;
-let dragthumbnail: any; // drag element (block/thumb div) with expando props; cross-module glue
+let dragthumbnail: DragElement | null = null; // drag element (block/thumb div) with expando props; cross-module glue
 let dragmousex = 0;
 let dragmousey = 0;
 let timeoutEvent: ReturnType<typeof setTimeout> | undefined;
-let dragcanvas: any; // drag element with expando props; cross-module glue
+let dragcanvas: DragElement | null = null; // drag element with expando props; cross-module glue
 let dragDiv!: HTMLDivElement;
 let fcnstart: ((e: MouseEvent) => void) | undefined;
 let fcnend: ((e: MouseEvent | TouchEvent, c: HTMLElement) => void) | undefined;
@@ -34,11 +44,11 @@ export default class Events {
         dragged = newDragged;
     }
 
-    static get dragthumbnail () {
-        return dragthumbnail;
+    static get dragthumbnail (): DragElement {
+        return dragthumbnail!;
     }
 
-    static set dragthumbnail (newDragthumbnail) {
+    static set dragthumbnail (newDragthumbnail: DragElement | null) {
         dragthumbnail = newDragthumbnail;
     }
 
@@ -66,11 +76,11 @@ export default class Events {
         timeoutEvent = newTimeoutEvent;
     }
 
-    static get dragcanvas () {
-        return dragcanvas;
+    static get dragcanvas (): DragElement {
+        return dragcanvas!;
     }
 
-    static set dragcanvas (newDragcanvas) {
+    static set dragcanvas (newDragcanvas: DragElement | null) {
         dragcanvas = newDragcanvas;
     }
 
@@ -155,7 +165,7 @@ export default class Events {
     static holdit (c: HTMLElement, fcn: (c: HTMLElement) => void) {
         var repeat = function () {
             Events.clearEvents();
-            fcn(dragthumbnail);
+            fcn(dragthumbnail!);
             Events.clearDragAndDrop();
         };
         timeoutEvent = setTimeout(repeat, 500);
@@ -163,9 +173,9 @@ export default class Events {
 
     static clearDragAndDrop () {
         timeoutEvent = undefined;
-        dragcanvas = undefined;
+        dragcanvas = null;
         dragged = false;
-        dragthumbnail = undefined;
+        dragthumbnail = null;
         fcnstart = undefined;
         fcnend = undefined;
         updatefcn = undefined;
@@ -191,7 +201,7 @@ export default class Events {
         }
         dragged = true;
         if (updatefcn) {
-            updatefcn(e, dragcanvas);
+            updatefcn(e, dragcanvas!);
         }
         dragmousex = pt.x;
         dragmousey = pt.y;
@@ -237,13 +247,13 @@ export default class Events {
 
     static performMouseUpAction (e: MouseEvent | TouchEvent) {
         if (fcnend) {
-            fcnend(e, dragcanvas);
+            fcnend(e, dragcanvas!);
         }
     }
 
     static itIsAClick (e: MouseEvent | TouchEvent) {
         if (fcnclick) {
-            fcnclick(e, dragthumbnail);
+            fcnclick(e, dragthumbnail!);
         }
     }
 

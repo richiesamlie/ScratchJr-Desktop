@@ -477,7 +477,7 @@ export default class Stage {
     }
 
     startSpriteDrag (e?: MouseEvent) {
-        var spr = Events.dragthumbnail.owner;
+        var spr = Events.dragthumbnail.owner as Sprite;
         spr.threads = ScratchJr.runtime.removeRunScript(spr);
         this.currentPage.div.appendChild(Events.dragthumbnail);
         this.deltaPoint = {
@@ -505,7 +505,7 @@ export default class Stage {
             clearTimeout(Events.timeoutEvent);
         }
         Events.timeoutEvent = undefined;
-        var spr = Events.dragthumbnail.owner;
+        var spr = Events.dragthumbnail.owner as Sprite;
         delta = this.wrapDelta(spr, Vector.diff(pt, this.deltaPoint));
         spr.xcoor += delta.x;
         spr.ycoor += delta.y;
@@ -559,7 +559,7 @@ export default class Stage {
     }
 
     mouseUp (e: MouseEvent) {
-        var spr = Events.dragthumbnail.owner;
+        var spr = Events.dragthumbnail.owner as Sprite;
         if (Events.timeoutEvent) {
             clearTimeout(Events.timeoutEvent);
         }
@@ -575,7 +575,7 @@ export default class Stage {
         }
         Events.clearEvents();
         Events.dragged = false;
-        Events.dragthumbnail = undefined;
+        Events.dragthumbnail = null;
     }
 
     moveElementBy (spr: Sprite) {
