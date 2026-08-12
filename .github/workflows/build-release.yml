@@ -126,6 +126,12 @@ jobs:
           echo "SHA256 checksums:"
           cat *.sha256
 
+      - name: Smoke test packaged app (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          node scripts/smoke-packaged.js out/ScratchJr-win32-x64
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
