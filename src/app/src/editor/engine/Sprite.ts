@@ -115,7 +115,11 @@ export default class Sprite {
             ScratchAudio.loadProjectSound(this.sounds[i]);
         }
         var sprites = JSON.parse(page.sprites);
-        sprites.push(this.id);
+        // Idempotent: a sprite re-created with the same id (reload, undo, or a
+        // re-entrant add) must not accumulate duplicate entries in page.sprites.
+        if (sprites.indexOf(this.id) < 0) {
+            sprites.push(this.id);
+        }
         page.sprites = JSON.stringify(sprites);
         var me = this;
         page.div.appendChild(this.div);
@@ -771,7 +775,9 @@ Math.floor(h));
         this.homeflip = false;
         this.outline = document.createElement('canvas');
         var sprites = JSON.parse(page.sprites);
-        sprites.push(this.id);
+        if (sprites.indexOf(this.id) < 0) {
+            sprites.push(this.id);
+        }
         page.sprites = JSON.stringify(sprites);
         if ((this.str == '') && !whenDone) {
             this.setTextBox();

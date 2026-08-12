@@ -105,6 +105,16 @@ describe('script strip round-trip (project file format)', () => {
         expect(reencoded[0][1]).toBe(1);
         expect(reencoded[1][0]).toBe('gotopage');
     });
+
+    it('re-creating a sprite with the same id registers it once in page.sprites', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const attr = { type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] };
+        new Sprite(attr);
+        // A second creation with the same id (reload / undo replay) must not
+        // duplicate the registration — that was the flood data path.
+        new Sprite(attr);
+        expect(JSON.parse(page.sprites)).toEqual(['cat']);
+    });
 });
 
 describe('Thumbs.getPagePos (scroll-aware page strip caret math)', () => {
