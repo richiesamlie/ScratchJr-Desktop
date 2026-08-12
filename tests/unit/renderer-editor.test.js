@@ -14,6 +14,7 @@ import iOS from '../../src/app/src/iPad/iOS.js';
 import BlockSpecs from '../../src/app/src/editor/blocks/BlockSpecs.js';
 import Thread from '../../src/app/src/editor/engine/Thread.js';
 import Prims from '../../src/app/src/editor/engine/Prims.js';
+import Undo from '../../src/app/src/editor/ui/Undo.js';
 import { gn } from '../../src/app/src/utils/lib.js';
 
 function resetDom () {
@@ -24,11 +25,19 @@ function resetDom () {
     const pagesdiv = document.createElement('div');
     pagesdiv.id = 'pagesdiv';
     document.body.appendChild(pagesdiv);
+    // The speech balloon sizes itself against the stage's zoom.
+    const stage = document.createElement('div');
+    stage.id = 'stage';
+    document.body.appendChild(stage);
+    stage.owner = { currentZoom: 1 };
     ScratchJr.stage = {
         pagesdiv,
         pages: [],
         currentPage: null,
     };
+    // The Repeat primitive sets ScratchJr.runtime.yield; the static is
+    // getter-only, so stub it via defineProperty.
+    Object.defineProperty(ScratchJr, 'runtime', { value: { yield: false }, configurable: true });
 }
 
 // Sprite construction kicks off async media loading through the native
@@ -246,5 +255,88 @@ describe('runtime primitive execution', () => {
         expect(spr.shown).toBe(false);
         expect(spr.div.style.opacity).toBe('0');
         expect(hideThread.thisblock).toBeNull();
+    });
+
+    it('Hop starts a multi-tick jump from the hop table', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        const thread = makeThread([['hop', 2, 0, 0]], spr);
+        const startY = 80;
+        spr.ycoor = startY;
+        spr.xcoor = 100;
+
+        Prims.Hop(thread);
+
+        // First hop tick: count 11 -> 10, the last hop-table entry applied.
+        expect(thread.count).toBe(10);
+        expect(thread.vector).toEqual({ x: 0, y: 48 });
+        expect(spr.ycoor).toBeLessThan(startY);
+        expect(spr.xcoor).toBe(100);
+    });
+
+    it('Repeat enters the nested strip and counts down on the block', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        const thread = makeThread([['repeat', 3, 0, 10, [['hop', 2, 0, 0]]]], spr);
+        const repeatBlock = thread.firstBlock;
+
+        Prims.Repeat(thread);
+
+        expect(repeatBlock.repeatCounter).toBe(2);
+        expect(thread.stack).toHaveLength(1);
+        expect(thread.stack[0]).toBe(repeatBlock);
+        // The thread jumped into the nested strip.
+        expect(thread.thisblock.blocktype).toBe('hop');
+    });
+
+    it('Say opens the speech balloon and holds the block', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        const thread = makeThread([['say', 'Hello', 0, 0]], spr);
+        // The balloon SVG template loads async via IO.requestFromServer in
+        // initBlocks; provide the markers drawBalloon rewrites.
+        BlockSpecs.balloon = '<svg width="30px" height="44px" viewBox="0 0 30 44"><path d="M0 0h17v24L5 5h-2l1 1h-1z"/></svg>';
+
+        Prims.Say(thread);
+
+        expect(spr.balloon).toBeTruthy();
+        expect(thread.count).toBe(30);
+        // The block is not advanced until the balloon times out.
+        expect(thread.thisblock.blocktype).toBe('say');
+    });
+});
+
+describe('Undo page-order snapshot', () => {
+    beforeEach(() => {
+        resetDom();
+        stubMedia();
+        BlockSpecs.initBlocks();
+    });
+
+    it('getPageOrder walks the page-thumb chain in order', () => {
+        const pagecc = document.createElement('div');
+        pagecc.id = 'pagecc';
+        document.body.appendChild(pagecc);
+        let prevThumb = null;
+        for (let i = 0; i < 3; i++) {
+            const thumb = document.createElement('div');
+            thumb.id = 'pt' + i;
+            thumb.owner = 'page' + i;
+            thumb.prev = prevThumb;
+            if (prevThumb) {
+                prevThumb.next = thumb;
+            }
+            pagecc.appendChild(thumb);
+            prevThumb = thumb;
+
+            const pageObj = { id: 'page' + i };
+            const pageDiv = document.createElement('div');
+            pageDiv.id = 'page' + i;
+            document.body.appendChild(pageDiv);
+            pageDiv.owner = pageObj;
+        }
+
+        const order = Undo.getPageOrder({ pages: ['page0', 'page1', 'page2'], currentPage: 'page1' });
+        expect(order.map(p => p.id)).toEqual(['page0', 'page1', 'page2']);
     });
 });
