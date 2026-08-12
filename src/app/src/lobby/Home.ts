@@ -278,7 +278,8 @@ export default class Home {
             return;
         }
         var thumb = (typeof th === 'string') ? JSON.parse(th) : th;
-        var pc = thumb.pagecount ? thumb.pagecount : 1;
+        // Page-count badge assets only exist for p1..p4 — clamp larger projects
+        var pc = Math.min(thumb.pagecount ? thumb.pagecount : 1, 4);
         var tb = newHTML('div', 'projectthumb', parent);
         tb.setAttribute('id', id);
         tb.type = 'projectthumb';

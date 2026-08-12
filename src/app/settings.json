@@ -33,5 +33,6 @@
         "ไทย": "th",
         "简体中文": "zh-cn"
     },
-    "settingsPageDisabled": false
+    "settingsPageDisabled": false,
+    "maxPages": 8
 }

@@ -25,7 +25,7 @@
     top: 0px;
     left: ${css_vh(32.29)};
     width: ${css_vh(1.04)};
-    height: ${css_vh(40.63)};
+    height: ${css_vh(50)};
     background: rgba(255,255,255,0.5);
 }
 
@@ -60,7 +60,7 @@
     overflow-y: scroll;
     overflow-x: hidden;
     width: ${css_vh(33.85)};
-    max-height: ${css_vh(40.63)};
+    max-height: ${css_vh(50)};
 }
 
 .spritethumbs::-webkit-scrollbar {

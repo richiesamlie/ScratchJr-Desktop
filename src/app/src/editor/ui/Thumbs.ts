@@ -45,7 +45,8 @@ export default class Thumbs {
             ScriptsPane.updateScriptsPageBlocks(JSON.parse(page.sprites));
             prev = th;
         }
-        if ((ScratchJr.stage.pages.length > 3) || !ScratchJr.isEditable()) {
+        // Cap on pages per project — configurable via settings.json maxPages (default 4)
+        if ((ScratchJr.stage.pages.length >= (window.Settings.maxPages ?? 4)) || !ScratchJr.isEditable()) {
             return;
         }
         var ep = Thumbs.emptyPage(pthumbs);

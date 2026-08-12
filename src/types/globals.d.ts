@@ -111,6 +111,7 @@ interface ScratchJrSettings {
     defaultLocaleShort: string;
     supportedLocales: Record<string, string>;
     settingsPageDisabled: boolean;
+    maxPages?: number;
     [key: string]: unknown;
 }
 
