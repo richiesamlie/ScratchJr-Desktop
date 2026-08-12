@@ -53,6 +53,12 @@ if (targetPlatform === 'darwin' && process.platform === 'win32') {
 
 console.log(`Packaging ${pkg.productName || pkg.name} v${pkg.version} for ${options.platform}/${options.arch}...`);
 
+// The renderer entry (src/app/renderer-entry.js and its imports, incl. npm
+// deps) must be bundled into dist/app.bundle.js BEFORE packaging — the HTML
+// pages load only that bundle, and it is gitignored, so a fresh checkout has
+// no bundle at all.
+execSync('node scripts/build-renderer.js', { stdio: 'inherit' });
+
 packager(options)
     .then((outputPaths) => {
         console.log('Packaged:', outputPaths);
