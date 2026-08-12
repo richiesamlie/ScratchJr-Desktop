@@ -1,9 +1,42 @@
 import BlockSpecs from './BlockSpecs';
-import BlockArg from './BlockArg.js';
+import BlockArg from './BlockArg';
 import ScratchJr from '../ScratchJr.js';
 import {setProps, setCanvasSize, scaleMultiplier} from '../../utils/lib';
 
 export default class Block {
+    // Instance state built by the constructor and shape-drawing helpers
+    div: HTMLElement;
+    blockshape: HTMLCanvasElement;
+    spec: unknown[];
+    isReporter: boolean;
+    blocktype: string;
+    icon: unknown;
+    image: HTMLImageElement;
+    aStart: boolean;
+    anEnd: boolean;
+    cShape: boolean;
+    prev: Block;
+    next: Block;
+    inside: Block;
+    isCaret: boolean;
+    type: string;
+    arg: BlockArg;
+    daddy: Block;
+    scale: number;
+    repeatCounter: number;
+    originalCount: number;
+    threads: unknown[];
+    min: number;
+    max: number;
+    hrubberband: number;
+    vrubberband: number;
+    shadow: HTMLCanvasElement;
+    shadowimg: HTMLImageElement;
+    shine: HTMLCanvasElement;
+    blockicon: HTMLCanvasElement;
+    inpalette: boolean;
+    done: boolean;
+
     constructor (spec, isPalette, scale) {
         this.div = document.createElement('div');
 
@@ -58,7 +91,7 @@ export default class Block {
         return 66;
     }
 
-    setBlockshapeFromSpecs (spec, isPalette, scale) {
+    setBlockshapeFromSpecs (spec, isPalette?, scale?) {
         this.spec = spec;
         this.isReporter = (spec[1] == 'reporter');
         this.blocktype = spec[0];
@@ -130,7 +163,8 @@ export default class Block {
     }
 
     addHighlight () {
-        var img = this.spec[5];
+        // spec[5] is the highlight image slot
+        var img = this.spec[5] as HTMLImageElement;
         if (!img) {
             return;
         }
@@ -190,7 +224,8 @@ export default class Block {
                 + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
             pointerEvents: 'all'
         });
-        if (this.icon && this.icon.tagName) {
+        const iconNode = this.icon;
+        if (iconNode && typeof iconNode === 'object' && 'tagName' in iconNode) {
             this.drawIcon();
         }
         this.done = true;
@@ -209,7 +244,8 @@ export default class Block {
         if (!this.div.parentNode) {
             return;
         } // deleted block
-        if ((this.div.parentNode.id != 'palette') && (this.div.parentNode != ScratchJr.getActiveScript())) {
+        const parentNode = this.div.parentNode as HTMLElement;
+        if ((parentNode.id != 'palette') && (this.div.parentNode != ScratchJr.getActiveScript())) {
             return;
         }
         this.shine.style.visibility = 'visible';
@@ -250,7 +286,7 @@ export default class Block {
 
     drawMyIcon (ctx, dx, dy) {
         var me = this;
-        var icon = this.icon;
+        var icon = this.icon as HTMLImageElement;
         if (!icon.complete) {
             icon.onload = function () {
                 ctx.drawImage(icon, 0, 0, icon.width, icon.height, dx, dy, icon.width * me.scale * window.devicePixelRatio, icon.height * me.scale * window.devicePixelRatio);
@@ -282,7 +318,7 @@ export default class Block {
         if (list.length <= val) {
             return list[0];
         }
-        return list[val];
+        return list[Number(val)];
     }
 
     update (spr) {
@@ -380,7 +416,7 @@ export default class Block {
         return connections.indexOf(you);
     }
 
-    isConnectedAfterFirst (myn, you) {
+    isConnectedAfterFirst (myn, you, yourn?) {
         if (myn == 0) {
             return false;
         }

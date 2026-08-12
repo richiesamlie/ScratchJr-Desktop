@@ -6,7 +6,7 @@ import Palette from './Palette.js';
 import Undo from './Undo.js';
 import Events from '../../utils/Events';
 import Scroll from './Scroll.js';
-import Menu from '../blocks/Menu.js';
+import Menu from '../blocks/Menu';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, localx, localy, newHTML, isTouch,
     globalx, globaly, setCanvasSize, getDocumentHeight, frame} from '../../utils/lib';

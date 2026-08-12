@@ -156,6 +156,7 @@ interface HTMLElement {
     top?: number;
     img?: HTMLImageElement;
     originalImg?: HTMLImageElement;
+    active?: unknown;
 }
 
 interface ChildNode {

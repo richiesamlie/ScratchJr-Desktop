@@ -9,7 +9,7 @@ import Record from './ui/Record.js';
 import IO from '../iPad/IO';
 import iOS from '../iPad/iOS';
 import UI from './ui/UI.js';
-import Menu from './blocks/Menu.js';
+import Menu from './blocks/Menu';
 import Library from './ui/Library.js';
 import Grid from './ui/Grid.js';
 import ScriptsPane from './ui/ScriptsPane.js';

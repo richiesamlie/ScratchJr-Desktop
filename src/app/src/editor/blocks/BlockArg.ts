@@ -1,11 +1,12 @@
 import ScratchJr from '../ScratchJr.js';
 import BlockSpecs from './BlockSpecs';
-import Menu from './Menu.js';
+import Menu from './Menu';
 import Undo from '../ui/Undo.js';
 import {setCanvasSize, setProps, writeText, scaleMultiplier,
     newHTML, newDiv, newCanvas, getStringSize, isTouch,
     newP, globalx, globaly} from '../../utils/lib';
 import Localization from '../../utils/Localization';
+import type Block from './Block';
 
 /*
 Argument types
@@ -19,6 +20,18 @@ p: page icons
 
 */
 export default class BlockArg {
+    div: HTMLElement;
+    arg: HTMLElement & { updateIcon?: () => void };
+    argType: string;
+    argValue: unknown;
+    button: HTMLCanvasElement;
+    daddy: Block;
+    icon: HTMLImageElement | string;
+    input: HTMLInputElement;
+    list: string;
+    numperrow: number;
+    type: string;
+
     constructor (block) {
         this.daddy = block;
         this.type = 'blockarg';
@@ -46,14 +59,15 @@ export default class BlockArg {
             this.argValue = block.spec[4];
             this.list = JSON.stringify(block.spec[1]);
             this.numperrow = 3;
-            this.icon = BlockSpecs.speeds[this.argValue];
+            this.icon = BlockSpecs.speeds[this.argValue as number];
             this.div = this.addImageMenu(this.menuCloseSpeeds);
             break;
         case 'p':
             this.argValue = block.spec[4];
             this.div = this.pageIcon(this.argValue);
             var ctx = block.blockshape.getContext('2d');
-            ctx.drawImage(this.div, 0, 0, this.div.width, this.div.height, 0, 0, this.div.width * block.scale, this.div.height * block.scale);
+            const pageCanvas = this.div as HTMLCanvasElement;
+            ctx.drawImage(pageCanvas, 0, 0, pageCanvas.width, pageCanvas.height, 0, 0, pageCanvas.width * block.scale, pageCanvas.height * block.scale);
             break;
         case 's':
             this.argValue = block.spec[4];
@@ -61,7 +75,7 @@ export default class BlockArg {
                 position: 'absolute',
                 zoom: (block.scale * 100) + '%'
             });
-            var p = newP(this.div, this.argValue.split('.')[0], {
+            var p = newP(this.div, String(this.argValue).split('.')[0], {
                 width: '60px'
             });
             p.setAttribute('class', 'soundname');
@@ -73,16 +87,16 @@ export default class BlockArg {
                 zoom: (block.scale * 100) + '%'
             });
             var num = newHTML('p', 'recordedNumber', this.div);
-            num.textContent = this.daddy.inpalette ? this.argValue : '?';
+            num.textContent = this.daddy.inpalette ? String(this.argValue) : '?';
             break;
         default:
             break;
         }
     }
 
-    update () {
+    update (spr?) {
         if (this.argType == 'r') {
-            this.div.childNodes[0].textContent = this.argValue;
+            this.div.childNodes[0].textContent = String(this.argValue);
         }
         if (this.arg && (this.argType == 'p')) {
             this.arg.updateIcon();
@@ -179,12 +193,13 @@ export default class BlockArg {
         // Expand the parent div to incorporate the size of the button,
         // else on Android 4.2 the bottom part of the button
         // will not be clickable.
-        div.parentNode.height += 10 * window.devicePixelRatio;
-        setCanvasSize(div.parentNode, div.parentNode.width, div.parentNode.height);
+        const divParent = div.parentNode as HTMLCanvasElement;
+        divParent.height += 10 * window.devicePixelRatio;
+        setCanvasSize(divParent, divParent.width, divParent.height);
         return div;
     }
 
-    addTextArgument (str) {
+    addTextArgument (str, isText?) {
         var div = newHTML('div', 'textfield', this.daddy.div);
         var ti = newHTML('h3', undefined, div);
         this.input = ti;
@@ -194,8 +209,9 @@ export default class BlockArg {
         // Expand the parent div to incorporate the size of the button,
         // else on Android 4.2 the bottom part of the button
         // will not be clickable.
-        div.parentNode.height += 10 * window.devicePixelRatio;
-        setCanvasSize(div.parentNode, div.parentNode.width, div.parentNode.height);
+        const divParent = div.parentNode as HTMLCanvasElement;
+        divParent.height += 10 * window.devicePixelRatio;
+        setCanvasSize(divParent, divParent.width, divParent.height);
         return div;
     }
 
@@ -235,8 +251,9 @@ export default class BlockArg {
             // Expand the parent div to incorporate the size of the button,
             // else on Android 4.2 the bottom part of the button
             // will not be clickable.
-            this.button.parentNode.height += this.button.height / 2;
-            setCanvasSize(this.button.parentNode, this.button.parentNode.width, this.button.parentNode.height);
+            const buttonParent = this.button.parentNode as HTMLCanvasElement;
+            buttonParent.height += this.button.height / 2;
+            setCanvasSize(buttonParent, buttonParent.width, buttonParent.height);
         }
         return this.daddy.blockicon;
     }
@@ -435,11 +452,12 @@ export default class BlockArg {
 
     updateIcon () {
         var num = this.argValue;
-        var page = ScratchJr.stage.pages[num - 1];
+        var page = ScratchJr.stage.pages[Number(num) - 1];
         page.num = num;
         this.div = this.pageIcon(num);
         var block = this.daddy;
         var ctx = block.blockshape.getContext('2d');
-        ctx.drawImage(this.div, 0, 0, this.div.width, this.div.height, 0, 0, this.div.width * block.scale, this.div.height * block.scale);
+        const pageCanvas = this.div as HTMLCanvasElement;
+        ctx.drawImage(pageCanvas, 0, 0, pageCanvas.width, pageCanvas.height, 0, 0, pageCanvas.width * block.scale, pageCanvas.height * block.scale);
     }
 }

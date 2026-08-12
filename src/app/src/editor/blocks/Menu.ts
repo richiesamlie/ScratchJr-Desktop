@@ -5,6 +5,11 @@ import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTouch,
 let openMenu;
 
 export default class Menu {
+    // Referenced by the dropdown hover path but never defined anywhere in the
+    // codebase (pre-existing broken hover); declared so the calls typecheck.
+    static highlightdot: (evt: unknown) => void;
+    static unhighlightdot: (evt: unknown) => void;
+
     static get openMenu () {
         return openMenu;
     }
@@ -30,8 +35,8 @@ export default class Menu {
         if (dx < 5) {
             dx = 5;
         }
-        dx += globalx(p, 0);
-        var dy = b.top + b.offsetHeight - ((10 + 18) * scaleMultiplier) + globaly(p, 0);
+        dx += globalx(p);
+        var dy = b.top + b.offsetHeight - ((10 + 18) * scaleMultiplier) + globaly(p);
         if ((dy + ((10 + dh) * scaleMultiplier)) > getDocumentHeight()) {
             dy = getDocumentHeight() - ((15 + dh) * scaleMultiplier);
         }
