@@ -1,8 +1,8 @@
 import ScratchJr from '../editor/ScratchJr.js';
-import Path from './Path.js';
-import Paint from './Paint.js';
-import Camera from './Camera.js';
-import SVGTools from './SVGTools.js';
+import Path from './Path';
+import Paint from './Paint';
+import Camera from './Camera';
+import SVGTools from './SVGTools';
 import {newHTML, gn} from '../utils/lib';
 import ScratchAudio from '../utils/ScratchAudio';
 //////////////////////////////////
@@ -65,7 +65,7 @@ export default class PaintUndo {
     }
 
     // you record before introducing a change
-    static record (dontStartStories) {
+    static record (dontStartStories?) {
         if ((index + 1) <= buffer.length) {
             buffer.splice(index + 1, buffer.length);
         }

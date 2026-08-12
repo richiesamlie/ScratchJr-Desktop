@@ -1,14 +1,14 @@
 import ScratchJr from '../editor/ScratchJr.js';
 import iOS from '../iPad/iOS';
 import ScratchAudio from '../utils/ScratchAudio';
-import Paint from './Paint.js';
-import PaintUndo from './PaintUndo.js';
-import SVGImage from './SVGImage.js';
-import SVGTools from './SVGTools.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
+import Paint from './Paint';
+import PaintUndo from './PaintUndo';
+import SVGImage from './SVGImage';
+import SVGTools from './SVGTools';
+import SVG2Canvas from '../utils/SVG2Canvas';
 import Rectangle from '../geom/Rectangle';
-import Layer from './Layer.js';
-import Ghost from './Ghost.js';
+import Layer from './Layer';
+import Ghost from './Ghost';
 import {gn, globalx, globaly, DEGTOR, setCanvasSize, isAndroid} from '../utils/lib';
 
 let view = 'front';
@@ -16,6 +16,9 @@ let target;
 let available = false;
 
 export default class Camera {
+    static active: boolean;
+    static flip: unknown;
+
     static get available () {
         return available;
     }
@@ -37,7 +40,7 @@ export default class Camera {
         viewbox = viewbox.expandBy(20);
         viewbox.crop(box);
         var mask = Camera.getLayerMask(target);
-        var data = {};
+        var data: Record<string, unknown> = {};
         var x = Math.floor((viewbox.x + (viewbox.width / 2)) * Paint.currentZoom - (viewbox.width / 2));
         var y = Math.floor((viewbox.y + (viewbox.height / 2)) * Paint.currentZoom - (viewbox.height / 2));
         data.x = globalx(gn('workspacebkg')) + x + gn('maincanvas').dx

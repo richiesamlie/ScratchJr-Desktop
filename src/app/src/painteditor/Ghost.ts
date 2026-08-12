@@ -1,13 +1,13 @@
 import Snap from 'snapsvg';
 
 import ScratchJr from '../editor/ScratchJr.js';
-import SVGTools from './SVGTools.js';
-import Paint from './Paint.js';
-import PaintAction from './PaintAction.js';
-import Layer from './Layer.js';
+import SVGTools from './SVGTools';
+import Paint from './Paint';
+import PaintAction from './PaintAction';
+import Layer from './Layer';
 import Vector from '../geom/Vector';
-import Transform from './Transform.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
+import Transform from './Transform';
+import SVG2Canvas from '../utils/SVG2Canvas';
 import {gn, setCanvasSize, newDiv} from '../utils/lib';
 
 let maskCanvas = document.createElement('canvas');
@@ -116,7 +116,7 @@ export default class Ghost {
         }
     }
 
-    static hitSomething (pt, id) {
+    static hitSomething (pt, id, color?) {
         var mt = gn(id);
         var dogohst = true;
         if (mt && mt.getAttribute('relatedto')) {
@@ -129,13 +129,13 @@ export default class Ghost {
         case 'scissors':
         case 'path':
             if (mt.getAttribute('fixed') == 'yes') {
-                mt = Ghost.getHitObject(pt, Paint.mode == 'path');
+                mt = Ghost.getHitObject(pt, (Paint.mode as string) == 'path');
             }
             dogohst = mt ? (mt.getAttribute('fixed') != 'yes') : false;
             break;
         case 'paintbucket':
         case 'camera':
-            mt = Ghost.getHitObject(pt, Paint.mode == 'path');
+            mt = Ghost.getHitObject(pt, (Paint.mode as string) == 'path');
             break;
         }
         if (mt && dogohst) {
@@ -198,7 +198,7 @@ export default class Ghost {
         case 'rotate':
         case 'stamper':
         case 'scissors':
-            mt = Ghost.getActualHit(Ghost.getHitObject(pt, Paint.mode != 'path'), pt);
+            mt = Ghost.getActualHit(Ghost.getHitObject(pt, (Paint.mode as string) != 'path'), pt);
             if (mt && mt.id) {
                 if (mt.getAttribute('relatedto')) {
                     mt = gn(mt.getAttribute('relatedto'));
@@ -228,7 +228,7 @@ export default class Ghost {
         return null;
     }
 
-    static getActualHit (mt, pt) {
+    static getActualHit (mt, pt, id?) {
         if (!mt) {
             return null;
         }
@@ -300,7 +300,7 @@ export default class Ghost {
         }
     }
 
-    static getKid (p, elem, opacity, space, c, sw) {
+    static getKid (p, elem, opacity?, space?, c?, sw?) {
         if (!sw) {
             sw = elem.getAttribute('stroke-width');
         }
@@ -325,7 +325,7 @@ export default class Ghost {
         }
         shape.setAttribute('fill', 'none');
         shape.setAttribute('stroke', c);
-        shape.setAttribute('stroke-width', sw / Paint.currentZoom);
+        shape.setAttribute('stroke-width', String(sw / Paint.currentZoom));
         shape.setAttribute('class', 'active3d');
         var ang = Transform.getRotationAngle(elem);
         if (ang != 0) {
@@ -347,7 +347,7 @@ export default class Ghost {
         }
         dash.setAttribute('fill', 'none');
         dash.setAttribute('stroke', 'white');
-        dash.setAttribute('stroke-width', 3 / Paint.currentZoom);
+        dash.setAttribute('stroke-width', String(3 / Paint.currentZoom));
         dash.setAttribute('stroke-dasharray', space);
         dash.setAttribute('class', 'active3d');
         if (opacity) {
@@ -466,7 +466,7 @@ export default class Ghost {
         return r + g + b;
     }
 
-    static getHitObject (pt, isTip, exclude) {
+    static getHitObject (pt, isTip?, exclude?) {
         var list = Ghost.svgHit(pt);
         pt = Vector.floor(Vector.scale(pt, Paint.currentZoom));
         if (!Paint.root) {

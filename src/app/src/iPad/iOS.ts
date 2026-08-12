@@ -285,7 +285,7 @@ export default class iOS {
         }
     }
 
-    static stopfeed (fcn) {
+    static stopfeed (fcn?) {
         var result = tabletInterface.scratchjr_stopfeed();
         if (fcn) {
             fcn(result);

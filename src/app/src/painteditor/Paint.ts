@@ -1,20 +1,26 @@
 import ScratchJr from '../editor/ScratchJr.js';
 import BlockSpecs from '../editor/blocks/BlockSpecs';
-import SVGTools from './SVGTools.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import Ghost from './Ghost.js';
+import SVGTools from './SVGTools';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import Ghost from './Ghost';
 import iOS from '../iPad/iOS';
+
+// Named-form access: document.forms.spriteform
+const namedForms = document.forms as unknown as {
+    spriteform: HTMLFormElement & { name: HTMLInputElement };
+};
 import IO from '../iPad/IO';
 import MediaLib from '../iPad/MediaLib';
 import Localization from '../utils/Localization';
 import Alert from '../editor/ui/Alert';
-import PaintAction from './PaintAction.js';
+import PaintAction from './PaintAction';
 import ScratchAudio from '../utils/ScratchAudio';
-import Path from './Path.js';
-import PaintUndo from './PaintUndo.js';
-import Camera from './Camera.js';
+import Path from './Path';
+import type Sprite from '../editor/engine/Sprite';
+import PaintUndo from './PaintUndo';
+import Camera from './Camera';
 import Events from '../utils/Events';
-import Transform from './Transform.js';
+import Transform from './Transform';
 import Vector from '../geom/Vector';
 import {gn, newHTML, setCanvasSize, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib';
 
@@ -29,7 +35,7 @@ let xmlnslink = 'http://www.w3.org/1999/xlink';
 let fillcolor = '#080808';
 let workspaceWidth = 432;
 let workspaceHeight = 384;
-let mode = 'select';
+let mode: string = 'select';
 let pensizes = [1, 2, 4, 8, 16];
 
 let strokewidth = 2;
@@ -59,6 +65,8 @@ let deltaPoint = {
 };
 
 export default class Paint {
+    static skipNext: boolean;
+
 
     static get xmlns () {
         return xmlns;
@@ -161,7 +169,7 @@ export default class Paint {
         splashshade = 'data:image/svg+xml;base64,' + btoa(str);
     }
 
-    static open (bkg, md5, sname, cname, cscale, sw, sh) {
+    static open (bkg, md5, sname?, cname?, cscale?, sw?, sh?) {
         iOS.analyticsEvent('editor', 'paint_editor_opened', bkg ? 'bkg' : 'character');
         PaintUndo.buffer = [];
         PaintUndo.index = 0;
@@ -190,7 +198,7 @@ export default class Paint {
         // Set the back button callback
         ScratchJr.onBackButtonCallback.push(function () {
             var e = document.createEvent('TouchEvent');
-            e.initTouchEvent();
+            (e as TouchEvent & { initTouchEvent: () => void }).initTouchEvent();
             Paint.backToProject(e);
         });
     }
@@ -635,7 +643,7 @@ export default class Paint {
         ScratchJr.activeFocus = undefined;
         var spr = ScratchJr.getSprite();
         var ti = e.target;
-        var val = ScratchJr.validate(ti.value, spr.name);
+        var val = ScratchJr.validate(ti.value, (spr as Sprite).name);
         ti.value = val.substring(0, ti.maxLength);
         ScratchJr.storyStart('Paint.nameBlur');
     }
@@ -737,10 +745,10 @@ export default class Paint {
         var p = gn('sizeSelector');
         for (var i = 0; i < p.childElementCount; i++) {
             var elem = p.childNodes[i];
-            if (elem.key == str) {
-                elem.setAttribute('class', 'pensizeholder on');
+            if ((elem as HTMLElement).key == str) {
+                (elem as HTMLElement).setAttribute('class', 'pensizeholder on');
             } else {
-                elem.setAttribute('class', 'pensizeholder off');
+                (elem as HTMLElement).setAttribute('class', 'pensizeholder off');
             }
         }
     }
@@ -917,11 +925,13 @@ export default class Paint {
         }
         var c = t.childNodes[0].childNodes[0].style.backgroundColor;
         for (var i = 0; i < gn('swatches').childElementCount; i++) {
-            var mycolor = gn('swatches').childNodes[i].childNodes[0].childNodes[0].style.backgroundColor;
+            const swatchNode = gn('swatches').childNodes[i] as HTMLElement;
+            const swatchColor = swatchNode.childNodes[0].childNodes[0] as HTMLElement;
+            var mycolor = swatchColor.style.backgroundColor;
             if (c == mycolor) {
-                gn('swatches').childNodes[i].childNodes[1].setAttribute('class', 'splasharea on');
+                (swatchNode.childNodes[1] as HTMLElement).setAttribute('class', 'splasharea on');
             } else {
-                gn('swatches').childNodes[i].childNodes[1].setAttribute('class', 'splasharea off');
+                (swatchNode.childNodes[1] as HTMLElement).setAttribute('class', 'splasharea off');
             }
         }
         fillcolor = c;
@@ -978,7 +988,7 @@ export default class Paint {
         layer.setAttribute('style', 'pointer-events:visiblePainted');
         SVGTools.createGroup(root, 'draglayer');
         SVGTools.createGroup(root, 'paintgrid');
-        gn('paintgrid').setAttribute('opacity', 0.5);
+        gn('paintgrid').setAttribute('opacity', '0.5');
     }
 
     static clearWorkspace () {
@@ -1053,7 +1063,7 @@ export default class Paint {
         var dh = root.parentNode.parentNode.offsetHeight / (workspaceHeight + 10);
         var dw = root.parentNode.parentNode.offsetWidth / (workspaceWidth + 10);
         Paint.setZoomTo(Math.min(dw, dh));
-        document.forms.spriteform.style.visibility = 'hidden';
+        (document.forms as unknown as { spriteform: HTMLFormElement }).spriteform.style.visibility = 'hidden';
         if (currentMd5) {
             Paint.loadBackground(currentMd5);
         } else {
@@ -1064,7 +1074,7 @@ export default class Paint {
                 fill: ScratchJr.stagecolor
             };
             var cmds = [['M', 0, 0], ['L', 480, 0], ['L', 480, 360], ['L', 0, 360], ['L', 0, 0]];
-            attr.d = SVG2Canvas.arrayToString(cmds);
+            (attr as Record<string, unknown>).d = SVG2Canvas.arrayToString(cmds);
             SVGTools.addChild(gn('layer1'), 'path', attr);
             Ghost.drawOffscreen();
             PaintUndo.record(true);
@@ -1134,8 +1144,8 @@ export default class Paint {
 
     static initSprite (ow, oh) {
         nativeJr = true;
-        document.forms.spriteform.style.visibility = 'visible';
-        document.forms.spriteform.name.value = gn(currentName) ? gn(currentName).owner.name : currentName;
+        namedForms.spriteform.style.visibility = 'visible';
+        namedForms.spriteform.name.value = gn(currentName) ? (gn(currentName).owner as Sprite).name : currentName;
         if (ow) {
             workspaceWidth = ow;
         }
@@ -1201,7 +1211,7 @@ export default class Paint {
     // Saving
     /////////////////////////////////
 
-    static savePageImage (fcn) {
+    static savePageImage (fcn?) {
         var worthsaving = (gn('layer1').childElementCount > 0);
         if (!worthsaving) {
             Paint.close();
@@ -1221,7 +1231,7 @@ export default class Paint {
     static changeBackground (md5, fcn) {
         saveMD5 = md5;
         var type = 'userbkgs';
-        var mobj = {};
+        var mobj: SqlPayload = {};
         mobj.cond = 'md5 = ? AND version = ?';
         mobj.items = ['*'];
         mobj.values = [saveMD5, ScratchJr.version];
@@ -1258,7 +1268,7 @@ export default class Paint {
         var pngBase64 = dataurl.split(',')[1];
         iOS.setmedia(pngBase64, 'png', setBkgRecord);
         function setBkgRecord (pngmd5) {
-            var json = {};
+            var json: SqlPayload = {};
             var keylist = ['md5', 'altmd5', 'version', 'width', 'height', 'ext'];
             var values = '?,?,?,?,?,?';
             json.values = [saveMD5, pngmd5, ScratchJr.version, '480', '360', 'svg'];
@@ -1272,8 +1282,8 @@ export default class Paint {
         Paint.close();
     }
 
-    static saveSprite (fcn) {
-        var cname = document.forms.spriteform.name.value;
+    static saveSprite (fcn?) {
+        var cname = namedForms.spriteform.name.value;
         var worthsaving = (gn('layer1').childElementCount > 0) && (PaintUndo.index > 0);
         if (worthsaving) {
             saving = true;
@@ -1298,7 +1308,7 @@ export default class Paint {
 
     static addOrModifySprite (str, fcn) {
         saveMD5 = str;
-        var mobj = {};
+        var mobj: SqlPayload = {};
         mobj.cond = 'md5 = ? AND version = ?';
         mobj.items = ['*'];
         mobj.values = [saveMD5, ScratchJr.version];
@@ -1335,7 +1345,7 @@ export default class Paint {
 
     static addToLib (fcn) {
         var scale = '0.5'; // always saves with 1/2 the size
-        var cname = document.forms.spriteform.name.value;
+        var cname = namedForms.spriteform.name.value;
         cname = ((unescape(cname)).replace(/[0-9]/g, '')).replace(/\s*/g, '');
         var box = SVGTools.getBox(gn('layer1')).rounded();
         box = box.expandBy(20);
@@ -1345,7 +1355,7 @@ export default class Paint {
         var pngBase64 = dataurl.split(',')[1];
         iOS.setmedia(pngBase64, 'png', setCostumeRecord);
         function setCostumeRecord (pngmd5) {
-            var json = {};
+            var json: SqlPayload = {};
             var keylist = ['scale', 'md5', 'altmd5', 'version', 'width', 'height', 'ext', 'name'];
             var values = '?,?,?,?,?,?,?,?';
             json.values = [scale, saveMD5, pngmd5, ScratchJr.version, w, h, 'svg', cname];
@@ -1356,7 +1366,7 @@ export default class Paint {
 
     static changePageSprite () {
         Paint.close();
-        var cname = document.forms.spriteform.name.value;
+        var cname = namedForms.spriteform.name.value;
         var type = Paint.getLoadType(spriteId, cname);
         switch (type) {
         case 'modify':
@@ -1428,7 +1438,7 @@ export default class Paint {
         }
     }
 
-    static createCharFromXML (str) {
+    static createCharFromXML (str, fcn?) {
         nativeJr = str.indexOf('Scratch Jr') > -1;
         var dx = (workspaceWidth < 432) ? Math.floor((432 - workspaceWidth) / 2) : 0;
         var dy = (workspaceHeight < 384) ? Math.floor((384 - workspaceHeight) / 2) : 0;

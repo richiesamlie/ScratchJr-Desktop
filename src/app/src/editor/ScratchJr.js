@@ -1,6 +1,6 @@
 import Project from './ui/Project';
 import ScratchAudio from '../utils/ScratchAudio';
-import Paint from '../painteditor/Paint.js';
+import Paint from '../painteditor/Paint';
 import Prims from './engine/Prims';
 import Undo from './ui/Undo';
 import Alert from './ui/Alert';

@@ -5,17 +5,19 @@
 // path for clip -- > ID = pathmask_ + imageid
 // visible path border  --> ID = pathborder_ + imageid
 ///////////////////////////////////////////////////////////////////
-import Path from './Path.js';
-import Paint from './Paint.js';
-import Layer from './Layer.js';
-import Transform from './Transform.js';
+import Path from './Path';
+import Paint from './Paint';
+import Layer from './Layer';
+import Transform from './Transform';
 import Rectangle from '../geom/Rectangle';
-import SVGTools from './SVGTools.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import PaintAction from './PaintAction.js';
+import SVGTools from './SVGTools';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import PaintAction from './PaintAction';
 import {getIdFor, gn, getIdForCamera, setCanvasSize, DEGTOR} from '../utils/lib';
 
 export default class SVGImage {
+    static currentshape: HTMLElement;
+
     static addCameraFill (mt, str) {
         //  prepare to insert image by getting the objects above
         if (mt.getAttribute('relatedto')) {
@@ -53,7 +55,7 @@ export default class SVGImage {
             'id': 'pathmask_' + imageid
         };
         for (var val in maskattr) {
-            pathmask.setAttribute(val, maskattr[val]);
+            (pathmask as HTMLElement).setAttribute(val, maskattr[val]);
         }
         var clippath = SVGTools.addChild(g, 'clipPath', {
             id: 'clip_' + imageid,
@@ -95,7 +97,7 @@ export default class SVGImage {
     // Actions on Images
     ///////////////////////
 
-    static removeClip (img, keepmt) {
+    static removeClip (img, keepmt?) {
         var imageid = img.getAttribute('id');
         var isbkg = imageid.indexOf('staticbkg') > -1;
         var clip = gn('clip_' + imageid);
@@ -103,7 +105,7 @@ export default class SVGImage {
         var pathborder = gn('pathborder_' + imageid);
         if (isbkg && !keepmt) {
             var path = clip.childNodes[0];
-            path.id = 'staticbkg';
+            (path as HTMLElement).id = 'staticbkg';
             gn('layer1').appendChild(path);
         } else {
             if (group) {
@@ -142,7 +144,7 @@ export default class SVGImage {
     //	Mask for camera
     ///////////////////////
 
-    static draw (image, clip, ctx, fcn) {
+    static draw (image, clip, ctx, fcn?) {
         var angle = Transform.getRotationAngle(image);
         var center = SVGTools.getBoxCenter(image);
         var newcnv = document.createElement('canvas');
@@ -258,7 +260,7 @@ export default class SVGImage {
             'id': 'pathmask_' + imageid
         };
         for (var val in maskattr) {
-            pathmask.setAttribute(val, maskattr[val]);
+            (pathmask as HTMLElement).setAttribute(val, maskattr[val]);
         }
         var g = SVGTools.createGroup(p, 'group_' + imageid);
         var clippath = SVGTools.addChild(g, 'clipPath', {
@@ -273,7 +275,7 @@ export default class SVGImage {
             'id': 'pathborder_' + imageid
         };
         for (var vl in borderattr) {
-            pathborder.setAttribute(vl, borderattr[vl]);
+            (pathborder as HTMLElement).setAttribute(vl, borderattr[vl]);
         }
         p.appendChild(pathborder);
         Transform.translateTo(img, window.xform);

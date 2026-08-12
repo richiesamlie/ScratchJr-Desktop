@@ -1,13 +1,13 @@
 
-import Paint from './Paint.js';
+import Paint from './Paint';
 import Vector from '../geom/Vector';
 import {gn, getIdFor, rgb2hsb} from '../utils/lib';
-import Transform from './Transform.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import SVGImage from './SVGImage.js';
+import Transform from './Transform';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import SVGImage from './SVGImage';
 import Rectangle from '../geom/Rectangle';
-import Layer from './Layer.js';
-import Path from './Path.js';
+import Layer from './Layer';
+import Path from './Path';
 
 let attributeTable = {
     'path': ['d'],
@@ -50,9 +50,9 @@ export default class SVGTools {
         };
     }
 
-    static create (parent, w, h) {
+    static create (parent, w?, h?) {
         var el = document.createElementNS(Paint.xmlns, 'svg');
-        el.setAttributeNS(null, 'version', 1.1);
+        el.setAttributeNS(null, 'version', '1.1');
         if (w) {
             el.setAttributeNS(null, 'width', w);
         }
@@ -155,7 +155,7 @@ export default class SVGTools {
             'opacity': 1
         };
         var cmds = [['M', x, y + 1], ['L', x + 0.5, y], ['L', x + 1, y + 1], ['L', x, y + 1]];
-        attr.d = SVG2Canvas.arrayToString(cmds);
+        (attr as Record<string, unknown>).d = SVG2Canvas.arrayToString(cmds);
         var drawattr = SVGTools.getPenAttr();
         for (var val in attr) {
             shape.setAttribute(val, attr[val]);
@@ -199,7 +199,7 @@ export default class SVGTools {
         };
     }
 
-    static getPenAttr () {
+    static getPenAttr (shape?) {
         return {
             'fill': 'none',
             'stroke': Paint.fillcolor,
@@ -403,7 +403,7 @@ export default class SVGTools {
         return box;
     }
 
-    static getBox (elem, isSaving) {
+    static getBox (elem, isSaving?) {
         var box = new Rectangle(0, 0, 0, 0);
         if (elem == undefined) {
             return box;

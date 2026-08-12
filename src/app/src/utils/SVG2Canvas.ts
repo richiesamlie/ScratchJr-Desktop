@@ -1,6 +1,6 @@
 import Vector from '../geom/Vector';
 import {setCanvasSize, rgb2hsb, colorToRGBA} from './lib';
-import SVGImage from '../painteditor/SVGImage.js';
+import SVGImage from '../painteditor/SVGImage';
 
 let endp;
 let startp;
@@ -28,6 +28,8 @@ let strokevalues = {
 ////////////////////////////////////////////////////////
 
 export default class SVG2Canvas {
+    static acurve: boolean;
+
     // Getters/setters for globally used properties
     static get endp () {
         return endp;
@@ -73,7 +75,7 @@ export default class SVG2Canvas {
         }
     }
 
-    static drawLayer (elem, ctx, _fcn) {
+    static drawLayer (elem, ctx, _fcn?) {
         // svg no fill means black
         ctx.fillStyle = !elem.getAttribute('fill')
             ? 'black'
@@ -248,7 +250,7 @@ export default class SVG2Canvas {
     ////////////////////////////////////////////////////////
 
 
-    static processXMLnode (elem, ctx, fcn) {
+    static processXMLnode (elem, ctx, fcn?) {
         if (!elem) {
             return;
         }
@@ -342,7 +344,7 @@ export default class SVG2Canvas {
         var cx = Number(shape.getAttribute('cx'));
         var cy = Number(shape.getAttribute('cy'));
         var kappa = (Math.sqrt(2) - 1) / 3 * 4;
-        var d = [['M', cx - rx, cy],
+        var d: string | (string | number)[][] = [['M', cx - rx, cy],
             ['C', cx - rx, cy - ry * kappa, cx - rx * kappa, cy - ry, cx, cy - ry],
             ['C', cx + rx * kappa, cy - ry, cx + rx, cy - ry * kappa, cx + rx, cy],
             ['C', cx + rx, cy + ry * kappa, cx + rx * kappa, cy + ry, cx, cy + ry],

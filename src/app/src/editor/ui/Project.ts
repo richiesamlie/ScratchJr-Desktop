@@ -7,8 +7,8 @@ import Page from '../engine/Page';
 import Sprite from '../engine/Sprite';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
-import Paint from '../../painteditor/Paint.js';
-import SVG2Canvas from '../../utils/SVG2Canvas.js';
+import Paint from '../../painteditor/Paint';
+import SVG2Canvas from '../../utils/SVG2Canvas';
 import type Scripts from './Scripts';
 import {frame, gn, newHTML, scaleMultiplier, getIdFor,
     isAndroid, setProps, setCanvasSize} from '../../utils/lib';

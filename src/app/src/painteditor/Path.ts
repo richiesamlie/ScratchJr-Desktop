@@ -6,16 +6,17 @@
 // data needs to be moved, etc. -TM
 
 import ScratchJr from '../editor/ScratchJr.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import SVGImage from './SVGImage.js';
-import SVGTools from './SVGTools.js';
-import Layer from './Layer.js';
+import {isTouch} from '../utils/lib';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import SVGImage from './SVGImage';
+import SVGTools from './SVGTools';
+import Layer from './Layer';
 import Vector from '../geom/Vector';
-import Transform from './Transform.js';
-import Paint from './Paint.js';
-import PaintUndo from './PaintUndo.js';
-import PaintAction from './PaintAction.js';
-import Ghost from './Ghost.js';
+import Transform from './Transform';
+import Paint from './Paint';
+import PaintUndo from './PaintUndo';
+import PaintAction from './PaintAction';
+import Ghost from './Ghost';
 import Events from '../utils/Events';
 import {gn, getIdFor, setCanvasSize} from '../utils/lib';
 
@@ -311,7 +312,7 @@ export default class Path {
         var c = elem.getAttribute('fill');
         var s = elem.getAttribute('stroke');
         var sw = elem.getAttribute('stroke-width');
-        var attr = {
+        var attr: Record<string, unknown> = {
             'opacity': 1,
             'fill': c,
             'stroke': s,
@@ -602,7 +603,7 @@ export default class Path {
         if (g != null) {
             g.parentNode.removeChild(g);
         }
-        g = document.createElementNS(Paint.xmlns, 'g');
+        g = document.createElementNS(Paint.xmlns, 'g') as HTMLElement;
         g.setAttribute('style', 'pointer-events:none');
         g.setAttribute('id', 'pathdots');
         var p = document.getElementById('layer1').parentNode;
@@ -811,12 +812,12 @@ export default class Path {
         g.parentNode.removeChild(g);
     }
 
-    static getDotsCoodinates () {
+    static getDotsCoodinates (shape?) {
         var pointslist = [];
         for (var i = 0; i < gn('pathdots').childElementCount; i++) {
             var dot = gn('pathdots').childNodes[i];
             pointslist.push({
-                cmd: dot.getAttribute('cmd'),
+                cmd: (dot as HTMLElement).getAttribute('cmd'),
                 pt: Path.getDotPoint(dot)
             });
         }
@@ -916,7 +917,7 @@ export default class Path {
         var list1 = Path.getPointsForFirst(shape);
         var list = Path.getPointsAndCmds(shape);
         var mustdelteboth = (
-                (gn('pathdots').childNodes[gn('pathdots').childElementCount - 1]).getAttribute('cmd') == 'x'
+                (gn('pathdots').childNodes[gn('pathdots').childElementCount - 1] as HTMLElement).getAttribute('cmd') == 'x'
             );
         if ((list.length != list1.length) && (list1.length < 5)) {
             return;
@@ -1353,7 +1354,7 @@ export default class Path {
             return false;
         }
         // get a duplicate of the background
-        var attr2 = {
+        var attr2: Record<string, unknown> = {
             'id': getIdFor('path'),
             'opacity': 1,
             fill: 'white'
@@ -1370,7 +1371,7 @@ export default class Path {
         }
         var attr = Path.getStylingFrom(gn('staticbkg'));
         for (var val in attr) {
-            mt.setAttribute(val, attr[val]);
+            mt.setAttribute(val, String(attr[val]));
         }
         return Path.createStencil(shape, mt);
     }
@@ -1500,7 +1501,7 @@ export default class Path {
         return d;
     }
 
-    static getNextCmd (i, prev, plist, endpt) {
+    static getNextCmd (i, prev, plist, endpt?) {
         var next = '';
         switch (plist[i].cmd.toUpperCase()) {
         case 'M':
@@ -1676,7 +1677,7 @@ export default class Path {
     }
 
     static getMinMaxPoints (list) {
-        var res = [0, 0, 0, 0];
+        var res: Array<{ type: string; x: number; y: number; index: number } | number> = [0, 0, 0, 0];
         if (list.length < 1) {
             return res;
         }
@@ -2031,10 +2032,10 @@ export default class Path {
     // for debugging
     static placePoint (p, pt, c) {
         var el = SVGTools.addEllipse(p, pt.x, pt.y);
-        el.setAttributeNS(null, 'stroke-width', 0.5);
+        el.setAttributeNS(null, 'stroke-width', '0.5');
 
-        el.setAttributeNS(null, 'rx', 4);
-        el.setAttributeNS(null, 'ry', 4);
+        el.setAttributeNS(null, 'rx', '4');
+        el.setAttributeNS(null, 'ry', '4');
         el.setAttributeNS(null, 'fill', c);
     }
     // Path.placePoint(gn("testlayer"), pt, c ? c : "#0093ff");

@@ -1,11 +1,11 @@
 import ScratchJr from '../editor/ScratchJr.js';
-import Paint from './Paint.js';
-import PaintUndo from './PaintUndo.js';
-import Path from './Path.js';
-import SVGTools from './SVGTools.js';
-import SVGImage from './SVGImage.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import Transform from './Transform.js';
+import Paint from './Paint';
+import PaintUndo from './PaintUndo';
+import Path from './Path';
+import SVGTools from './SVGTools';
+import SVGImage from './SVGImage';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import Transform from './Transform';
 import {gn, setCanvasSize, newDiv, DEGTOR} from '../utils/lib';
 
 let targetOffscreen = document.createElement('canvas');
@@ -40,10 +40,10 @@ export default class Layer {
         var res = [];
         for (let i = 0; i < gn('layer1').childElementCount; i++) {
             var mt = gn('layer1').childNodes[i];
-            if (mt.getAttribute('fixed') == 'yes') {
+            if ((mt as HTMLElement).getAttribute('fixed') == 'yes') {
                 continue;
             }
-            if (mt.getAttribute('stencil') == 'yes') {
+            if ((mt as HTMLElement).getAttribute('stencil') == 'yes') {
                 continue;
             }
             res.push(mt);
@@ -287,10 +287,10 @@ export default class Layer {
         var box = SVGTools.getBox(mt);
         for (var i = n - 1; i > -1; i--) {
             var elem = p.childNodes[i];
-            if (elem.id == 'staticbkg') {
+            if ((elem as HTMLElement).id == 'staticbkg') {
                 continue;
             }
-            if (elem.id.indexOf('erasertemp') > -1) {
+            if ((elem as HTMLElement).id.indexOf('erasertemp') > -1) {
                 continue;
             }
             var box2 = SVGTools.getBox(elem);
@@ -381,7 +381,7 @@ export default class Layer {
         return data[(dx * 4) + dy * w * 4 + 3] == 0;
     }
 
-    static drawInContext (elem, ctx, zoom, lw, isTip) {
+    static drawInContext (elem, ctx, zoom?, lw?, isTip?) {
         var rot = Transform.extract(elem, 4);
         if (rot.angle != 0) {
             Layer.rotateFromCenter(ctx, elem, rot.angle);

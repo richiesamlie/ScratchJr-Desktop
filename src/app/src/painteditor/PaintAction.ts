@@ -1,16 +1,16 @@
 import ScratchJr from '../editor/ScratchJr.js';
-import Paint from './Paint.js';
-import PaintUndo from './PaintUndo.js';
+import Paint from './Paint';
+import PaintUndo from './PaintUndo';
 import ScratchAudio from '../utils/ScratchAudio';
-import SVGTools from './SVGTools.js';
-import Path from './Path.js';
-import Transform from './Transform.js';
-import Ghost from './Ghost.js';
+import SVGTools from './SVGTools';
+import Path from './Path';
+import Transform from './Transform';
+import Ghost from './Ghost';
 import Vector from '../geom/Vector';
-import Layer from './Layer.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import SVGImage from './SVGImage.js';
-import Camera from './Camera.js';
+import Layer from './Layer';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import SVGImage from './SVGImage';
+import Camera from './Camera';
 import Events from '../utils/Events';
 import Rectangle from '../geom/Rectangle';
 import {gn, isTouch, getIdFor} from '../utils/lib';
@@ -52,6 +52,9 @@ let mindist = 10;
 /////////////////////////////////
 
 export default class PaintAction {
+    static center: { x: number; y: number };
+    static currentshape: HTMLElement;
+
     // Getters/setters for globally used properties
     static set target (newTarget) {
         target = newTarget;
@@ -98,7 +101,7 @@ export default class PaintAction {
                 continue;
             }
             var res = [];
-            for (let i = 0; i < kid.childElementCount; i++) {
+            for (let i = 0; i < (kid as HTMLElement).childElementCount; i++) {
                 var elem = kid.childNodes[i];
                 if (!elem) {
                     continue;
@@ -106,7 +109,7 @@ export default class PaintAction {
                 Transform.rotateFromPoint(erot, elem);
                 res.push(elem);
             }
-            for (let i = 0; i < kid.childElementCount; i++) {
+            for (let i = 0; i < (kid as HTMLElement).childElementCount; i++) {
                 gn('layer1').appendChild(res[i]);
             }
             gn('layer1').removeChild(kid);
@@ -231,7 +234,7 @@ export default class PaintAction {
         PaintAction.fingerDown(evt);
     }
 
-    static startHold () {
+    static startHold (e?) {
         //  console.log ("startHold", currentShape);
         if (!currentShape) {
             return;
@@ -371,7 +374,7 @@ export default class PaintAction {
         Ghost.findTarget(evt);
     }
 
-    static startDragShape () {
+    static startDragShape (e?) {
         if (timeoutEvent) {
             clearTimeout(timeoutEvent);
         }
@@ -813,7 +816,7 @@ Path.maxDistance()); // check the start
         PaintAction.paintRegion(evt);
     }
 
-    static paintRegion () {
+    static paintRegion (e?) {
         ScratchAudio.sndFX('splash.wav');
         switch (PaintAction.getPaintType()) {
         case 'paths':
@@ -880,12 +883,7 @@ Path.maxDistance()); // check the start
             Transform.eleminateTranslates(dragGroup[i]);
         }
         var box1 = SVGTools.getTransformedBox(dragGroup[0]);
-        var box2 = {
-            x: 0,
-            y: 0,
-            width: Paint.workspaceWidth,
-            height: Paint.workspaceHeight
-        };
+        var box2 = new Rectangle(0, 0, Paint.workspaceWidth, Paint.workspaceHeight);
         for (var j = 1; j < dragGroup.length; j++) {
             box1 = box1.union(
                 SVGTools.getTransformedBox(dragGroup[j]).expandBy(
@@ -919,7 +917,7 @@ Path.maxDistance()); // check the start
 
     static ignoreEvt () {}
 
-    static backToSelect () {
+    static backToSelect (e?) {
         Paint.selectButton('select');
     }
 
@@ -951,7 +949,7 @@ Path.maxDistance()); // check the start
     //Calls for click
 
 
-    static removeShape () {
+    static removeShape (e?) {
         if (currentShape == undefined) {
             return;
         }
@@ -966,12 +964,12 @@ Path.maxDistance()); // check the start
         PaintAction.removeShape(evt);
         currentShape = SVGTools.addRect(gn('layer1'), Paint.initialPoint.x, Paint.initialPoint.y);
         var c = currentShape.getAttribute('stroke');
-        var attr = {
+        var attr: Record<string, string | number> = {
             'width': 16 / Paint.currentZoom,
             'height': 16 / Paint.currentZoom
         };
         for (var val in attr) {
-            currentShape.setAttribute(val, attr[val]);
+            currentShape.setAttribute(val, String(attr[val]));
         }
         PaintAction.rectMouseUp(evt);
         attr = {
@@ -979,7 +977,7 @@ Path.maxDistance()); // check the start
             'stroke-width': 4
         };
         for (var vl in attr) {
-            currentShape.setAttribute(vl, attr[vl]);
+            currentShape.setAttribute(vl, String(attr[vl]));
         }
         PaintUndo.record();
     }
@@ -991,12 +989,12 @@ Path.maxDistance()); // check the start
         PaintAction.removeShape(evt);
         currentShape = SVGTools.addEllipse(gn('layer1'), Paint.initialPoint.x, Paint.initialPoint.y);
         var c = currentShape.getAttribute('stroke');
-        var attr = {
+        var attr: Record<string, string | number> = {
             'rx': 8 / Paint.currentZoom,
             'ry': 8 / Paint.currentZoom
         };
         for (var val in attr) {
-            currentShape.setAttribute(val, attr[val]);
+            currentShape.setAttribute(val, String(attr[val]));
         }
         PaintAction.ellipseMouseUp(evt);
         attr = {
@@ -1004,7 +1002,7 @@ Path.maxDistance()); // check the start
             'stroke-width': 4
         };
         for (var vl in attr) {
-            currentShape.setAttribute(vl, attr[vl]);
+            currentShape.setAttribute(vl, String(attr[vl]));
         }
         PaintUndo.record();
     }

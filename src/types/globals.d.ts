@@ -16,6 +16,10 @@ interface AndroidInterfaceStatic {
     scratchjr_forceShowKeyboard(): void;
     scratchjr_forceHideKeyboard(): void;
     notifyEditorDoneLoading(): void;
+    scratchjr_has_multiple_cameras(): boolean;
+    scratchjr_setcamerafeed(url: string, callback?: unknown): void;
+    scratchjr_stopcamerafeed(): void;
+    scratchjr_getcamera(callback?: unknown): void;
     // filled in as more call sites are typed
     [key: string]: unknown;
 }
@@ -167,6 +171,11 @@ interface HTMLElement {
     fieldname?: string;
     w?: number;
     h?: number;
+    cx?: number;
+    cy?: number;
+    dx?: number;
+    dy?: number;
+    key?: unknown;
     next?: unknown;
     prev?: unknown;
 }
@@ -210,4 +219,7 @@ interface Window {
     isTouch?: boolean;
     devicePixelRatio?: number;
     reloadDebug?: unknown;
+    xform?: { setTranslate(x: number, y: number): void; matrix?: unknown };
+    selxform?: unknown;
+    Camera?: unknown;
 }

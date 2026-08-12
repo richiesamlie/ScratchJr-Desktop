@@ -2,9 +2,9 @@
 // SVG Transforms
 //////////////////////////////////
 
-import SVGTools from './SVGTools.js';
-import SVG2Canvas from '../utils/SVG2Canvas.js';
-import Paint from './Paint.js';
+import SVGTools from './SVGTools';
+import SVG2Canvas from '../utils/SVG2Canvas';
+import Paint from './Paint';
 import Vector from '../geom/Vector';
 import {gn, DEGTOR} from '../utils/lib';
 
@@ -56,7 +56,7 @@ export default class Transform {
     // Element translation
     ////////////////////////////
 
-    static translateTo (elem, xform) {
+    static translateTo (elem, xform, fcn?) {
         if (elem == undefined) {
             return;
         }
@@ -209,7 +209,7 @@ export default class Transform {
     // SVG Transforms
     //////////////////////////////////
 
-    static getRotationAngle (elem, to_rad) {
+    static getRotationAngle (elem, to_rad?) {
         var tl = Transform.getList(elem);
         if (!tl) {
             return 0;
@@ -505,6 +505,7 @@ export default class Transform {
     }
 }
 
-SVGMatrix.prototype.isIdentity = function () {
+const svgMatrixProto = SVGMatrix.prototype as unknown as { isIdentity: () => boolean };
+        svgMatrixProto.isIdentity = function () {
     return (this.a == 1 && this.b == 0 && this.c == 0 && this.d == 1 && this.e == 0 && this.f == 0);
 };
