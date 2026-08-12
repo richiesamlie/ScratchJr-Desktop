@@ -21,8 +21,11 @@ function resetDom () {
     const scriptscontainer = document.createElement('div');
     scriptscontainer.id = 'scriptscontainer';
     document.body.appendChild(scriptscontainer);
+    const pagesdiv = document.createElement('div');
+    pagesdiv.id = 'pagesdiv';
+    document.body.appendChild(pagesdiv);
     ScratchJr.stage = {
-        pagesdiv: document.createElement('div'),
+        pagesdiv,
         pages: [],
         currentPage: null,
     };
@@ -43,7 +46,7 @@ describe('script strip round-trip (project file format)', () => {
     });
 
     it('recreates blocks and re-encodes the same blocktype/arg/nesting', () => {
-        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [] });
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
         const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
         const sc = new Scripts(spr);
 
@@ -75,7 +78,7 @@ describe('script strip round-trip (project file format)', () => {
     });
 
     it('round-trips a strip with an arg block and page navigation target', () => {
-        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [] });
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
         const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
         const sc = new Scripts(spr);
 
@@ -145,6 +148,47 @@ describe('Thumbs.getPagePos (scroll-aware page strip caret math)', () => {
     });
 });
 
+describe('page encode/decode round-trip (page bag format)', () => {
+    beforeEach(() => {
+        resetDom();
+        stubMedia();
+        BlockSpecs.initBlocks();
+    });
+
+    it('encodePage produces the page bag and recreatePage decodes it', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        spr.code.recreateStrip([
+            ['hop', 2, 0, 0],
+            ['repeat', 3, 0, 10, [['say', 'Hi', 0, 0]]],
+        ]);
+        page.sprites = JSON.stringify(['cat']);
+
+        const encoded = page.encodePage();
+
+        // Page bag shape: sprite list, last sprite, num, layers, sprite bags.
+        expect(encoded.sprites).toEqual(['cat']);
+        expect(encoded.lastSprite).toBeUndefined();
+        expect(encoded.num).toBe(1);
+        expect(encoded.layers).toContain('cat');
+        const spriteBag = encoded.cat;
+        expect(spriteBag.id).toBe('cat');
+        expect(spriteBag.type).toBe('sprite');
+        expect(spriteBag.scripts[0][0][0]).toBe('hop');
+        expect(spriteBag.scripts[0][1][0]).toBe('repeat');
+        expect(spriteBag.scripts[0][1][4][0][0]).toBe('say');
+
+        // Decode: recreatePage builds a new page and re-creates the sprite.
+        Project.recreatePage('page2', encoded);
+        const page2 = ScratchJr.stage.pages[1];
+        expect(page2.id).toBe('page2');
+        expect(JSON.parse(page2.sprites)).toEqual(['cat']);
+        const catDiv = Array.from(page2.div.children).find(c => c.id === 'cat');
+        expect(catDiv).toBeTruthy();
+        expect(catDiv.owner.type).toBe('sprite');
+    });
+});
+
 describe('runtime primitive execution', () => {
     beforeEach(() => {
         resetDom();
@@ -152,12 +196,16 @@ describe('runtime primitive execution', () => {
         BlockSpecs.initBlocks();
     });
 
-    it('Home moves the sprite back to its home position', () => {
-        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [] });
-        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+    function makeThread (strip, spr) {
         const sc = new Scripts(spr);
-        const [block] = sc.recreateStrip([['home', 'null', 0, 0]]);
-        const thread = new Thread(spr, block);
+        const [block] = sc.recreateStrip(strip);
+        return new Thread(spr, block);
+    }
+
+    it('Home moves the sprite back to its home position', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        const thread = makeThread([['home', 'null', 0, 0]], spr);
 
         spr.homex = 0;
         spr.homey = 0;
@@ -169,5 +217,34 @@ describe('runtime primitive execution', () => {
         expect(spr.ycoor).toBe(0);
         // The primitive advanced the thread to the next block (end of strip).
         expect(thread.thisblock).toBeNull();
+    });
+
+    it('SetSpeed applies 2^arg to the sprite speed', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        const thread = makeThread([['setspeed', 2, 0, 0]], spr);
+
+        Prims.SetSpeed(thread);
+
+        expect(spr.speed).toBe(4);
+        expect(thread.thisblock).toBeNull();
+    });
+
+    it('Show and Hide flip visibility synchronously at full speed', () => {
+        const page = new Page('page1', { lastSprite: '', sprites: [], layers: [], num: 1 });
+        const spr = new Sprite({ type: 'sprite', page, md5: 'm1', id: 'cat', name: 'Cat', sounds: [] });
+        spr.speed = 4;
+        const showThread = makeThread([['show', 'null', 0, 0]], spr);
+        const hideThread = makeThread([['hide', 'null', 0, 0]], spr);
+
+        Prims.Show(showThread);
+        expect(spr.shown).toBe(true);
+        expect(spr.div.style.opacity).toBe('1');
+        expect(showThread.thisblock).toBeNull();
+
+        Prims.Hide(hideThread);
+        expect(spr.shown).toBe(false);
+        expect(spr.div.style.opacity).toBe('0');
+        expect(hideThread.thisblock).toBeNull();
     });
 });
