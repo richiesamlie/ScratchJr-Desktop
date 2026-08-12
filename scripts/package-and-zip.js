@@ -14,16 +14,31 @@ const { execSync } = require('child_process');
 
 const pkg = require('../package.json');
 
+// Target platform/arch. Defaults to the host so plain `npm run make:zip`
+// behaves as before; override for cross-building:
+//   npm_config_platform=linux npm_config_arch=arm64 npm run make:zip
+const targetPlatform = process.env.npm_config_platform || process.platform;
+const targetArch = process.env.npm_config_arch || 'x64';
+
+if (targetPlatform === 'darwin' && process.platform === 'win32') {
+    console.error(
+        'Cannot safely build macOS from Windows: the .app bundle relies on\n'
+        + 'framework symlinks that Windows zipping destroys. Build darwin on a\n'
+        + 'macOS runner (the CI matrix does this) — refusing to continue.'
+    );
+    process.exit(1);
+}
+
     const options = {
     dir: process.cwd(),
     name: pkg.productName || pkg.name,
-    platform: process.platform,
-    arch: process.env.npm_config_arch || 'x64',
+    platform: targetPlatform,
+    arch: targetArch,
     out: path.join(process.cwd(), 'out'),
     overwrite: true,
-    icon: path.join(process.cwd(), process.platform === 'win32'
+    icon: path.join(process.cwd(), targetPlatform === 'win32'
         ? 'src/icons/win/icon.ico'
-        : process.platform === 'darwin'
+        : targetPlatform === 'darwin'
             ? 'src/icons/mac/icon.icns'
             : 'src/icons/png/512x512.png'),
     asar: true,
