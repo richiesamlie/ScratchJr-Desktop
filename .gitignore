@@ -8,3 +8,6 @@ src/debug.log
 # CI build artifacts (zip + checksum files generated during release)
 ScratchJr-*.zip
 ScratchJr-*.zip.sha256
+
+# Internal migration tracking (never published)
+MIGRATION.md

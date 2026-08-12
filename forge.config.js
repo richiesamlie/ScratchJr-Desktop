@@ -6,7 +6,7 @@ let platform = os.platform();
 let {version} = require('./package.json');
 const iconFileWindows = path.resolve(__dirname, "src/icons/win/icon.ico");
 const installerGifWindows = path.resolve(__dirname, "src/icons/win/installerGif.gif");
-const copyrightDate = "Copyright (c) 2016, MIT";
+const copyrightDate = "Copyright (c) 2016, Massachusetts Institute of Technology";
 
 const iconFileMac = path.resolve(__dirname, "src/icons/mac/icon.icns");
 const iconFileLinux = path.resolve(__dirname, "src/icons/png/512x512.png");

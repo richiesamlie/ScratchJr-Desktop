@@ -21,8 +21,8 @@
     },
     "keywords": [],
     "author": "ScratchJr - Open Source Community Port",
-    "license": "MIT",
-    "app-copyright": "Copyright (c) 2016, MIT",
+    "license": "BSD-3-Clause",
+    "app-copyright": "Copyright (c) 2016, Massachusetts Institute of Technology",
     "config": {
         "forge": "./forge.config.js"
     },

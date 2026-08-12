@@ -245,7 +245,12 @@ Thank you to the teams behind [Electron](https://electronjs.org/), [Electron For
 
 ## License
 
-MIT
+**BSD 3-Clause** — Copyright (c) 2016, Massachusetts Institute of Technology.
+
+This is the license of the original ScratchJr project (see `LICENSE`); this
+derived port retains it, as required for redistributions of the original
+source. The modernization work in this repository is distributed under the
+same terms.
 
 ## Disclaimer
 
