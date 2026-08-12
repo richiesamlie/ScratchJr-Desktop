@@ -1,6 +1,6 @@
-# ScratchJr Desktop
+# ScratchJr Reborn — Desktop Edition
 
-> A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — maintained through **Vibe Coding**.
+> **ScratchJr, reborn.** A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — rebuilt with a fully typed codebase, hardened security, and editor enhancements that free up what the original capped.
 
 ## Official Disclaimer
 
@@ -8,11 +8,12 @@ Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, w
 
 ## Downloads
 
-**[Download ScratchJr for Desktop (latest release)](https://github.com/richiesamlie/ScratchJr-Desktop/releases/latest)**
+**[Download ScratchJr Reborn (latest release)](https://github.com/richiesamlie/ScratchJr-Desktop/releases/latest)**
 
 | File | Platform |
 |------|----------|
-| `ScratchJr-win32-x64.zip` | Windows x64 |
+| `ScratchJr-win32-x64.msi` | Windows x64 (installer) |
+| `ScratchJr-win32-x64.zip` | Windows x64 (portable) |
 | `ScratchJr-darwin-x64.zip` | macOS x64 |
 | `ScratchJr-darwin-arm64.zip` | macOS ARM64 |
 | `ScratchJr-linux-x64.zip` | Linux x64 |
@@ -22,9 +23,32 @@ Each release includes SHA256 checksums (`.sha256` files) for integrity verificat
 
 ---
 
-## What's Different from the Original
+## What Makes It "Reborn"
 
-This is a **complete modernization** of the original [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop) fork. The app looks the same to users, but the internals have been rebuilt from the ground up.
+The original ScratchJr Desktop was a faithful but fragile port: a 1,100-line monolith, an untyped JavaScript renderer with hidden global dependencies, a sync-IPC renderer that froze on file I/O, no tests, and hardcoded limits that cramped the editor. **Reborn** is that same app, rebuilt so it doesn't get in the way — and given creative room the original never had.
+
+### v1.5.0 — Editor Freedom + Fully Typed Core
+
+**More room to create — the original's caps are gone or configurable:**
+
+| Cap in the original | Reborn |
+|---|---|
+| **4 pages max** (hardcoded) | **8 pages by default** — configurable via `maxPages` in `settings.json` (change it any time, no code edits) |
+| **Page strip truncated** at ~4 thumbs, no scrolling | **Scrollable page strip** — mouse wheel + scrollbar, auto-scrolls to keep the current page in view |
+| **~4 characters visible** in the sidebar before scrolling | **Bigger character sidebar** (~5–6 visible) — and characters per page were never capped, so the only limit was the view |
+| **Lobby thumbnail breaks** for projects beyond 4 pages | Page-count badge clamps cleanly — multi-page projects always render a proper thumbnail |
+
+**A codebase you can trust — the full TypeScript migration:**
+
+- **All 56 renderer files** converted `.js` → `.ts` — every class declares its fields, every import is explicit, no hidden globals
+- `tsc --noEmit` clean (with `noImplicitThis` + `useUnknownInCatchVariables` enforced; full strict-mode burn-down is a documented follow-up)
+- **88 tests** (up from 80) — new persistence round-trip coverage for project naming/save logic
+- **Bugs the migration surfaced and fixed**:
+  - App failed to boot after the main-process `sql-validator` rename (`Cannot find module`) — Electron's Node 24 strips `.ts` natively, explicit extension added
+  - `Record.saveSoundandClose` typo pushed `undefined` onto the back-button stack — now saves correctly
+  - `ScratchJr.currentProject` had a getter-only static — assignment threw in strict mode at runtime
+  - Paint editor's close-button never rendered on async load (`drawImage(0, 0)` missing its image)
+  - `findKeyframesRule` crashed on Chromium's CSSRule model — now guarded and safe
 
 ### v1.4.0 — Full Modernization (8 Phases)
 
@@ -63,10 +87,10 @@ src/main.js (94 lines)  ← orchestrator: crash handlers, dependency wiring, app
 
 src/preload.js            — contextBridge API (invoke-based)
 src/electronClient.js     — renderer adapter (async methods)
-src/app/                  — bundled renderer (esbuild)
-  ├── appEntry.js         — async page bootstrap
-  ├── src/utils/lib.js    — async CSS preprocessing
-  └── src/iPad/iOS.js     — tabletInterface bridge (async)
+src/app/                  — typed renderer (TypeScript, bundled by esbuild)
+  ├── appEntry.ts         — async page bootstrap
+  ├── src/utils/lib.ts    — async CSS preprocessing
+  └── src/iPad/iOS.ts     — tabletInterface bridge (async)
 ```
 
 ### Bug Fixes (v1.3.x)
@@ -98,9 +122,7 @@ In practice, this means:
 - **The AI reads, analyzes, and modifies the codebase** — tracing execution paths, identifying bugs, refactoring modules, and writing tests
 - **The human sets the goals and reviews the results** — defining what "done" looks like, verifying behavior, and making architectural decisions
 - **Iterative and evidence-driven** — every change is verified with tests, smoke checks, and live UI screenshots before moving on
-- **Fast modernization** — the entire 8-phase modernization (security, async IPC, modularization, CSS audit, CI hardening) was completed in a single session
-
-The result is a codebase that's been thoroughly audited, tested, and modernized — without the weeks of manual effort that would normally require.
+- **Fast modernization** — the 8-phase modernization, the full TypeScript migration, and the editor-freedom enhancements were all delivered this way
 
 ---
 
@@ -121,11 +143,19 @@ npm start
 ### Packaging
 
 ```bash
-# Platform-specific (must run on target OS)
+# Current platform (win32 on Windows, linux on Linux, darwin on macOS)
 npm run make:zip
+
+# Cross-build Linux from any OS (macOS must be built on macOS — see CI)
+npm_config_platform=linux npm_config_arch=arm64 npm run make:zip
+
+# Windows MSI installer (Windows only)
+node scripts/build-msi.js
 
 # Output: out/ScratchJr-<platform>-<arch>.zip
 ```
+
+The GitHub Actions workflow builds all six targets on native runners and attaches them to every `v*.*.*` tag.
 
 ### Testing
 
@@ -171,21 +201,24 @@ CSS files use JavaScript template literals (e.g., `${css_vh(10)}`) for responsiv
 package.json          — dependencies, scripts, ESLint config
 forge.config.js       — Electron Forge packaging config
 vitest.config.mjs     — test runner config
+tsconfig.json         — TypeScript config (strict-lite: noImplicitThis etc.)
 src/
   main.js             — entry point (orchestrator)
   main/               — modular main process components
   preload.js          — contextBridge API
   electronClient.js   — renderer adapter
-  app/                — renderer (HTML, CSS, JS, assets)
-    appEntry.js       — page bootstrap
-    src/              — application source modules
+  app/                — renderer (TypeScript, HTML, CSS, assets)
+    appEntry.ts       — page bootstrap
+    src/              — application source modules (.ts)
     css/              — stylesheets (template literal preprocessing)
     dist/             — bundled output (generated)
+  types/              — ambient type declarations (globals.d.ts)
   lib/                — shared utilities (path-utils, sql-validator)
   icons/              — platform icons
 scripts/
   build-renderer.js   — esbuild bundler
-  package-and-zip.js  — packaging script
+  package-and-zip.js  — packaging script (cross-platform aware)
+  build-msi.js        — Windows MSI builder (WiX)
   smoke.js            — boot verification test
 tests/
   unit/               — vitest test suite
@@ -200,7 +233,7 @@ docs/                 — developer documentation
 
 **ScratchJr:** [LLK/ScratchJr](https://github.com/LLK/scratchjr) by MIT
 
-**Modernization:** [richiesamlie/ScratchJr-Desktop](https://github.com/richiesamlie/ScratchJr-Desktop) — maintained through Vibe Coding
+**Reborn modernization:** [richiesamlie/ScratchJr-Desktop](https://github.com/richiesamlie/ScratchJr-Desktop) — maintained through Vibe Coding
 
 ### Acknowledgments
 
