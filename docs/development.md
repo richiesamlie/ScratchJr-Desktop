@@ -124,8 +124,12 @@ git tag vX.Y.Z && git push origin vX.Y.Z  # CI builds all 6 targets + MSI + rele
 - `src/types/globals.d.ts` expando declarations must stay mutually consistent
   (the `HTMLElement.next` vs `ChildNode.next` clash broke element assignability).
 - The character picker attaches both `tb.onmouseup` and `window.onmouseup` in
-  `Library.selectAsset`; `clickMe` nulls them after the first call, but the
-  pattern is fragile — prefer a single delegated handler.
+  `Library.selectAsset`; `clickMe` nulls them after the first call. Since
+  v1.5.1-fix, `Library.close` resets `selectedOne`/`clickThumb` and detaches
+  the picker's mouse handlers, and `closeSpriteSelection` guards on
+  `ScratchJr.onHold` — a closed picker can no longer re-add characters via
+  stale handlers or re-entrant adds (this was the "flood of characters on
+  click" bug).
 - CI does not boot-verify packaged artifacts (`scripts/smoke.js` is local-only).
   A smoke step in the workflow would catch packaging regressions like the
   missing-bundle one.
