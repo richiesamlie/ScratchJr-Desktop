@@ -204,6 +204,7 @@
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.26.0",
         "intl-messageformat": "^11.2.13",
+        "jsdom": "^30.0.1",
         "jszip": "^3.10.1",
         "snapsvg": "^0.5.1",
         "typescript": "^7.0.2",
