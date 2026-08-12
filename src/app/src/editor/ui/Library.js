@@ -5,7 +5,7 @@ import IO from '../../iPad/IO.js';
 import MediaLib from '../../iPad/MediaLib.js';
 import Paint from '../../painteditor/Paint.js';
 import Events from '../../utils/Events.js';
-import Localization from '../../utils/Localization.js';
+import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio.js';
 import {gn, newHTML, scaleMultiplier,
     getDocumentWidth, getDocumentHeight, setProps, newCanvas, frame} from '../../utils/lib.js';

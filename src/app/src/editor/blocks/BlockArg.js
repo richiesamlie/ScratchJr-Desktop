@@ -5,7 +5,7 @@ import Undo from '../ui/Undo.js';
 import {setCanvasSize, setProps, writeText, scaleMultiplier,
     newHTML, newDiv, newCanvas, getStringSize, isTouch,
     newP, globalx, globaly} from '../../utils/lib.js';
-import Localization from '../../utils/Localization.js';
+import Localization from '../../utils/Localization';
 
 /*
 Argument types

@@ -1,5 +1,5 @@
 import {gn} from '../utils/lib.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 import iOS from '../iPad/iOS.js';
 import Lobby from '../lobby/Lobby.js';
 

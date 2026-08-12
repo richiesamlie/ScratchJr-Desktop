@@ -1,5 +1,5 @@
 import {gn} from '../utils/lib.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 
 export function inappAbout () {
     gn('aboutScratchjrTitle').textContent = Localization.localize('ABOUT_SCRATCHJR');

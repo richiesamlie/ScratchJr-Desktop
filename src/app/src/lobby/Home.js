@@ -6,7 +6,7 @@ import Lobby from './Lobby.js';
 import iOS from '../iPad/iOS.js';
 import IO from '../iPad/IO.js';
 import Project from '../editor/ui/Project.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 import ScratchAudio from '../utils/ScratchAudio.js';
 import Vector from '../geom/Vector';
 import {gn, newHTML, isTouch} from '../utils/lib.js';

@@ -6,7 +6,7 @@ import Ghost from './Ghost.js';
 import iOS from '../iPad/iOS.js';
 import IO from '../iPad/IO.js';
 import MediaLib from '../iPad/MediaLib.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 import Alert from '../editor/ui/Alert.js';
 import PaintAction from './PaintAction.js';
 import ScratchAudio from '../utils/ScratchAudio.js';

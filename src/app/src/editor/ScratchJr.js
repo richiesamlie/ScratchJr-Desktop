@@ -16,7 +16,7 @@ import ScriptsPane from './ui/ScriptsPane.js';
 import Events from '../utils/Events.js';
 import BlockSpecs from './blocks/BlockSpecs.js';
 import Runtime from './engine/Runtime.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 import {libInit, gn, scaleMultiplier, newHTML,
     isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib.js';
 

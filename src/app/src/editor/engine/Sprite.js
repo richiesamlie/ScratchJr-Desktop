@@ -21,7 +21,7 @@ import SVG2Canvas from '../../utils/SVG2Canvas.js';
 import SVGTools from '../../painteditor/SVGTools.js';
 import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events.js';
-import Localization from '../../utils/Localization.js';
+import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio.js';
 import Scripts from '../ui/Scripts.js';
 import {newHTML, newDiv, newP, gn,

@@ -7,7 +7,7 @@ import IO from '../iPad/IO.js';
 import iOS from '../iPad/iOS.js';
 import MediaLib from '../iPad/MediaLib.js';
 import ScratchAudio from '../utils/ScratchAudio.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 import {gn, newHTML} from '../utils/lib.js';
 
 let frame;

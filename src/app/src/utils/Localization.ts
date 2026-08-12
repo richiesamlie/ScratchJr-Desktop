@@ -73,12 +73,14 @@ export default class Localization {
     }
 
     // Translate a particular message given the message key and info
-    static localize (key, formatting) {
+    static localize (key: string, formatting?: Record<string, unknown>): string {
         var message;
         if (IntlMessageFormat) {
             if (key in localizationMessages) {
                 message = new IntlMessageFormat(localizationMessages[key], currentLocale);
-                return message.format(formatting);
+                // IntlMessageFormat.format is generic over the formatted result;
+                // localized messages are always strings here.
+                return message.format(formatting) as string;
             }
         } else {
             return 'Loc missing: ' + key;

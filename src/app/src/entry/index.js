@@ -2,7 +2,7 @@ import ScratchAudio from '../utils/ScratchAudio.js';
 import {gn, getUrlVars, isAndroid, isiOS} from '../utils/lib.js';
 import iOS from '../iPad/iOS.js';
 import UI from '../editor/ui/UI.js';
-import Localization from '../utils/Localization.js';
+import Localization from '../utils/Localization';
 import AppUsage from '../utils/AppUsage';
 
 export function indexMain () { // eslint-disable-line import/prefer-default-export
