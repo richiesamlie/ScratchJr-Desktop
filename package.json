@@ -165,15 +165,8 @@
             "AndroidInterface": true,
             "window": true,
             "WebKitCSSMatrix": true,
-            "webkitAudioContext": true,
             "electron": true,
             "require": true,
-            "ScratchJr": true,
-            "Undo": true,
-            "Home": true,
-            "loadPage": true,
-            "devicePixelRatio": true,
-            "globalThis": true,
             "isTouch": true
         },
         "env": {

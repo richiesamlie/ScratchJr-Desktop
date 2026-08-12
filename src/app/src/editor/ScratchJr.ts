@@ -1,4 +1,6 @@
 import Project from './ui/Project';
+import type Sprite from './engine/Sprite';
+import type Scripts from './ui/Scripts';
 import ScratchAudio from '../utils/ScratchAudio';
 import Paint from '../painteditor/Paint';
 import Prims from './engine/Prims';
@@ -21,6 +23,13 @@ import {libInit, gn, scaleMultiplier, newHTML,
     isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib';
 
 const bridge = window.scratchjr;
+
+// Named-form access
+const namedForms = document.forms as unknown as {
+    editable: HTMLFormElement & { field: HTMLInputElement };
+    activetextbox: HTMLFormElement & { typing: HTMLInputElement };
+    projectname: HTMLFormElement & { myproject: HTMLInputElement };
+};
 
 let workingCanvas = document.createElement('canvas');
 let workingCanvas2 = document.createElement('canvas');
@@ -187,7 +196,7 @@ export default class ScratchJr {
         defaultSprite = window.Settings.defaultSprite;
         version = v;
         document.body.scrollTop = 0;
-        time = (new Date()) - 0;
+        time = Date.now();
         var urlvars = getUrlVars();
         iOS.hascamera();
         ScratchJr.log('starting the app');
@@ -213,7 +222,8 @@ export default class ScratchJr {
         Events.init();
         if (window.Settings.autoSaveInterval > 0) {
             autoSaveSetInterval = window.setInterval(function () {
-                if (autoSaveEnabled && !onHold && !Project.saving && !UI.infoBoxOpen) {
+                const projectWithSaving = Project as unknown as { saving: boolean };
+        if (autoSaveEnabled && !onHold && !projectWithSaving.saving && !UI.infoBoxOpen) {
                     ScratchJr.saveProject(null, function () {
                         Alert.close();
                     });
@@ -239,28 +249,28 @@ export default class ScratchJr {
         window.onmouseup = undefined;
     }
 
-    static unfocus (evt) {
+    static unfocus (evt?) {
         if (Palette.helpballoon) {
             Palette.helpballoon.parentNode.removeChild(Palette.helpballoon);
             Palette.helpballoon = undefined;
         }
-        if (document.forms.editable) {
-            if (evt && (evt.target == document.forms.editable.field)) {
+        if (namedForms.editable) {
+            if (evt && (evt.target == namedForms.editable.field)) {
                 return;
             } // block is being edit
         }
-        if (document.forms.activetextbox) {
-            if (evt && (evt.target == document.forms.activetextbox.typing)) {
+        if (namedForms.activetextbox) {
+            if (evt && (evt.target == namedForms.activetextbox.typing)) {
                 return;
             } // stage text box
         }
-        if (document.forms.projectname) {
-            if (evt && (evt.target == document.forms.projectname.myproject)) {
+        if (namedForms.projectname) {
+            if (evt && (evt.target == namedForms.projectname.myproject)) {
                 return;
             } // infobox text box
         }
         if (document.activeElement.tagName.toLowerCase() == 'input') {
-            document.activeElement.blur();
+            (document.activeElement as HTMLElement).blur();
         }
         ScratchJr.clearSelection();
         ScratchJr.blur();
@@ -305,7 +315,7 @@ export default class ScratchJr {
     }
 
     static getTime () {
-        return ((new Date()) - time) / 1000;
+        return (Date.now() - time) / 1000;
     }
 
     static isSampleOrStarter () {
@@ -329,7 +339,8 @@ export default class ScratchJr {
         // Re-enable autosaves
         autoSaveEnabled = true;
         autoSaveSetInterval = window.setInterval(function () {
-            if (autoSaveEnabled && !onHold && !Project.saving && !UI.infoBoxOpen) {
+            const projectWithSaving = Project as unknown as { saving: boolean };
+        if (autoSaveEnabled && !onHold && !projectWithSaving.saving && !UI.infoBoxOpen) {
                 ScratchJr.saveProject(null, function () {
                     Alert.close();
                 });
@@ -425,9 +436,9 @@ export default class ScratchJr {
         }
         if (ScratchJr.getSprite()) {
             if (isOff && !inFullscreen) {
-                ScratchJr.getSprite().select();
+                (ScratchJr.getSprite() as Sprite).select();
             } else {
-                ScratchJr.getSprite().unselect();
+                (ScratchJr.getSprite() as Sprite).unselect();
             }
         }
         if (isOff && userStart) {
@@ -466,7 +477,8 @@ export default class ScratchJr {
 
     static startScriptsFor (spr, list) {
         var sc = gn(spr.id + '_scripts');
-        var topblocks = sc.owner.getBlocksType(list);
+        const scriptsOwner = sc.owner as Scripts;
+        var topblocks = scriptsOwner.getBlocksType(list);
         for (var j = 0; j < topblocks.length; j++) {
             var b = topblocks[j];
             runtime.addRunScript(spr, b);
@@ -494,7 +506,7 @@ export default class ScratchJr {
         if (gn('full').className == 'fullscreen') {
             onBackButtonCallback.push(function () {
                 var fakeEvent = document.createEvent('TouchEvent');
-                fakeEvent.initTouchEvent();
+                (fakeEvent as TouchEvent & { initTouchEvent: () => void }).initTouchEvent();
                 ScratchJr.quitFullScreen(fakeEvent);
             });
 
@@ -548,7 +560,7 @@ export default class ScratchJr {
     }
 
     static getBlocks () {
-        return ScratchJr.getActiveScript().owner.getBlocks();
+        return (ScratchJr.getActiveScript().owner as Scripts).getBlocks();
     }
 
     /////////////////////////////////////////////////
@@ -614,17 +626,17 @@ export default class ScratchJr {
         var w = div.offsetWidth;
         var h = div.offsetHeight;
         var dx = ((pt.x + 480 * scaleMultiplier) > w) ? (w - 486 * scaleMultiplier) : pt.x - 6 * scaleMultiplier;
-        var ti = document.forms.editable.field;
+        var ti = namedForms.editable.field;
         ti.style.textAlign = 'center';
-        document.forms.editable.style.left = dx + 'px';
+        namedForms.editable.style.left = dx + 'px';
         var top = pt.y + 55 * scaleMultiplier;
-        document.forms.editable.style.top = top + 'px';
+        namedForms.editable.style.top = top + 'px';
         if (isAndroid) {
             AndroidInterface.scratchjr_setsoftkeyboardscrolllocation(
                 top * window.devicePixelRatio, (top + h) * window.devicePixelRatio
             );
         }
-        document.forms.editable.className = 'textform on';
+        namedForms.editable.className = 'textform on';
         ti.value = b.argValue;
         if (isAndroid) {
             AndroidInterface.scratchjr_forceShowKeyboard();
@@ -642,11 +654,11 @@ export default class ScratchJr {
         onBackButtonCallback.pop();
         e.preventDefault();
         e.stopPropagation();
-        var ti = document.forms.editable.field;
+        var ti = namedForms.editable.field;
         var str = ti.value.substring(0, ti.maxLength);
         activeFocus.argValue = str;
         activeFocus.setValue(str);
-        document.forms.editable.className = 'textform off';
+        namedForms.editable.className = 'textform off';
         if (activeFocus.daddy.div.parentNode) {
             var spr = activeFocus.daddy.div.parentNode.owner.spr;
             var action = {
@@ -866,7 +878,7 @@ export default class ScratchJr {
 
     static editDone () {
         if (document.activeElement.tagName === 'INPUT') {
-            document.activeElement.blur();
+            (document.activeElement as HTMLElement).blur();
         }
         if (activeFocus == undefined) {
             return;
@@ -875,7 +887,7 @@ export default class ScratchJr {
             return;
         }
         if (activeFocus.isText()) {
-            document.forms.editable.field.blur();
+            namedForms.editable.field.blur();
         } else {
             ScratchJr.closeNumberEdit();
             onBackButtonCallback.pop();
@@ -983,7 +995,7 @@ export default class ScratchJr {
      */
     static goBack () {
         if (onBackButtonCallback.length === 0) {
-            var e = document.createEvent('TouchEvent');
+            var e = document.createEvent('TouchEvent') as TouchEvent & { initTouchEvent: () => void };
             e.initTouchEvent();
             e.preventDefault();
             e.stopPropagation();

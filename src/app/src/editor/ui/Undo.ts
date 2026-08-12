@@ -2,7 +2,7 @@
 // Undo / Redo Functions
 //////////////////////////////////
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Thumbs from './Thumbs';
 import Project from './Project';
 import Palette from './Palette';

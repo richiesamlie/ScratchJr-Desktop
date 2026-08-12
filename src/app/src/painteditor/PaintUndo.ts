@@ -1,4 +1,4 @@
-import ScratchJr from '../editor/ScratchJr.js';
+import ScratchJr from '../editor/ScratchJr';
 import Path from './Path';
 import Paint from './Paint';
 import Camera from './Camera';

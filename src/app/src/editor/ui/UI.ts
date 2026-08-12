@@ -2,7 +2,7 @@
 //  General UI Layout
 /////////////////////////////////////
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import BlockSpecs from '../blocks/BlockSpecs';
 import Alert from './Alert';
 import Project from './Project';

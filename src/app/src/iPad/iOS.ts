@@ -20,6 +20,10 @@ let mediacounter = 0;
 let tabletInterface = null;
 
 export default class iOS {
+    // Referenced by ScratchJr.stopServer but never defined anywhere in the
+    // codebase (pre-existing missing method).
+    static stopserver: (fcn?: unknown) => void;
+
     // Getters/setters for properties used in other classes
     static get path () {
         return path;

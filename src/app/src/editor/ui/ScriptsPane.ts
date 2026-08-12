@@ -1,5 +1,5 @@
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Project from './Project';
 import Thumbs from './Thumbs';
 import Palette from './Palette';

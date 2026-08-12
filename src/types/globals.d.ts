@@ -114,6 +114,10 @@ interface ScratchJrSettings {
     [key: string]: unknown;
 }
 
+interface Document {
+    ongesturestart?: unknown;
+}
+
 interface Navigator {
     // Legacy IE-era property still read by Localization.determineLocaleFromBrowser
     userLanguage?: string;
@@ -212,14 +216,12 @@ interface Window {
     iOS?: unknown;
     // Non-standard touch handler used by Events.js
     ontouchleave?: ((this: GlobalEventHandlers, ev: TouchEvent) => void) | null;
-    ScratchJr?: unknown;
-    Undo?: unknown;
-    Home?: unknown;
-    loadPage?: unknown;
-    isTouch?: boolean;
-    devicePixelRatio?: number;
     reloadDebug?: unknown;
     xform?: { setTranslate(x: number, y: number): void; matrix?: unknown };
     selxform?: unknown;
     Camera?: unknown;
+    scratchjr?: {
+        onAppClose(callback: () => void): void;
+        sendAppClosedAcked(): void;
+    };
 }

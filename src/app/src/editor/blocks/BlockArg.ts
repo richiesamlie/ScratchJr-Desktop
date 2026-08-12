@@ -1,4 +1,4 @@
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import BlockSpecs from './BlockSpecs';
 import Menu from './Menu';
 import Undo from '../ui/Undo';

@@ -1,4 +1,4 @@
-import ScratchJr from '../editor/ScratchJr.js';
+import ScratchJr from '../editor/ScratchJr';
 import BlockSpecs from '../editor/blocks/BlockSpecs';
 import SVGTools from './SVGTools';
 import SVG2Canvas from '../utils/SVG2Canvas';
@@ -149,7 +149,7 @@ export default class Paint {
     //Opening and Layout
     ///////////////////////////////////////////
 
-    static init (w, h) {
+    static init (w?, h?) {
         paintFrame = document.getElementById('paintframe');
         paintFrame.style.width = w + 'px';
         paintFrame.style.height = h + 'px';
@@ -391,7 +391,7 @@ export default class Paint {
         ScratchJr.onBackButtonCallback.pop();
     }
 
-    static saveEditState () {
+    static saveEditState (fcn?) {
         Camera.close();
         ScratchJr.unfocus();
         ScratchAudio.sndFX('tap.wav');

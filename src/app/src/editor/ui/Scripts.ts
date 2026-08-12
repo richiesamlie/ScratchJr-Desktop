@@ -2,7 +2,7 @@
 //  Scripts
 ///////////////////////////////////////////////
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Block from '../blocks/Block';
 import BlockSpecs from '../blocks/BlockSpecs';
 import ScriptsPane from './ScriptsPane';

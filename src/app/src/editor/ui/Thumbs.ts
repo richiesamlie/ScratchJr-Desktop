@@ -2,7 +2,7 @@
 //   Pages
 /////////////////////////////////////
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Palette from './Palette';
 import Page from '../engine/Page';
 import ScriptsPane from './ScriptsPane';

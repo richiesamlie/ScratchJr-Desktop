@@ -1,4 +1,4 @@
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Project from '../ui/Project';
 import Thumbs from '../ui/Thumbs';
 import UI from '../ui/UI';

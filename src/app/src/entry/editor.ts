@@ -1,4 +1,4 @@
-import ScratchJr from '../editor/ScratchJr.js';
+import ScratchJr from '../editor/ScratchJr';
 import iOS from '../iPad/iOS';
 import Camera from '../painteditor/Camera';
 import Record from '../editor/ui/Record';

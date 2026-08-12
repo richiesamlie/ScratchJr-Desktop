@@ -2,7 +2,7 @@
 // Stage grid
 //////////////////////////////
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Events from '../../utils/Events';
 import type Sprite from '../engine/Sprite';
 import Localization from '../../utils/Localization';

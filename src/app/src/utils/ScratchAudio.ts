@@ -12,6 +12,10 @@ let defaultSounds = ['cut.wav', 'snap.wav', 'copy.wav', 'grab.wav', 'boing.wav',
 let projectSounds = {};
 
 export default class ScratchAudio {
+    // Attached by ScratchJr.js at startup
+    static firstTime: boolean;
+    static firstClick: () => void;
+
     static get uiSounds () {
         return uiSounds;
     }

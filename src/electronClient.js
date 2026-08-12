@@ -952,22 +952,22 @@ class CameraPickerDialog {
 bridge.onKeyboardShortcut(function(action) {
   switch (action) {
     case 'save':
-      if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) {
+      if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) { // eslint-disable-line no-undef
         ScratchJr.saveProject(null, function() {});
       }
       break;
     case 'undo':
-      if (typeof Undo !== 'undefined' && Undo.undo) {
+      if (typeof Undo !== 'undefined' && Undo.undo) { // eslint-disable-line no-undef
         Undo.undo();
       }
       break;
     case 'redo':
-      if (typeof Undo !== 'undefined' && Undo.redo) {
+      if (typeof Undo !== 'undefined' && Undo.redo) { // eslint-disable-line no-undef
         Undo.redo();
       }
       break;
     case 'new':
-      if (typeof Home !== 'undefined' && Home.createNewProject) {
+      if (typeof Home !== 'undefined' && Home.createNewProject) { // eslint-disable-line no-undef
         Home.createNewProject();
       }
       break;

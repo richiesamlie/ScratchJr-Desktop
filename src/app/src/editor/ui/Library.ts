@@ -1,5 +1,5 @@
 
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';

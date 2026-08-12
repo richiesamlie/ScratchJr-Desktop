@@ -19,12 +19,12 @@
 | 4 | Lobby + iPad shim | ✅ done 6 files, persistence tests added (88 tests), smoke PASS | aaa81ef, 7c77ae5, e4c095b |
 | 5 | Engine core | ✅ done 7 files (6 engine + BlockSpecs pulled forward), smoke PASS | c8954eb |
 | 6 | Editor UI | ☐ not started | |
-| 7 | Paint editor | ☐ in progress | |
-| 8 | ScratchJr.js + globals teardown | ☐ not started | |
+| 7 | Paint editor | ✅ done 11 files (10 paint + SVG2Canvas), smoke PASS | 3781364 |
+| 8 | ScratchJr.js + globals teardown | ☐ in progress | |
 | 9 | Strict mode + cleanup | ☐ not started | |
 
 **Global metrics** (fill in at each phase end):
-- Files converted: `42 / 56`
+- Files converted: `53 / 56`
 - eslint `globals` entries remaining in package.json: `12` (AndroidInterface, window, WebKitCSSMatrix, webkitAudioContext, electron, require, ScratchJr, Undo, Home, loadPage, devicePixelRatio, globalThis, isTouch — count at baseline, then shrink)
 - `tsc --noEmit` errors: `0`
 
@@ -209,7 +209,7 @@ Blocks first (smaller), then UI:
 ---
 
 ## Phase 7 — Paint editor
-**Status:** ☐ not started
+**Status:** ✅ done
 **Effort:** ~2 days
 
 - [ ] `painteditor/PaintUndo.js` (148 ln)

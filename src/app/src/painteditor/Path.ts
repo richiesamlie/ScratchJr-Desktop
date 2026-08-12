@@ -5,7 +5,7 @@
 // some serious code changes - determining where the relevant Path.X are called, if any shared
 // data needs to be moved, etc. -TM
 
-import ScratchJr from '../editor/ScratchJr.js';
+import ScratchJr from '../editor/ScratchJr';
 import {isTouch} from '../utils/lib';
 import SVG2Canvas from '../utils/SVG2Canvas';
 import SVGImage from './SVGImage';

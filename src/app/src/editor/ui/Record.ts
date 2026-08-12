@@ -1,4 +1,4 @@
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import Palette from './Palette';
 import Undo from './Undo';
 import iOS from '../../iPad/iOS';

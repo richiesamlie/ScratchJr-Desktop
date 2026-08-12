@@ -1,6 +1,6 @@
 import Snap from 'snapsvg';
 
-import ScratchJr from '../editor/ScratchJr.js';
+import ScratchJr from '../editor/ScratchJr';
 import SVGTools from './SVGTools';
 import Paint from './Paint';
 import PaintAction from './PaintAction';

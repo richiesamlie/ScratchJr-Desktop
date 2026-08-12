@@ -1,4 +1,4 @@
-import ScratchJr from '../ScratchJr.js';
+import ScratchJr from '../ScratchJr';
 import BlockSpecs from '../blocks/BlockSpecs';
 import Alert from './Alert';
 import Palette from './Palette';
@@ -58,7 +58,7 @@ export default class Project {
         UI.clear();
     }
 
-    static load () {
+    static load (md5?) {
         mediaCountBase = 1;
         ScratchJr.log('Project load status', ScratchJr.getTime(), 'sec', BlockSpecs.loadCount);
         if (BlockSpecs.loadCount > 0) {
@@ -437,7 +437,7 @@ export default class Project {
         });
     }
 
-    static save (id, whenDone) {
+    static save (id, whenDone?) {
         saving = true;
         var th = metadata.thumbnail;
         if (th && ScratchJr.editmode != 'storyStarter') { // Don't try to delete the thumbnail in a sample project
