@@ -15,7 +15,7 @@
 | 0 | Baseline & branch | ✅ done (tests 80/80, lint 0err/8warn, package works) | ba68b08 |
 | 1 | TypeScript scaffolding | ✅ done (tsconfig, typecheck CI step, esbuild .ts proof) | ba68b08 |
 | 2 | Leaf modules (lib, geom, small utils) | ✅ done 9 files, tests/lint/typecheck green | 34c3088 |
-| 3 | Mid-size utils & entry points | ☐ not started | |
+| 3 | Mid-size utils & entry points | ✅ done 8 files, all pages load (smoke PASS), main-process sql-validator.ts require fixed | 5de8407 |
 | 4 | Lobby + iPad shim | ☐ not started | |
 | 5 | Engine core | ☐ not started | |
 | 6 | Editor UI | ☐ not started | |
@@ -24,8 +24,8 @@
 | 9 | Strict mode + cleanup | ☐ not started | |
 
 **Global metrics** (fill in at each phase end):
-- Files converted: `9 / 56`
-- eslint `globals` entries remaining in package.json: `10` (AndroidInterface, window, WebKitCSSMatrix, webkitAudioContext, electron, require, ScratchJr, Undo, Home, loadPage, devicePixelRatio, isTouch — count at baseline, then shrink)
+- Files converted: `17 / 56`
+- eslint `globals` entries remaining in package.json: `12` (AndroidInterface, window, WebKitCSSMatrix, webkitAudioContext, electron, require, ScratchJr, Undo, Home, loadPage, devicePixelRatio, globalThis, isTouch — count at baseline, then shrink)
 - `tsc --noEmit` errors: `0`
 
 ### Phase 2 notes (worth remembering)
@@ -34,6 +34,17 @@
 - **eslint resolver**: added `import/resolver` node extensions `.js`, `.ts`, `.d.ts` to package.json so `import/no-unresolved` follows converted files.
 - Sound.ts auto-declares its 5 instance fields (`url`, `soundPlayId`, `name`, `time`, `playing`) — the host (Android vs iOS) decides which are live.
 - `src/types/globals.d.ts` declares `AndroidInterface` + host-level window keys so typecheck passes on files still importing them via incomplete shims.
+
+### Phase 3 notes (worth remembering)
+- **`allowJs` infers types for `.js` imports** — converting a `.js` file to `.ts` immediately re-types its consumers (e.g. `gn()` became `HTMLElement | null`, `getUrlVars()` became `any[]` once lib.ts landed). Expect cascade fixes in the same phase.
+- **`getUrlVars` returns a hybrid bag** (array + named query props). `string[] & Record<string, string>` is *not* expressible (TS arrays lack a string index signature), so the return is typed `Record<string, string>` with a single `as unknown as` cast inside lib.ts; all callers read named props only.
+- **`Number.prototype.mod`** needed a `declare global { interface Number { mod(n: number): number } }` augmentation before the assignment.
+- **IE-era DOM paths** (`style.styleSheet.cssText`, `CSSRule.styleSheet.rules`, `CSSRule.WEBKIT_KEYFRAMES_RULE`) are absent from TS lib.dom — guarded with `'prop' in obj` runtime narrowing per repo rule (no inline cast-access). `findKeyframesRule` previously *crashed* on these in Chromium; it now returns null gracefully.
+- **Main process cannot require extensionless `.ts`**: `src/main/ipc-handlers.js` broke at boot (`Cannot find module '../lib/sql-validator'`) after Phase 2's rename. Fix: explicit `require('../lib/sql-validator.ts')` — Electron 42's Node 24.18.1 strips types natively. This is why the Phase 3 smoke gate matters: `npm test`/lint/typecheck were all green while the app failed to boot.
+- `WebKitCSSMatrix` is declared as a concrete class in `src/types/globals.d.ts` (m41/m42/m11/m22 used by Events/lib).
+- `window.Settings` typed as `ScratchJrSettings` (full shape from settings.json), `window.tablet` as `TabletBridge` (all ElectronDesktopInterface methods), `window.ScratchAudio` as `ScratchAudioGlobal` (read via `window.parent` by in-app help pages).
+
+
 
 ---
 
@@ -122,7 +133,7 @@
 ---
 
 ## Phase 3 — Mid-size utils & entry points
-**Status:** ☐ not started
+**Status:** ✅ done
 **Effort:** ~1–2 days
 
 - [ ] `src/app/src/utils/Localization.js` (80 ln)
