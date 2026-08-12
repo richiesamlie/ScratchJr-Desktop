@@ -1,6 +1,6 @@
 # ScratchJr Reborn — Desktop Edition
 
-> **ScratchJr, reborn.** A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — rebuilt with a fully typed, fully strict codebase, hardened security, editor enhancements that free up what the original capped, and a release pipeline that actually ships what it builds.
+> **ScratchJr, reborn.** A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — faster to build with, safer to run, and built on a codebase you can trust.
 
 ## Official Disclaimer
 
@@ -19,275 +19,61 @@ Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, w
 | `ScratchJr-linux-x64.zip` | Linux x64 |
 | `ScratchJr-linux-arm64.zip` | Linux ARM64 |
 
-Each release includes SHA256 checksums (`.sha256` files) for integrity verification.
+Each release includes SHA256 checksums for integrity verification.
 
 ---
 
 ## Changes in this fork
 
-The original ScratchJr Desktop was a faithful but fragile port: a 1,100-line monolith, an untyped JavaScript renderer with hidden global dependencies, a sync-IPC renderer that froze on file I/O, no tests, and hardcoded limits that cramped the editor. **Reborn** is that same app, rebuilt so it doesn't get in the way — and given creative room the original never had.
+### 🎨 More room to create
 
-### v1.5.1 — Strict TypeScript, Tested Engine, Polished Editor
-
-**A fully strict, zero-`any` renderer:**
-
-- **`tsc --noEmit` clean under `strict: true`** — `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictPropertyInitialization`, and the rest all enforced, zero errors
-- **100% `any`-free** — the last explicit `any` annotations and `Record<string, any>` bags were replaced with real types: the project file format is now typed (`ProjectData`/`PageData`/`SpriteData`/`EncodedStrip`), the drag system uses a typed `DragElement`, and shared DOM expandos were aligned (`HTMLElement.next` vs `ChildNode.next`) so element assignability works again under TS 7
-- **Renderer engine test coverage** (new jsdom harness): script-strip encode/decode round-trip (the project file format, incl. loop nesting and arg encoding), page-bag encode/decode round-trip, runtime primitive execution (Home/SetSpeed/Show/Hide), and the scroll-aware page-strip caret math — **98 tests total**
-
-**Editor polish that fixes real friction:**
-
-- **The "+ add character" button can never be hidden again** — the character sidebar is sized to fit the button, so it stays visible at every window size
-- **The "+ page" button stays pinned** to the bottom of the page strip while pages scroll beneath it
-- **The character strip scrolls natively** — mouse-wheel scrolling works without clicking the list first, and the custom scrollbar tracks the real scroll position (previously the strip only scrolled by click-dragging and the scrollbar went stale)
-
-**A release pipeline that ships what it builds:**
-
-- The renderer bundle is now built **before** packaging (locally and in CI). The bundle is gitignored, so CI checkouts previously packaged apps **without** it — released apps couldn't load their UI. Fixed; every release is boot-verified.
-- CI matrix produces all five build jobs (a matrix `include` collision had been silently dropping the x64 Linux/macOS targets).
-
-### v1.5.0 — Editor Freedom + Fully Typed Core
-
-**More room to create — the original's caps are gone or configurable:**
-
-| Cap in the original | Reborn |
+| In the original | Now |
 |---|---|
-| **4 pages max** (hardcoded) | **8 pages by default** — configurable via `maxPages` in `settings.json` (change it any time, no code edits) |
-| **Page strip truncated** at ~4 thumbs, no scrolling | **Scrollable page strip** — mouse wheel + scrollbar, auto-scrolls to keep the current page in view |
-| **~4 characters visible** in the sidebar before scrolling | **Bigger character sidebar** (~5–6 visible) — and characters per page were never capped, so the only limit was the view |
-| **Lobby thumbnail breaks** for projects beyond 4 pages | Page-count badge clamps cleanly — multi-page projects always render a proper thumbnail |
+| 4 pages max, hardcoded | **8 pages by default**, configurable via `maxPages` in `settings.json` |
+| Page strip truncated, no scrolling | **Scrollable page strip** that keeps the current page in view |
+| ~4 characters visible in the sidebar | **Bigger character sidebar** — scrolls freely, characters per page unlimited |
+| "+" buttons disappear as you add | **Always visible** — add-character and add-page buttons stay on screen at any window size |
+| Strip only scrolls by dragging | **Native mouse-wheel scrolling** with a scrollbar that matches your position |
 
-**A codebase you can trust — the full TypeScript migration:**
+### 🛡️ Safe by design
 
-- **All 56 renderer files** converted `.js` → `.ts` — every class declares its fields, every import is explicit, no hidden globals
-- `tsc --noEmit` clean (with `noImplicitThis` + `useUnknownInCatchVariables` enforced; the full strict-mode burn-down shipped in v1.5.1)
-- **88 tests** (up from 80) — new persistence round-trip coverage for project naming/save logic
-- **Bugs the migration surfaced and fixed**:
-  - App failed to boot after the main-process `sql-validator` rename (`Cannot find module`) — Electron's Node 24 strips `.ts` natively, explicit extension added
-  - `Record.saveSoundandClose` typo pushed `undefined` onto the back-button stack — now saves correctly
-  - `ScratchJr.currentProject` had a getter-only static — assignment threw in strict mode at runtime
-  - Paint editor's close-button never rendered on async load (`drawImage(0, 0)` missing its image)
-  - `findKeyframesRule` crashed on Chromium's CSSRule model — now guarded and safe
+- **Sandboxed renderer** — no Node in the UI, only a narrow preload bridge
+- **Content Security Policy** on every page, SQL injection guards, navigation locked to the app root
+- Upgraded **Electron 42** — modern Chromium, Node 22/26 compatible
 
-### v1.4.0 — Full Modernization (8 Phases)
+### ⚡ Built on a codebase you can trust
 
-| Area | Before | After |
-|------|--------|-------|
-| **Electron** | 22 | 42.8.1 (Chromium 134) |
-| **Node compatibility** | Broken on Node 22+ | Node 22/26 compatible |
-| **IPC** | Synchronous `sendSync` (renderer freezes) | Async `invoke`/`handle` (all 19 channels) |
-| **Security** | `nodeIntegration: true`, no CSP | `sandbox: true`, CSP on all pages, SQL validation |
-| **Main process** | 1,122-line monolith | 94-line orchestrator + 5 focused modules |
-| **Renderer** | Global vendor scripts, no bundler | esbuild bundler, explicit ESM imports |
-| **Tests** | None | 80 tests (vitest) covering IPC, SQL, paths, layout |
-| **CI** | Broken lint, no checksums | Lint + test + SHA256 checksums + version verification |
-| **Vulnerabilities** | 26 known | 0 |
-| **CSS** | WebKit-only prefixes | Standard CSS with `-webkit-` only where required |
+- **All 56 renderer files** migrated to TypeScript — full `strict` mode, **zero errors, zero `any`**
+- **98 tests** — including a jsdom harness covering the project file format (save/load round-trips), runtime primitives, and editor math
+- **Reliable releases** — the renderer bundle is built before every package (a CI bug once shipped apps without it), all six platforms built natively with checksums
 
-### Security Hardening
-
-- **Content Security Policy** on all HTML pages
-- **Sandboxed renderer** — `nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`
-- **Preload bridge** — only named IPC operations exposed, no raw `ipcRenderer`
-- **SQL validation** — allowlisted verbs, parameterized queries, no multi-statement payloads
-- **Navigation restrictions** — file:// only within app root
-- **Permission policy** — camera/microphone only, all other requests blocked
-- **Window open handler** — all new window creation denied
-
-### Architecture
-
-```
-src/main.js (94 lines)  ← orchestrator: crash handlers, dependency wiring, app lifecycle
-  ├── src/main/logging.js        — structured logging, debug flags
-  ├── src/main/database.js       — SQL.js DatabaseManager class
-  ├── src/main/data-store.js     — project storage, media cache, path validation
-  ├── src/main/window-lifecycle.js — BrowserWindow, security, close handshake
-  └── src/main/ipc-handlers.js   — all 19 IPC channels
-
-src/preload.js            — contextBridge API (invoke-based)
-src/electronClient.js     — renderer adapter (async methods)
-src/app/                  — typed renderer (TypeScript, bundled by esbuild)
-  ├── renderer-entry.js   — bundle entry point
-  ├── src/                — application source modules (.ts, strict mode)
-  ├── css/                — stylesheets (template literal preprocessing)
-  ├── dist/               — bundled output (generated, gitignored)
-src/types/globals.d.ts    — ambient declarations (settings, bridges, DOM expandos)
-src/lib/                  — shared utilities (path-utils, sql-validator)
-scripts/
-  build-renderer.js       — esbuild bundler
-  package-and-zip.js      — packaging script (builds the bundle first)
-  build-msi.js            — Windows MSI builder (WiX)
-  smoke.js                — boot verification test
-tests/
-  unit/                   — vitest suite (main-process + jsdom renderer harness)
-docs/                     — developer documentation
-```
-
-### Bug Fixes (v1.3.x)
-
-19 bugs fixed across the main process, renderer engine, and UI:
-
-- Fixed `isTablet` always returning `true` on desktop (broke mouse interaction)
-- Fixed async IPC `event.returnValue` returning `undefined`
-- Fixed save-on-close data loss (ack sent before save completes)
-- Fixed `delete this.mediaStrings.key` → `[key]` (memory leak)
-- Parameterized 5 SQL injection vulnerabilities
-- Fixed `for...in` on arrays in Runtime and DrawPath
-- Replaced deprecated `new Buffer()` with `Buffer.from()`
-- Fixed sql.js prepared statements never freed (memory leak)
-- Fixed HTML injection via `innerHTML` in camera picker
-- Added 5s window close timeout fallback
-- Fixed DB init race condition with promise guard
-- Added `statement.free()` in finally blocks for database queries
-- And more — see commit history for full details
-
----
-
-## What is Vibe Coding?
-
-This project is maintained using **Vibe Coding** — a development approach where an AI agent handles the heavy lifting of code analysis, refactoring, testing, and verification, while a human developer directs the work at a higher level.
-
-In practice, this means:
-
-- **The AI reads, analyzes, and modifies the codebase** — tracing execution paths, identifying bugs, refactoring modules, and writing tests
-- **The human sets the goals and reviews the results** — defining what "done" looks like, verifying behavior, and making architectural decisions
-- **Iterative and evidence-driven** — every change is verified with tests, smoke checks, and live UI measurements before moving on
-- **Fast modernization** — the 8-phase modernization, the full TypeScript migration, the strict-mode burn-down, and the editor-freedom enhancements were all delivered this way
+Maintained through **Vibe Coding** — AI-assisted development where an agent does the analysis and implementation, a human sets the goals and reviews the results.
 
 ---
 
 ## Building from Source
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/en/) 22+ (26 also supported)
-- [Git](https://git-scm.com/)
-
-### Development
+**Prerequisites:** Node.js 22+ (26 supported), Git.
 
 ```bash
 npm install
-npm start
+npm start          # run the app
+npm run make:zip   # package for your platform (builds the renderer first)
+npm test           # 98 tests
+npm run typecheck  # tsc --noEmit (strict)
 ```
 
-### Packaging
-
-```bash
-# Current platform (win32 on Windows, linux on Linux, darwin on macOS).
-# The renderer bundle is built automatically before packaging.
-npm run make:zip
-
-# Cross-build Linux from any OS (macOS must be built on macOS — see CI)
-npm_config_platform=linux npm_config_arch=arm64 npm run make:zip
-
-# Windows MSI installer (Windows only)
-node scripts/build-msi.js
-
-# Output: out/ScratchJr-<platform>-<arch>.zip
-```
-
-The GitHub Actions workflow builds all six targets on native runners and attaches them to every `v*.*.*` tag.
-
-### Testing
-
-```bash
-npm test          # 98 tests via vitest (main-process + jsdom renderer)
-npm run typecheck # tsc --noEmit over the TS renderer (strict mode, zero errors)
-npm run lint      # ESLint (airbnb-base config)
-```
-
-The renderer is TypeScript (all 56 source files migrated, full `strict: true`).
-`tsc` uses `moduleResolution: bundler` and esbuild consumes `.ts` natively in
-`npm run build:renderer` / `npm start`, so no build step is required between
-editing and running — but the bundle **is** rebuilt by `make:zip` so packaged
-builds always match the source.
-
-### Debugging
-
-```bash
-npm start           # Launches with Chrome DevTools
-npm run debugMain   # Debug main process (open chrome://inspect)
-```
-
----
-
-## Architecture Notes
-
-### ElectronDesktopInterface
-
-The original ScratchJr calls a `tabletInterface` for OS operations (filesystem, audio, video). On desktop, `ElectronDesktopInterface` implements this interface — handling some calls in HTML5 (e.g., WebRTC for recording) and forwarding others to the main process via IPC.
-
-### SQL.js
-
-The project database uses [sql.js](https://github.com/sql-js/sql.js/) (SQLite compiled to JavaScript). The schema is largely the same as the original iOS/Android version, with an added `PROJECTFILES` table that stores SVG, audio, and video files inline — enabling project bundles as starter kits.
-
-### CSS Preprocessing
-
-CSS files use JavaScript template literals (e.g., `${css_vh(10)}`) for responsive sizing. These are preprocessed at load time via `preprocessAndLoadCss()` — now fully async to support the sandboxed preload bridge.
-
-### Renderer Bundling
-
-The renderer is bundled by [esbuild](https://esbuild.github.io/) into `src/app/dist/app.bundle.js` (`npm run build:renderer`). The bundle is **gitignored** — it is generated, never committed — and `make:zip` / CI run the build automatically before packaging.
-
----
-
-## Directory Structure
-
-```
-package.json          — dependencies, scripts, ESLint config
-forge.config.js       — Electron Forge packaging config
-vitest.config.mjs     — test runner config
-tsconfig.json         — TypeScript config (full strict mode)
-src/
-  main.js             — entry point (orchestrator)
-  main/               — modular main process components
-  preload.js          — contextBridge API
-  electronClient.js   — renderer adapter
-  app/                — renderer (TypeScript, HTML, CSS, assets)
-    renderer-entry.js — bundle entry point
-    src/              — application source modules (.ts)
-    css/              — stylesheets (template literal preprocessing)
-    dist/             — bundled output (generated, gitignored)
-  types/              — ambient type declarations (globals.d.ts)
-  lib/                — shared utilities (path-utils, sql-validator)
-  icons/              — platform icons
-scripts/
-  build-renderer.js   — esbuild bundler
-  package-and-zip.js  — packaging script (cross-platform aware)
-  build-msi.js        — Windows MSI builder (WiX)
-  smoke.js            — boot verification test
-tests/
-  unit/               — vitest test suite (incl. jsdom renderer harness)
-docs/                 — developer documentation
-```
+Cross-build Linux from any OS: `npm_config_platform=linux npm_config_arch=arm64 npm run make:zip`
+Windows MSI: `node scripts/build-msi.js`. macOS must be built on macOS — CI handles all six targets on tag pushes.
 
 ---
 
 ## Credits
 
-**Original port:** [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop)
-
-**ScratchJr:** [LLK/ScratchJr](https://github.com/LLK/scratchjr) by MIT
-
-**Reborn modernization:** [richiesamlie/ScratchJr-Desktop-Reborn](https://github.com/richiesamlie/ScratchJr-Desktop-Reborn) — maintained through Vibe Coding
-
-### Acknowledgments
-
-Thank you to the official Scratch team and their supporters: https://github.com/LLK/scratchjr
-
-Thank you to the teams behind [Electron](https://electronjs.org/), [Electron Forge](https://electronforge.io/), [sql.js](https://github.com/sql-js/sql.js/), and [esbuild](https://esbuild.github.io/).
-
----
+**Original port:** [JustSch/ScratchJr-Desktop](https://github.com/JustSch/ScratchJr-Desktop) · **ScratchJr:** [LLK/ScratchJr](https://github.com/LLK/scratchjr) by MIT · **Reborn:** [richiesamlie/ScratchJr-Desktop-Reborn](https://github.com/richiesamlie/ScratchJr-Desktop-Reborn)
 
 ## License
 
 **BSD 3-Clause** — Copyright (c) 2016, Massachusetts Institute of Technology.
-
-This is the license of the original ScratchJr project (see `LICENSE`); this
-derived port retains it, as required for redistributions of the original
-source. The modernization work in this repository is distributed under the
-same terms.
-
-## Disclaimer
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
