@@ -11,7 +11,7 @@ const { app, ipcMain } = require('electron');
 const {
   DEBUG, DEBUG_DATABASE, DEBUG_FILEIO, DEBUG_RESOURCEIO, DEBUG_NYI, debugLog
 } = require('./logging');
-const { normalizeAndValidateSqlPayload } = require('../lib/sql-validator');
+const { normalizeAndValidateSqlPayload } = require('../lib/sql-validator.ts');
 
 function register(getDataStore, getWindow) {
   ipcMain.handle('io_getIsDebug', () => DEBUG);

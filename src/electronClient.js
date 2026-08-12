@@ -952,23 +952,23 @@ class CameraPickerDialog {
 bridge.onKeyboardShortcut(function(action) {
   switch (action) {
     case 'save':
-      if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) {
-        ScratchJr.saveProject(null, function() {});
+      if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) { // eslint-disable-line no-undef
+        ScratchJr.saveProject(null, function() {}); // eslint-disable-line no-undef
       }
       break;
     case 'undo':
-      if (typeof Undo !== 'undefined' && Undo.undo) {
-        Undo.undo();
+      if (typeof Undo !== 'undefined' && Undo.undo) { // eslint-disable-line no-undef
+        Undo.undo(); // eslint-disable-line no-undef
       }
       break;
     case 'redo':
-      if (typeof Undo !== 'undefined' && Undo.redo) {
-        Undo.redo();
+      if (typeof Undo !== 'undefined' && Undo.redo) { // eslint-disable-line no-undef
+        Undo.redo(); // eslint-disable-line no-undef
       }
       break;
     case 'new':
-      if (typeof Home !== 'undefined' && Home.createNewProject) {
-        Home.createNewProject();
+      if (typeof Home !== 'undefined' && Home.createNewProject) { // eslint-disable-line no-undef
+        Home.createNewProject(); // eslint-disable-line no-undef
       }
       break;
   }

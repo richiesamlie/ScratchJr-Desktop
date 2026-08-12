@@ -45,10 +45,38 @@ patchFile(forgePkgPath, [
 }`,
         `function hidePromiseFromPromisify(fn) {
     return async (opts) => {
+        // packager v20 Promise-based hooks don't pass a callback; forge's internal
+        // hooks still expect one, so supply a no-op and surface rejections via throw.
+        const noop = () => {};
+        if (opts && typeof opts === 'object' && opts.buildPath !== undefined) {
+            await fn(opts.buildPath, opts.electronVersion, opts.platform, opts.arch, noop);
+        } else {
+            await fn(opts);
+        }
+    };
+}`
+    ],
+    // Repair earlier version of this patch: it dropped the callback arg, causing
+    // "TypeError: done is not a function" in forge's internal callback-style hooks.
+    [
+        `function hidePromiseFromPromisify(fn) {
+    return async (opts) => {
         if (opts && typeof opts === 'object' && opts.buildPath !== undefined) {
             await fn(opts.buildPath, opts.electronVersion, opts.platform, opts.arch);
         } else {
             await fn(opts);
+        }
+    };
+}`,
+        `function hidePromiseFromPromisify(fn) {
+    return async (opts) => {
+        // packager v20 Promise-based hooks don't pass a callback; forge's internal
+        // hooks still expect one, so supply a no-op and surface rejections via throw.
+        const noop = () => {};
+        if (opts && typeof opts === 'object' && opts.buildPath !== undefined) {
+            await fn(opts.buildPath, opts.electronVersion, opts.platform, opts.arch, noop);
+        } else {
+            await fn(opts, noop);
         }
     };
 }`
@@ -107,9 +135,47 @@ patchFile(forgePkgPath, [
         `function sequentialFinalizePackageTargetsHooks(hooks) {
     return [
         async (targets) => {
+            // forge's internal hooks (and some user hooks) still use the
+            // callback style: (targets, done). Pass a no-op done alongside the
+            // Promise so both calling conventions keep working.
+            const noop = () => {};
+            for (const hook of hooks) {
+                try {
+                    await hook(targets, noop);
+                }
+                catch (err) {
+                    throw err;
+                }
+            }
+        },
+    ];
+}`
+    ],
+    [
+        `function sequentialFinalizePackageTargetsHooks(hooks) {
+    return [
+        async (targets) => {
             for (const hook of hooks) {
                 try {
                     await hook(targets);
+                }
+                catch (err) {
+                    throw err;
+                }
+            }
+        },
+    ];
+}`,
+        `function sequentialFinalizePackageTargetsHooks(hooks) {
+    return [
+        async (targets) => {
+            // forge's internal hooks (and some user hooks) still use the
+            // callback style: (targets, done). Pass a no-op done alongside the
+            // Promise so both calling conventions keep working.
+            const noop = () => {};
+            for (const hook of hooks) {
+                try {
+                    await hook(targets, noop);
                 }
                 catch (err) {
                     throw err;

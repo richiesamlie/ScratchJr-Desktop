@@ -1,15 +1,15 @@
-import {preprocessAndLoadCss} from './src/utils/lib.js';
-import Localization from './src/utils/Localization.js';
-import AppUsage from './src/utils/AppUsage.js';
-import iOS from './src/iPad/iOS.js';
-import IO from './src/iPad/IO.js';
-import MediaLib from './src/iPad/MediaLib.js';
+import {preprocessAndLoadCss} from './src/utils/lib';
+import Localization from './src/utils/Localization';
+import AppUsage from './src/utils/AppUsage';
+import iOS from './src/iPad/iOS';
+import IO from './src/iPad/IO';
+import MediaLib from './src/iPad/MediaLib';
 
-import {indexMain} from './src/entry/index.js';
-import {homeMain} from './src/entry/home.js';
-import {editorMain} from './src/entry/editor.js';
-import {gettingStartedMain} from './src/entry/gettingstarted.js';
-import {inappInterfaceGuide, inappAbout, inappBlocksGuide, inappPaintEditorGuide} from './src/entry/inapp.js';
+import {indexMain} from './src/entry/index';
+import {homeMain} from './src/entry/home';
+import {editorMain} from './src/entry/editor';
+import {gettingStartedMain} from './src/entry/gettingstarted';
+import {inappInterfaceGuide, inappAbout, inappBlocksGuide, inappPaintEditorGuide} from './src/entry/inapp';
 
 function loadSettings (settingsRoot, whenDone) {
 	IO.requestFromServer(settingsRoot + 'settings.json', (result) => {

@@ -130,9 +130,15 @@ npm run make:zip
 ### Testing
 
 ```bash
-npm test        # 80 tests via vitest
-npm run lint    # ESLint (airbnb-base config)
+npm test          # 88 tests via vitest
+npm run typecheck # tsc --noEmit over the TS renderer
+npm run lint      # ESLint (airbnb-base config)
 ```
+
+The renderer is TypeScript (all 56 source files migrated). `tsc` uses
+`moduleResolution: bundler` and esbuild consumes `.ts` natively in
+`npm run build:renderer` / `npm start`, so no build step is required
+between editing and running.
 
 ### Debugging
 
