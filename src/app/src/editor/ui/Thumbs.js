@@ -8,10 +8,10 @@ import Page from '../engine/Page.js';
 import ScriptsPane from './ScriptsPane.js';
 import Undo from './Undo.js';
 import UI from './UI.js';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, localx, newHTML, scaleMultiplier, getIdFor,
-    isTouch, newImage, localy, setProps} from '../../utils/lib.js';
+    isTouch, newImage, localy, setProps} from '../../utils/lib';
 
 let caret = undefined;
 

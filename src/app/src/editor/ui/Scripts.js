@@ -6,10 +6,10 @@ import ScratchJr from '../ScratchJr.js';
 import Block from '../blocks/Block.js';
 import BlockSpecs from '../blocks/BlockSpecs.js';
 import ScriptsPane from './ScriptsPane.js';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, newHTML, setCanvasSize, setProps,
-    localx, localy, scaleMultiplier, hit3DRect, isTouch} from '../../utils/lib.js';
+    localx, localy, scaleMultiplier, hit3DRect, isTouch} from '../../utils/lib';
 
 export default class Scripts {
     constructor (spr) {

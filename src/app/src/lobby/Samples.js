@@ -8,7 +8,7 @@ import iOS from '../iPad/iOS.js';
 import MediaLib from '../iPad/MediaLib.js';
 import ScratchAudio from '../utils/ScratchAudio';
 import Localization from '../utils/Localization';
-import {gn, newHTML} from '../utils/lib.js';
+import {gn, newHTML} from '../utils/lib';
 
 let frame;
 // Should ScratchJr projects be saved when the sample project is changed?

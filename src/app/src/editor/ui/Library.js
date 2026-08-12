@@ -4,11 +4,11 @@ import iOS from '../../iPad/iOS.js';
 import IO from '../../iPad/IO.js';
 import MediaLib from '../../iPad/MediaLib.js';
 import Paint from '../../painteditor/Paint.js';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, newHTML, scaleMultiplier,
-    getDocumentWidth, getDocumentHeight, setProps, newCanvas, frame} from '../../utils/lib.js';
+    getDocumentWidth, getDocumentHeight, setProps, newCanvas, frame} from '../../utils/lib';
 
 let selectedOne;
 let nativeJr = true;

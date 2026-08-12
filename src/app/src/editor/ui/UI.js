@@ -17,11 +17,11 @@ import iOS from '../../iPad/iOS.js';
 import IO from '../../iPad/IO.js';
 import MediaLib from '../../iPad/MediaLib.js';
 import Paint from '../../painteditor/Paint.js';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, CSSTransition, localx, newHTML, scaleMultiplier, getIdFor, isTouch, newDiv,
-    newTextInput, isAndroid, getDocumentWidth, getDocumentHeight, setProps, globalx} from '../../utils/lib.js';
+    newTextInput, isAndroid, getDocumentWidth, getDocumentHeight, setProps, globalx} from '../../utils/lib';
 
 let projectNameTextInput = null;
 let info = null;

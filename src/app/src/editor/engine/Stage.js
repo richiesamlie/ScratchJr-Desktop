@@ -5,14 +5,14 @@ import UI from '../ui/UI.js';
 import Undo from '../ui/Undo.js';
 import ScriptsPane from '../ui/ScriptsPane.js';
 import Rectangle from '../../geom/Rectangle';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';
 import Vector from '../../geom/Vector';
 import Page from './Page.js';
 import {newHTML, newDiv, gn,
     getIdFor, setProps,
     scaleMultiplier, setCanvasSize,
-    globaly, globalx} from '../../utils/lib.js';
+    globaly, globalx} from '../../utils/lib';
 
 export default class Stage {
     constructor (div) {

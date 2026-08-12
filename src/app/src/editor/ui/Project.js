@@ -10,7 +10,7 @@ import IO from '../../iPad/IO.js';
 import Paint from '../../painteditor/Paint.js';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';
 import {frame, gn, newHTML, scaleMultiplier, getIdFor,
-    isAndroid, setProps, setCanvasSize} from '../../utils/lib.js';
+    isAndroid, setProps, setCanvasSize} from '../../utils/lib';
 
 let metadata = undefined;
 let mediaCount = -1;

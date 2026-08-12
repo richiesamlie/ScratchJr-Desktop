@@ -3,7 +3,7 @@ import Path from './Path.js';
 import Paint from './Paint.js';
 import Camera from './Camera.js';
 import SVGTools from './SVGTools.js';
-import {newHTML, gn} from '../utils/lib.js';
+import {newHTML, gn} from '../utils/lib';
 import ScratchAudio from '../utils/ScratchAudio';
 //////////////////////////////////
 // Undo / Redo Functions

@@ -2,7 +2,7 @@
 // Home Screen
 //////////////////////////////////////////////////
 
-import {libInit, getUrlVars, gn, isAndroid, newHTML, preprocessAndLoad} from '../utils/lib.js';
+import {libInit, getUrlVars, gn, isAndroid, newHTML, preprocessAndLoad} from '../utils/lib';
 import ScratchAudio from '../utils/ScratchAudio';
 import iOS from '../iPad/iOS.js';
 import Localization from '../utils/Localization';

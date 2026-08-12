@@ -1,4 +1,4 @@
-import {isAndroid} from './lib.js';
+import {isAndroid} from './lib';
 import iOS from '../iPad/iOS.js';
 
 export default class Sound {

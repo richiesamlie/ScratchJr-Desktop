@@ -6,7 +6,7 @@ import SVGTools from './SVGTools.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import Paint from './Paint.js';
 import Vector from '../geom/Vector';
-import {gn, DEGTOR} from '../utils/lib.js';
+import {gn, DEGTOR} from '../utils/lib';
 
 export default class Transform {
     static getList (elem) {

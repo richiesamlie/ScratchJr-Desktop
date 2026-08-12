@@ -9,7 +9,7 @@ import SVG2Canvas from '../utils/SVG2Canvas.js';
 import Rectangle from '../geom/Rectangle';
 import Layer from './Layer.js';
 import Ghost from './Ghost.js';
-import {gn, globalx, globaly, DEGTOR, setCanvasSize, isAndroid} from '../utils/lib.js';
+import {gn, globalx, globaly, DEGTOR, setCanvasSize, isAndroid} from '../utils/lib';
 
 let view = 'front';
 let target;

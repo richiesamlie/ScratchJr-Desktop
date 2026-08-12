@@ -3,9 +3,9 @@
 //////////////////////////////
 
 import ScratchJr from '../ScratchJr.js';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';
-import {gn, scaleMultiplier, newDiv, setProps, newP, newCanvas} from '../../utils/lib.js';
+import {gn, scaleMultiplier, newDiv, setProps, newP, newCanvas} from '../../utils/lib';
 
 let width = 482;
 let height = 362;

@@ -1,4 +1,4 @@
-import {gn} from '../utils/lib.js';
+import {gn} from '../utils/lib';
 import Localization from '../utils/Localization';
 
 export function inappAbout () {
@@ -66,7 +66,7 @@ export function inappInterfaceGuide () {
     var switchHelp = function (e) {
         var target = e.target;
         if (target.className == 'interface-button-text') {
-            var descriptionId = parseInt(target.innerText - 1); // eslint-disable-line radix
+            var descriptionId = parseInt(target.innerText, 10) - 1;
             interfaceKeyHeaderNode.textContent = interfaceDescriptions[descriptionId][0];
             interfaceKeyDescriptionNode.textContent = interfaceDescriptions[descriptionId][1];
             currentButton.className = 'interface-button';
@@ -116,7 +116,7 @@ export function inappPaintEditorGuide () {
     var switchHelp = function (e) {
         var target = e.target;
         if (target.className == 'paint-button-text') {
-            var descriptionId = parseInt(target.innerText - 1);
+            var descriptionId = parseInt(target.innerText, 10) - 1;
             paintKeyHeaderNode.textContent = paintDescriptions[descriptionId][0];
             paintKeyDescriptionNode.textContent = paintDescriptions[descriptionId][1];
             currentButton.className = 'paint-button';

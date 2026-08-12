@@ -13,7 +13,7 @@ describe('startup layout bootstrap IPC contract', () => {
     const preloadSource = readSource('src/preload.js');
     const mainSource = readSource('src/main/ipc-handlers.js');
     const electronClientSource = readSource('src/electronClient.js');
-    const libSource = readSource('src/app/src/utils/lib.js');
+    const libSource = readSource('src/app/src/utils/lib.ts');
     const appEntrySource = readSource('src/app/appEntry.js');
 
     it('uses invoke for io_gettextresource in preload', () => {

@@ -1,4 +1,4 @@
-import {isiOS, gn} from '../utils/lib.js';
+import {isiOS, gn} from '../utils/lib';
 import IO from './IO.js';
 import Lobby from '../lobby/Lobby.js';
 import Alert from '../editor/ui/Alert.js';

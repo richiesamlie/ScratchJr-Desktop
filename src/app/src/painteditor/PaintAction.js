@@ -11,9 +11,9 @@ import Layer from './Layer.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import SVGImage from './SVGImage.js';
 import Camera from './Camera.js';
-import Events from '../utils/Events.js';
+import Events from '../utils/Events';
 import Rectangle from '../geom/Rectangle';
-import {gn, isTouch, getIdFor} from '../utils/lib.js';
+import {gn, isTouch, getIdFor} from '../utils/lib';
 /*
 Type of objects:
 - fixed: Only exists on Assets Backgrounds and can it only be fill (color or camera) or removed

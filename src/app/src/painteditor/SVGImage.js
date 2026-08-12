@@ -13,7 +13,7 @@ import Rectangle from '../geom/Rectangle';
 import SVGTools from './SVGTools.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import PaintAction from './PaintAction.js';
-import {getIdFor, gn, getIdForCamera, setCanvasSize, DEGTOR} from '../utils/lib.js';
+import {getIdFor, gn, getIdForCamera, setCanvasSize, DEGTOR} from '../utils/lib';
 
 export default class SVGImage {
     static addCameraFill (mt, str) {

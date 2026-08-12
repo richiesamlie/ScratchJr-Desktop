@@ -6,7 +6,7 @@ import SVGTools from './SVGTools.js';
 import SVGImage from './SVGImage.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import Transform from './Transform.js';
-import {gn, setCanvasSize, newDiv, DEGTOR} from '../utils/lib.js';
+import {gn, setCanvasSize, newDiv, DEGTOR} from '../utils/lib';
 
 let targetOffscreen = document.createElement('canvas');
 let offscreen = document.createElement('canvas');

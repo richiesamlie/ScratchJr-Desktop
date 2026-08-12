@@ -10,6 +10,7 @@ interface AndroidInterfaceStatic {
     audio_isplaying(handle: number): boolean;
     audio_sndfxwithvolume(name: string, volume: number): void;
     scratchjr_getgettingstartedvideopath(): string;
+    notifySplashDone(): void;
     // filled in as more call sites are typed
     [key: string]: unknown;
 }

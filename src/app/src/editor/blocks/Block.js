@@ -1,7 +1,7 @@
 import BlockSpecs from './BlockSpecs.js';
 import BlockArg from './BlockArg.js';
 import ScratchJr from '../ScratchJr.js';
-import {setProps, setCanvasSize, scaleMultiplier} from '../../utils/lib.js';
+import {setProps, setCanvasSize, scaleMultiplier} from '../../utils/lib';
 
 export default class Block {
     constructor (spec, isPalette, scale) {

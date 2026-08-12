@@ -120,11 +120,17 @@ export async function preprocessAndLoadCss (baseUrl, url) {
     style.id = url;
     style.type = 'text/css';
 
-    if (style.styleSheet){
-        style.styleSheet.cssText = cssData;
-    } else {
-        style.appendChild(document.createTextNode(cssData));
+    // styleSheet.cssText is the IE-era assignment path; guard the shape at
+    // runtime, then fall through to the modern text-node path.
+    if ('styleSheet' in style) {
+        const legacyStyleSheet = style.styleSheet;
+        if (legacyStyleSheet && typeof legacyStyleSheet === 'object' && 'cssText' in legacyStyleSheet) {
+            legacyStyleSheet.cssText = cssData;
+            head.appendChild(style);
+            return;
+        }
     }
+    style.appendChild(document.createTextNode(cssData));
     head.appendChild(style);
 }
 
@@ -558,9 +564,9 @@ export function newTextInput (p, type, str, mstyle) {
     return input;
 }
 
-export function getUrlVars () {
+export function getUrlVars (): Record<string, string> {
     if (window.location.href.indexOf('?') < 0) {
-        return [];
+        return {};
     }
     var args = window.location.href.slice(window.location.href.indexOf('?') + 1);
     var vars = [], hash;
@@ -570,7 +576,9 @@ export function getUrlVars () {
         vars.push(hash[0]);
         vars[hash[0]] = hash[1];
     }
-    return vars;
+    // Legacy hybrid: the bag is an array with named query params attached;
+    // every caller reads the named properties.
+    return vars as unknown as Record<string, string>;
 }
 
 export function getIdFor (name) {
@@ -676,13 +684,30 @@ export function getHex (num) {
 
 // findKeyframesRule ("swing");
 
-export function findKeyframesRule (rule) {
+export function findKeyframesRule (rule: string) {
     var ss = document.styleSheets;
     for (var i = 0; i < ss.length; ++i) {
         for (var j = 0; j < ss[i].cssRules.length; ++j) {
-            var styles = ss[i].cssRules[j].styleSheet.rules;
+            const ruleEntry = ss[i].cssRules[j];
+            // The prefixed constant and the styleSheet.rules collection are
+            // IE-era APIs absent from the standard CSSRule type — guard them.
+            if (!('styleSheet' in ruleEntry)) {
+                continue;
+            }
+            const legacySheet = ruleEntry.styleSheet;
+            if (!legacySheet || typeof legacySheet !== 'object' || !('rules' in legacySheet)) {
+                continue;
+            }
+            const styles = legacySheet.rules;
+            if (!Array.isArray(styles)) {
+                continue;
+            }
+            if (!('WEBKIT_KEYFRAMES_RULE' in window.CSSRule)) {
+                continue;
+            }
+            const keyframesConstant = window.CSSRule.WEBKIT_KEYFRAMES_RULE;
             for (var k = 0; k < styles.length; ++k) {
-                if (styles[k].type == window.CSSRule.WEBKIT_KEYFRAMES_RULE && styles[k].name == rule) {
+                if (styles[k].type == keyframesConstant && styles[k].name == rule) {
                     return styles[k];
                 }
             }
@@ -712,3 +737,9 @@ export function css_vw (x) {
 Number.prototype.mod = function (n) {  // eslint-disable-line no-extend-native
     return ((this % n) + n) % n;
 };
+
+declare global {
+    interface Number {
+        mod(n: number): number;
+    }
+}

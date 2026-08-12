@@ -1,7 +1,7 @@
 
 import Paint from './Paint.js';
 import Vector from '../geom/Vector';
-import {gn, getIdFor, rgb2hsb} from '../utils/lib.js';
+import {gn, getIdFor, rgb2hsb} from '../utils/lib';
 import Transform from './Transform.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import SVGImage from './SVGImage.js';

@@ -4,12 +4,12 @@ import Project from './Project.js';
 import Thumbs from './Thumbs.js';
 import Palette from './Palette.js';
 import Undo from './Undo.js';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import Scroll from './Scroll.js';
 import Menu from '../blocks/Menu.js';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, localx, localy, newHTML, isTouch,
-    globalx, globaly, setCanvasSize, getDocumentHeight, frame} from '../../utils/lib.js';
+    globalx, globaly, setCanvasSize, getDocumentHeight, frame} from '../../utils/lib';
 
 let scroll = undefined;
 let watermark;

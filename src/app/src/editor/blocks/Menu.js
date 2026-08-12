@@ -1,6 +1,6 @@
 import BlockSpecs from './BlockSpecs.js';
 import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTouch,
-    newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly} from '../../utils/lib.js';
+    newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly} from '../../utils/lib';
 
 let openMenu;
 

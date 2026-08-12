@@ -13,7 +13,7 @@ import Matrix from '../../geom/Matrix';
 import Vector from '../../geom/Vector';
 import {newHTML, newDiv, gn,
     setCanvasSizeScaledToWindowDocumentHeight,
-    DEGTOR, getIdFor, setProps} from '../../utils/lib.js';
+    DEGTOR, getIdFor, setProps} from '../../utils/lib';
 
 export default class Page {
     constructor (id, data, fcn) {

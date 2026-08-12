@@ -2,8 +2,8 @@
 // Scrolling Pane
 ////////////////////////////////////////////////
 
-import Events from '../../utils/Events.js';
-import {newDiv, newHTML, CSSTransition3D, isTouch, setCanvasSize} from '../../utils/lib.js';
+import Events from '../../utils/Events';
+import {newDiv, newHTML, CSSTransition3D, isTouch, setCanvasSize} from '../../utils/lib';
 
 export default class Scroll {
     constructor (div, id, w, h, cfcn, ofcn) {

@@ -8,7 +8,7 @@ import Project from './Project.js';
 import Palette from './Palette.js';
 import UI from './UI.js';
 import ScratchAudio from '../../utils/ScratchAudio';
-import {newHTML, isTouch, gn} from '../../utils/lib.js';
+import {newHTML, isTouch, gn} from '../../utils/lib';
 
 let buffer = [];
 let index = 0;

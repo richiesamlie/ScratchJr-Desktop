@@ -1,4 +1,4 @@
-import {isAndroid} from './lib.js';
+import {isAndroid} from './lib';
 import Sound from './Sound';
 import iOS from '../iPad/iOS.js';
 
@@ -35,7 +35,7 @@ export default class ScratchAudio {
         }
     }
 
-    static init (prefix) {
+    static init (prefix?: string) {
         if (!prefix) {
             prefix = '';
         }

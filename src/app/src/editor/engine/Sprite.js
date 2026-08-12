@@ -20,7 +20,7 @@ import ScriptsPane from '../ui/ScriptsPane.js';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';
 import SVGTools from '../../painteditor/SVGTools.js';
 import Rectangle from '../../geom/Rectangle';
-import Events from '../../utils/Events.js';
+import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio';
 import Scripts from '../ui/Scripts.js';
@@ -28,7 +28,7 @@ import {newHTML, newDiv, newP, gn,
     setCanvasSizeScaledToWindowDocumentHeight,
     DEGTOR, getIdFor, setProps, isTouch, isiOS,
     isAndroid, fitInRect, scaleMultiplier, setCanvasSize,
-    globaly, globalx, rgbToHex} from '../../utils/lib.js';
+    globaly, globalx, rgbToHex} from '../../utils/lib';
 
 export default class Sprite {
     constructor (attr, whenDone) {

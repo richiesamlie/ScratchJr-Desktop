@@ -13,12 +13,12 @@ import Menu from './blocks/Menu.js';
 import Library from './ui/Library.js';
 import Grid from './ui/Grid.js';
 import ScriptsPane from './ui/ScriptsPane.js';
-import Events from '../utils/Events.js';
+import Events from '../utils/Events';
 import BlockSpecs from './blocks/BlockSpecs.js';
 import Runtime from './engine/Runtime.js';
 import Localization from '../utils/Localization';
 import {libInit, gn, scaleMultiplier, newHTML,
-    isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib.js';
+    isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib';
 
 const bridge = window.scratchjr;
 

@@ -16,8 +16,8 @@ import Paint from './Paint.js';
 import PaintUndo from './PaintUndo.js';
 import PaintAction from './PaintAction.js';
 import Ghost from './Ghost.js';
-import Events from '../utils/Events.js';
-import {gn, getIdFor, setCanvasSize} from '../utils/lib.js';
+import Events from '../utils/Events';
+import {gn, getIdFor, setCanvasSize} from '../utils/lib';
 
 // Previous "PathEdit" globals
 let lineDotColor = 'white';
