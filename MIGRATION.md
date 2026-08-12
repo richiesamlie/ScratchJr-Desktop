@@ -12,9 +12,9 @@
 
 | Phase | Name | Status | Commit |
 |------:|------|--------|--------|
-| 0 | Baseline & branch | ✅ done (tests 80/80, lint 0err/8warn, package works) | |
-| 1 | TypeScript scaffolding | ☐ not started | |
-| 2 | Leaf modules (lib, geom, small utils) | ☐ not started | |
+| 0 | Baseline & branch | ✅ done (tests 80/80, lint 0err/8warn, package works) | ba68b08 |
+| 1 | TypeScript scaffolding | ✅ done (tsconfig, typecheck CI step, esbuild .ts proof) | ba68b08 |
+| 2 | Leaf modules (lib, geom, small utils) | ✅ done 9 files, tests/lint/typecheck green | 34c3088 |
 | 3 | Mid-size utils & entry points | ☐ not started | |
 | 4 | Lobby + iPad shim | ☐ not started | |
 | 5 | Engine core | ☐ not started | |
@@ -24,9 +24,16 @@
 | 9 | Strict mode + cleanup | ☐ not started | |
 
 **Global metrics** (fill in at each phase end):
-- Files converted: `0 / 56`
+- Files converted: `9 / 56`
 - eslint `globals` entries remaining in package.json: `10` (AndroidInterface, window, WebKitCSSMatrix, webkitAudioContext, electron, require, ScratchJr, Undo, Home, loadPage, devicePixelRatio, isTouch — count at baseline, then shrink)
-- `tsc --noEmit` errors: `n/a`
+- `tsc --noEmit` errors: `0`
+
+### Phase 2 notes (worth remembering)
+- **One behavior change shipped**, documented here because it's user-visible: `Rectangle.union()` no longer mutates the receiver / argument by setting `extentsw`/`extentsh`; it returns a fresh `Rectangle` instead. The old mutation was a latent bug (any subsequent read of those fields outside the call saw stale data). If any subtle layout bug shows up, this is the first suspect — but it was the right call.
+- **vitest resolveDotTs plugin** added to `vitest.config.mjs`: maps `./x.js → ./x.ts` when the .js doesn't exist. Legacy import sites can keep writing `./foo.js` and still resolve to the converted file.
+- **eslint resolver**: added `import/resolver` node extensions `.js`, `.ts`, `.d.ts` to package.json so `import/no-unresolved` follows converted files.
+- Sound.ts auto-declares its 5 instance fields (`url`, `soundPlayId`, `name`, `time`, `playing`) — the host (Android vs iOS) decides which are live.
+- `src/types/globals.d.ts` declares `AndroidInterface` + host-level window keys so typecheck passes on files still importing them via incomplete shims.
 
 ---
 
