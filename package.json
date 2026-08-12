@@ -167,6 +167,7 @@
             "WebKitCSSMatrix": true,
             "electron": true,
             "require": true,
+            "globalThis": true,
             "isTouch": true
         },
         "env": {

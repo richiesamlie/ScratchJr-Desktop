@@ -953,22 +953,22 @@ bridge.onKeyboardShortcut(function(action) {
   switch (action) {
     case 'save':
       if (typeof ScratchJr !== 'undefined' && ScratchJr.saveProject) { // eslint-disable-line no-undef
-        ScratchJr.saveProject(null, function() {});
+        ScratchJr.saveProject(null, function() {}); // eslint-disable-line no-undef
       }
       break;
     case 'undo':
       if (typeof Undo !== 'undefined' && Undo.undo) { // eslint-disable-line no-undef
-        Undo.undo();
+        Undo.undo(); // eslint-disable-line no-undef
       }
       break;
     case 'redo':
       if (typeof Undo !== 'undefined' && Undo.redo) { // eslint-disable-line no-undef
-        Undo.redo();
+        Undo.redo(); // eslint-disable-line no-undef
       }
       break;
     case 'new':
       if (typeof Home !== 'undefined' && Home.createNewProject) { // eslint-disable-line no-undef
-        Home.createNewProject();
+        Home.createNewProject(); // eslint-disable-line no-undef
       }
       break;
   }
