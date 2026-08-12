@@ -20,12 +20,12 @@
 | 5 | Engine core | ✅ done 7 files (6 engine + BlockSpecs pulled forward), smoke PASS | c8954eb |
 | 6 | Editor UI | ☐ not started | |
 | 7 | Paint editor | ✅ done 11 files (10 paint + SVG2Canvas), smoke PASS | 3781364 |
-| 8 | ScratchJr.js + globals teardown | ☐ in progress | |
-| 9 | Strict mode + cleanup | ☐ not started | |
+| 8 | ScratchJr.js + globals teardown | ✅ done 1 file, globals pruned, smoke PASS | 9950bae |
+| 9 | Strict mode + cleanup | ✅ done (partial strict, follow-up filed), package+zip verified, merged | 3b31c39 |
 
 **Global metrics** (fill in at each phase end):
-- Files converted: `53 / 56`
-- eslint `globals` entries remaining in package.json: `12` (AndroidInterface, window, WebKitCSSMatrix, webkitAudioContext, electron, require, ScratchJr, Undo, Home, loadPage, devicePixelRatio, globalThis, isTouch — count at baseline, then shrink)
+- Files converted: `56 / 56`
+- eslint `globals` entries remaining: `6` (AndroidInterface, window, WebKitCSSMatrix, electron, require, globalThis)
 - `tsc --noEmit` errors: `0`
 
 ### Phase 2 notes (worth remembering)
@@ -242,7 +242,7 @@ Blocks first (smaller), then UI:
 ---
 
 ## Phase 9 — Strict mode + cleanup
-**Status:** ☐ not started
+**Status:** ✅ done (partial strict — see follow-up below)
 **Effort:** ~2–3 days (unbounded if old typing debt surfaces; timebox and file follow-ups)
 
 - [ ] tsconfig: `strict: true` (or step through `noImplicitAny` → `strictNullChecks` individually if the all-at-once error count is scary)
@@ -265,3 +265,33 @@ Blocks first (smaller), then UI:
 
 ## Rollback
 Every phase is a commit set on `ts-migration`. Any phase that can't go green → revert that phase's commits; earlier phases still stand because each was independently validated.
+
+### Phase 9 status (timeboxed) + strict-mode follow-up
+
+`strict: true` lands as a **1,426-error burn-down** (noImplicitAny ~2,500 +
+strictNullChecks ~1,000 spread over 40 files — the plan's "unbounded if old
+typing debt surfaces" clause). Timeboxed: shipped the cheap, independent
+flags instead and filed the rest.
+
+**Landed now:**
+- `noImplicitThis: true` + `useUnknownInCatchVariables: true` (tsconfig) — 9
+  errors fixed (catch-var `as Error`, `Number.prototype.mod` `this: Number`,
+  `SVGMatrix.prototype.isIdentity` `this: SVGMatrix`)
+- `strictPropertyInitialization` — 79 instance-field sites got definite
+  assignment assertions (`field!: T`) so the strict flip is prep-ready
+
+**Follow-up (Phase 9b):**
+1. `tsconfig.json`: set `strict: true` (re-enable `strictNullChecks`,
+   `noImplicitAny`, and `strictPropertyInitialization`)
+2. Expect ~1,400 errors; dominant patterns:
+   - `gn()` returns `HTMLElement | null` — ~480 call sites need `!` or a guard
+   - implicit-any params (~2,000) — type them as you touch each file
+3. Every `as Sprite`/`as Scripts` owner cast is a candidate for a real
+   `div.owner: Sprite` typed accessor once `HTMLElement` expando props are
+   replaced with a typed owner contract
+4. Delete the remaining `// eslint-disable-line no-undef` guarded dead refs in
+   electronClient.js once the native callbacks are typed
+
+**Phase 9 done-when (as executed):** docs updated (README/CONTRIBUTING),
+`npm run make:zip` produces the packaged app + zip (166 MB), packaged exe
+boots to `[SCRATCHJR_READY]`, merge to main complete.
