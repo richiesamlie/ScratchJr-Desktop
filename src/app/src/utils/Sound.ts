@@ -1,5 +1,5 @@
 import {isAndroid} from './lib';
-import iOS from '../iPad/iOS.js';
+import iOS from '../iPad/iOS';
 
 export default class Sound {
     url;

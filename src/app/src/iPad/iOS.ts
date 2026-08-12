@@ -85,7 +85,7 @@ export default class iOS {
     }
 
     static setfield (db, id, fieldname, val, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         var keylist = [fieldname + ' = ?', 'mtime = ?'];
         json.values = [val, (new Date()).getTime().toString()];
         json.stmt = 'update ' + db + ' set ' + keylist.toString() + ' where id = ' + id;
@@ -134,7 +134,7 @@ export default class iOS {
     }
 
 	
-    static async getmediadone(file, fcn) {
+    static async getmediadone(file, fcn?) {
         var result = await tabletInterface.io_getmediadone(file);
         if (fcn) {
             fcn(result);
@@ -202,14 +202,14 @@ export default class iOS {
         }
     }
 
-    static playSound (name, fcn) {
+    static playSound (name, fcn?) {
         var result = tabletInterface.io_playsound(name);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static stopSound (name, fcn) {
+    static stopSound (name, fcn?) {
         var result = tabletInterface.io_stopsound(name);
         if (fcn) {
             fcn(result);
@@ -363,7 +363,7 @@ export default class iOS {
         fcn(tabletInterface.deviceName());
     }
 
-    static analyticsEvent (category, action, label, value) {
+    static analyticsEvent (category, action, label, value?) {
         if (!value) {
             value = 1;
         }

@@ -5,7 +5,7 @@ import Palette from './Palette.js';
 import UI from './UI.js';
 import Page from '../engine/Page.js';
 import Sprite from '../engine/Sprite.js';
-import iOS from '../../iPad/iOS.js';
+import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO.js';
 import Paint from '../../painteditor/Paint.js';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';

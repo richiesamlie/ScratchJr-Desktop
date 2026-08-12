@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////
 
 import Lobby from './Lobby.js';
-import iOS from '../iPad/iOS.js';
+import iOS from '../iPad/iOS';
 import IO from '../iPad/IO.js';
 import Project from '../editor/ui/Project.js';
 import Localization from '../utils/Localization';

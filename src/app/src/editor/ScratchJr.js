@@ -7,7 +7,7 @@ import Alert from './ui/Alert.js';
 import Palette from './ui/Palette.js';
 import Record from './ui/Record.js';
 import IO from '../iPad/IO.js';
-import iOS from '../iPad/iOS.js';
+import iOS from '../iPad/iOS';
 import UI from './ui/UI.js';
 import Menu from './blocks/Menu.js';
 import Library from './ui/Library.js';

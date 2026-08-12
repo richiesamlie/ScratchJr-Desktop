@@ -1,5 +1,5 @@
 import ScratchJr from '../editor/ScratchJr.js';
-import iOS from '../iPad/iOS.js';
+import iOS from '../iPad/iOS';
 import Camera from '../painteditor/Camera.js';
 import Record from '../editor/ui/Record.js';
 

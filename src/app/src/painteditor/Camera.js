@@ -1,5 +1,5 @@
 import ScratchJr from '../editor/ScratchJr.js';
-import iOS from '../iPad/iOS.js';
+import iOS from '../iPad/iOS';
 import ScratchAudio from '../utils/ScratchAudio';
 import Paint from './Paint.js';
 import PaintUndo from './PaintUndo.js';

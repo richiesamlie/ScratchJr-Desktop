@@ -11,6 +11,7 @@ interface AndroidInterfaceStatic {
     audio_sndfxwithvolume(name: string, volume: number): void;
     scratchjr_getgettingstartedvideopath(): string;
     notifySplashDone(): void;
+    notifyDoneLoading(): void;
     // filled in as more call sites are typed
     [key: string]: unknown;
 }
@@ -110,6 +111,32 @@ interface Navigator {
     userLanguage?: string;
 }
 
+/**
+ * DOM thumbs carry custom data attributes (md5/type/thumb/pos) attached as
+ * expando properties by Lobby/editor code. Structural cast target only.
+ */
+interface ThumbElement extends HTMLDivElement {
+    md5?: string;
+    type?: string;
+    thumb?: string;
+    pos?: number;
+    owner?: unknown;
+}
+
+/**
+ * SQL payload bag built incrementally by iOS/IO persistence code
+ * (`var json = {}` + field adds). Type annotation replaces the
+ * non-evolving `{}` inference on `var` declarations.
+ */
+interface SqlPayload {
+    stmt?: string;
+    values?: Array<string | number | boolean | null>;
+    cond?: string;
+    items?: string[];
+    order?: string;
+    [key: string]: unknown;
+}
+
 interface Window {
     // Runtime-injected by appEntry.js from settings.json
     Settings?: ScratchJrSettings;
@@ -117,6 +144,8 @@ interface Window {
     tablet?: TabletBridge;
     // Legacy global assignment kept until Phase 8 teardown
     ScratchAudio?: ScratchAudioGlobal;
+    // Set by iPad/iOS for tablet sharing callbacks
+    iOS?: unknown;
     // Non-standard touch handler used by Events.js
     ontouchleave?: ((this: GlobalEventHandlers, ev: TouchEvent) => void) | null;
     ScratchJr?: unknown;

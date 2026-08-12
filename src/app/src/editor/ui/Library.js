@@ -1,8 +1,8 @@
 
 import ScratchJr from '../ScratchJr.js';
-import iOS from '../../iPad/iOS.js';
+import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO.js';
-import MediaLib from '../../iPad/MediaLib.js';
+import MediaLib from '../../iPad/MediaLib';
 import Paint from '../../painteditor/Paint.js';
 import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';

@@ -1,7 +1,7 @@
 import ScratchJr from '../ScratchJr.js';
 import Palette from './Palette.js';
 import Undo from './Undo.js';
-import iOS from '../../iPad/iOS.js';
+import iOS from '../../iPad/iOS';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, newHTML, isAndroid, setProps} from '../../utils/lib';
 
