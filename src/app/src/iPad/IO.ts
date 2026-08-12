@@ -9,6 +9,19 @@ import SVG2Canvas from '../utils/SVG2Canvas.js';
 const database = 'projects';
 const collectLibraryAssets = false;
 
+// jszip 3.10 typings removed the deprecated sync APIs (load/asText/asBinary);
+// they still exist at runtime. Cast once for the sync share-import path.
+interface LegacyZipArchive {
+    load(data: string, options: { base64: boolean }): void;
+    forEach(callback: (relativePath: string, file: LegacyZipEntry) => void): void;
+}
+
+interface LegacyZipEntry {
+    dir: boolean;
+    asText(): string;
+    asBinary(): string;
+}
+
 // Sharing state
 let zipFile = null;
 let zipAssetsExpected = 0;
@@ -199,7 +212,7 @@ export default class IO {
     }
 
     static getObjectinDB (db, md5, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         json.stmt = 'select * from ' + db + ' where id = ?';
         json.values = [md5];
         iOS.query(json, fcn);
@@ -210,7 +223,7 @@ export default class IO {
     }
 
     static query (type, obj, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         json.stmt = 'select ' + obj.items + ' from ' + type
             + ' where ' + obj.cond + (obj.order ? ' order by ' + obj.order : '');
         json.values = obj.values;
@@ -218,7 +231,7 @@ export default class IO {
     }
 
     static deleteobject (type, id, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         json.stmt = 'delete from ' + type + ' where id = ?';
         json.values = [id];
         iOS.stmt(json, fcn);
@@ -237,7 +250,7 @@ export default class IO {
     */
 
     static createProject (obj, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         var keylist = ['name', 'version', 'deleted', 'mtime', 'isgift'];
         var values = '?,?,?,?,?';
         var mtime = (new Date()).getTime().toString();
@@ -259,7 +272,7 @@ export default class IO {
     }
 
     static saveProject (obj, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         var keylist = ['version = ?', 'deleted = ?', 'name = ?', 'json = ?', 'thumbnail = ?', 'mtime = ?'];
         json.values = [obj.version, obj.deleted, obj.name, JSON.stringify(obj.json),
             JSON.stringify(obj.thumbnail), (new Date()).getTime().toString()];
@@ -271,7 +284,7 @@ export default class IO {
     // Since saveProject is changing the modified time of the project,
     // let's just simply update the isgift flag in a separate function...
     static setProjectIsGift (obj, fcn) {
-        var json = {};
+        var json: SqlPayload = {};
         var keylist = ['isgift = ?'];
         json.values = [obj.isgift];
         json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
@@ -287,8 +300,8 @@ export default class IO {
         return str.substring(0, str.indexOf('.'));
     }
 
-    static parseProjectData (data) {
-        var res = {};
+    static parseProjectData (data: Record<string, unknown>): Record<string, unknown> {
+        var res: Record<string, unknown> = {};
         for (var key in data) {
             res[key.toLowerCase()] = data[key];
         }
@@ -342,33 +355,39 @@ export default class IO {
             };
 
             // Project thumbnail
-            collectAsset('thumbnails', jsonData.thumbnail.md5);
+            const thumbnail = jsonData.thumbnail;
+            if (thumbnail && typeof thumbnail === 'object' && 'md5' in thumbnail) {
+                collectAsset('thumbnails', thumbnail.md5);
+            }
 
             var projectData = jsonData.json;
 
             // Data for each page
-            for (var p = 0; p < projectData.pages.length; p++) {
-                var pageReference = projectData.pages[p];
-                var page = projectData[pageReference];
+            if (projectData && typeof projectData === 'object' && 'pages' in projectData && Array.isArray(projectData.pages)) {
+                var pages = projectData.pages;
+                for (var p = 0; p < pages.length; p++) {
+                    var pageReference = pages[p];
+                    var page = projectData[pageReference];
 
-                // Page background
-                collectAsset('backgrounds', page.md5);
+                    // Page background
+                    collectAsset('backgrounds', page.md5);
 
-                // Sprites
-                for (var s = 0; s < page.sprites.length; s++) {
-                    var spriteReference = page.sprites[s];
-                    var sprite = page[spriteReference];
+                    // Sprites
+                    for (var s = 0; s < page.sprites.length; s++) {
+                        var spriteReference = page.sprites[s];
+                        var sprite = page[spriteReference];
 
-                    if (sprite.type != 'sprite') {
-                        continue;
-                    }
+                        if (sprite.type != 'sprite') {
+                            continue;
+                        }
 
-                    // Sprite image
-                    collectAsset('characters', sprite.md5);
+                        // Sprite image
+                        collectAsset('characters', sprite.md5);
 
-                    // Sprite's recorded sounds
-                    for (var snd = 0; snd < sprite.sounds.length; snd++) {
-                        collectAsset('sounds', sprite.sounds[snd]);
+                        // Sprite's recorded sounds
+                        for (var snd = 0; snd < sprite.sounds.length; snd++) {
+                            collectAsset('sounds', sprite.sounds[snd]);
+                        }
                     }
                 }
             }
@@ -438,14 +457,15 @@ export default class IO {
             var windowsReservedRe = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
             var windowsTrailingRe = /[\. ]+$/;
 
-            zipFileName = jsonData.name.replace(/\s*/g, '');
+            const projectName = (typeof jsonData.name === 'string') ? jsonData.name : '';
+            zipFileName = projectName.replace(/\s*/g, '');
             zipFileName = zipFileName
                 .replace(illegalRe, '_')
                 .replace(controlRe, '_')
                 .replace(reservedRe, '_')
                 .replace(windowsReservedRe, '_')
                 .replace(windowsTrailingRe, '_');
-            shareName = jsonData.name;
+            shareName = projectName;
 
             function checkStatus () {
                 if ((zipAssetsActual / zipAssetsExpected) == 1) {
@@ -460,7 +480,7 @@ export default class IO {
         });
     }
 
-    static uniqueProjectName (jsonData, callback, useOne) {
+    static uniqueProjectName (jsonData, callback, useOne?) {
         // Ensure the project name is not a duplicate
 
         // Split project name from trailing number
@@ -486,7 +506,7 @@ export default class IO {
         var giftProjectNameParts = nameAndNumber(jsonData.name);
 
         // Get project names already existing in the DB
-        var json = {};
+        var json: SqlPayload = {};
         json.cond = 'deleted = ? AND gallery IS NULL';
         json.items = ['name'];
         json.values = ['NO'];
@@ -526,7 +546,7 @@ export default class IO {
         var saveExpected = 0; // How many assets we expect to save - updated as we process the zip
         var saveActual = 0; // How many assets actually saved - updated as we make IO saves
 
-        var receivedZip = JSZip();
+        var receivedZip = new JSZip() as unknown as LegacyZipArchive;
         receivedZip.load(b64data, {
             'base64': true
         });
@@ -639,7 +659,7 @@ export default class IO {
                             // Sprite thumbnail is saved - save character to the DB
 
                             // First ensure that this character doesn't already exist in the exact form
-                            var json = {};
+                            var json: SqlPayload = {};
                             json.cond = ('ext = ? AND md5 = ? AND altmd5 = ? AND name = ? '
                                 + 'AND scale = ? AND width = ? AND height = ?');
                             json.items = ['*'];
@@ -650,7 +670,7 @@ export default class IO {
                                 results = JSON.parse(results);
                                 if (results.length == 0) {
                                     // This character doesn't already exist - insert it
-                                    var json = {};
+                                    var json: SqlPayload = {};
                                     var keylist = ['scale', 'md5', 'altmd5',
                                         'version', 'width', 'height', 'ext', 'name'];
                                     var values = '?,?,?,?,?,?,?,?';
@@ -680,7 +700,7 @@ export default class IO {
                         iOS.setmedia(thumbnailPngBase64, 'png', function (thumbnailMD5) {
 
                             // First ensure that this bg doesn't already exist in the exact form
-                            var json = {};
+                            var json: SqlPayload = {};
                             json.cond = 'ext = ? AND md5 = ? AND altmd5 = ?';
                             json.items = ['*'];
                             json.values = ['svg', fullName, thumbnailMD5];
@@ -689,7 +709,7 @@ export default class IO {
                                 results = JSON.parse(results);
                                 if (results.length == 0) {
                                     // Background is unique, insert into the library
-                                    var json = {};
+                                    var json: SqlPayload = {};
                                     var keylist = ['md5', 'altmd5', 'version', 'width', 'height', 'ext'];
                                     var values = '?,?,?,?,?,?';
                                     json.values = [fullName, thumbnailMD5, 'iOSv01', '480', '360', 'svg'];

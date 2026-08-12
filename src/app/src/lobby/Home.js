@@ -4,7 +4,7 @@
 
 import Lobby from './Lobby.js';
 import iOS from '../iPad/iOS';
-import IO from '../iPad/IO.js';
+import IO from '../iPad/IO';
 import Project from '../editor/ui/Project.js';
 import Localization from '../utils/Localization';
 import ScratchAudio from '../utils/ScratchAudio';

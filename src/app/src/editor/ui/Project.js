@@ -6,7 +6,7 @@ import UI from './UI.js';
 import Page from '../engine/Page.js';
 import Sprite from '../engine/Sprite.js';
 import iOS from '../../iPad/iOS';
-import IO from '../../iPad/IO.js';
+import IO from '../../iPad/IO';
 import Paint from '../../painteditor/Paint.js';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';
 import {frame, gn, newHTML, scaleMultiplier, getIdFor,

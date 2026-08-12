@@ -14,7 +14,7 @@ import ScriptsPane from './ScriptsPane.js';
 import Undo from './Undo.js';
 import Library from './Library.js';
 import iOS from '../../iPad/iOS';
-import IO from '../../iPad/IO.js';
+import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
 import Paint from '../../painteditor/Paint.js';
 import Events from '../../utils/Events';

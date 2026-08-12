@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////
 
 import Lobby from './Lobby.js';
-import IO from '../iPad/IO.js';
+import IO from '../iPad/IO';
 import iOS from '../iPad/iOS';
 import MediaLib from '../iPad/MediaLib';
 import ScratchAudio from '../utils/ScratchAudio';

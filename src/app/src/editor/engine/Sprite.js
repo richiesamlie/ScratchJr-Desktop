@@ -13,7 +13,7 @@ import Thumbs from '../ui/Thumbs.js';
 import UI from '../ui/UI.js';
 import BlockSpecs from '../blocks/BlockSpecs.js';
 import iOS from '../../iPad/iOS';
-import IO from '../../iPad/IO.js';
+import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
 import Undo from '../ui/Undo.js';
 import ScriptsPane from '../ui/ScriptsPane.js';

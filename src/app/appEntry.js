@@ -2,7 +2,7 @@ import {preprocessAndLoadCss} from './src/utils/lib';
 import Localization from './src/utils/Localization';
 import AppUsage from './src/utils/AppUsage';
 import iOS from './src/iPad/iOS';
-import IO from './src/iPad/IO.js';
+import IO from './src/iPad/IO';
 import MediaLib from './src/iPad/MediaLib';
 
 import {indexMain} from './src/entry/index';

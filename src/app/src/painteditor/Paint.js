@@ -4,7 +4,7 @@ import SVGTools from './SVGTools.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import Ghost from './Ghost.js';
 import iOS from '../iPad/iOS';
-import IO from '../iPad/IO.js';
+import IO from '../iPad/IO';
 import MediaLib from '../iPad/MediaLib';
 import Localization from '../utils/Localization';
 import Alert from '../editor/ui/Alert.js';

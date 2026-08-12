@@ -6,7 +6,7 @@ import Sprite from './Sprite.js';
 import Palette from '../ui/Palette.js';
 import BlockSpecs from '../blocks/BlockSpecs.js';
 import iOS from '../../iPad/iOS';
-import IO from '../../iPad/IO.js';
+import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
 import Undo from '../ui/Undo.js';
 import Matrix from '../../geom/Matrix';
