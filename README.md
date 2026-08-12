@@ -1,6 +1,6 @@
 # ScratchJr Reborn — Desktop Edition
 
-> **ScratchJr, reborn.** A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — rebuilt with a fully typed codebase, hardened security, and editor enhancements that free up what the original capped.
+> **ScratchJr, reborn.** A modernized desktop port of [ScratchJr](https://scratchjr.org/) for Windows, macOS, and Linux — rebuilt with a fully typed, fully strict codebase, hardened security, editor enhancements that free up what the original capped, and a release pipeline that actually ships what it builds.
 
 ## Official Disclaimer
 
@@ -8,7 +8,7 @@ Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, w
 
 ## Downloads
 
-**[Download ScratchJr Reborn (latest release)](https://github.com/richiesamlie/ScratchJr-Desktop/releases/latest)**
+**[Download ScratchJr Reborn (latest release)](https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/releases/latest)**
 
 | File | Platform |
 |------|----------|
@@ -23,9 +23,28 @@ Each release includes SHA256 checksums (`.sha256` files) for integrity verificat
 
 ---
 
-## What Makes It "Reborn"
+## Changes in this fork
 
 The original ScratchJr Desktop was a faithful but fragile port: a 1,100-line monolith, an untyped JavaScript renderer with hidden global dependencies, a sync-IPC renderer that froze on file I/O, no tests, and hardcoded limits that cramped the editor. **Reborn** is that same app, rebuilt so it doesn't get in the way — and given creative room the original never had.
+
+### v1.5.1 — Strict TypeScript, Tested Engine, Polished Editor
+
+**A fully strict, zero-`any` renderer:**
+
+- **`tsc --noEmit` clean under `strict: true`** — `noImplicitAny`, `strictNullChecks`, `strictFunctionTypes`, `strictPropertyInitialization`, and the rest all enforced, zero errors
+- **100% `any`-free** — the last explicit `any` annotations and `Record<string, any>` bags were replaced with real types: the project file format is now typed (`ProjectData`/`PageData`/`SpriteData`/`EncodedStrip`), the drag system uses a typed `DragElement`, and shared DOM expandos were aligned (`HTMLElement.next` vs `ChildNode.next`) so element assignability works again under TS 7
+- **Renderer engine test coverage** (new jsdom harness): script-strip encode/decode round-trip (the project file format, incl. loop nesting and arg encoding), page-bag encode/decode round-trip, runtime primitive execution (Home/SetSpeed/Show/Hide), and the scroll-aware page-strip caret math — **98 tests total**
+
+**Editor polish that fixes real friction:**
+
+- **The "+ add character" button can never be hidden again** — the character sidebar is sized to fit the button, so it stays visible at every window size
+- **The "+ page" button stays pinned** to the bottom of the page strip while pages scroll beneath it
+- **The character strip scrolls natively** — mouse-wheel scrolling works without clicking the list first, and the custom scrollbar tracks the real scroll position (previously the strip only scrolled by click-dragging and the scrollbar went stale)
+
+**A release pipeline that ships what it builds:**
+
+- The renderer bundle is now built **before** packaging (locally and in CI). The bundle is gitignored, so CI checkouts previously packaged apps **without** it — released apps couldn't load their UI. Fixed; every release is boot-verified.
+- CI matrix produces all five build jobs (a matrix `include` collision had been silently dropping the x64 Linux/macOS targets).
 
 ### v1.5.0 — Editor Freedom + Fully Typed Core
 
@@ -41,7 +60,7 @@ The original ScratchJr Desktop was a faithful but fragile port: a 1,100-line mon
 **A codebase you can trust — the full TypeScript migration:**
 
 - **All 56 renderer files** converted `.js` → `.ts` — every class declares its fields, every import is explicit, no hidden globals
-- `tsc --noEmit` clean (with `noImplicitThis` + `useUnknownInCatchVariables` enforced; full strict-mode burn-down is a documented follow-up)
+- `tsc --noEmit` clean (with `noImplicitThis` + `useUnknownInCatchVariables` enforced; the full strict-mode burn-down shipped in v1.5.1)
 - **88 tests** (up from 80) — new persistence round-trip coverage for project naming/save logic
 - **Bugs the migration surfaced and fixed**:
   - App failed to boot after the main-process `sql-validator` rename (`Cannot find module`) — Electron's Node 24 strips `.ts` natively, explicit extension added
@@ -56,7 +75,7 @@ The original ScratchJr Desktop was a faithful but fragile port: a 1,100-line mon
 |------|--------|-------|
 | **Electron** | 22 | 42.8.1 (Chromium 134) |
 | **Node compatibility** | Broken on Node 22+ | Node 22/26 compatible |
-| **IPC** | Synchronous `sendSync` (renderer freezes) | Async `invoke`/`handle` (all 18 channels) |
+| **IPC** | Synchronous `sendSync` (renderer freezes) | Async `invoke`/`handle` (all 19 channels) |
 | **Security** | `nodeIntegration: true`, no CSP | `sandbox: true`, CSP on all pages, SQL validation |
 | **Main process** | 1,122-line monolith | 94-line orchestrator + 5 focused modules |
 | **Renderer** | Global vendor scripts, no bundler | esbuild bundler, explicit ESM imports |
@@ -88,9 +107,20 @@ src/main.js (94 lines)  ← orchestrator: crash handlers, dependency wiring, app
 src/preload.js            — contextBridge API (invoke-based)
 src/electronClient.js     — renderer adapter (async methods)
 src/app/                  — typed renderer (TypeScript, bundled by esbuild)
-  ├── appEntry.ts         — async page bootstrap
-  ├── src/utils/lib.ts    — async CSS preprocessing
-  └── src/iPad/iOS.ts     — tabletInterface bridge (async)
+  ├── renderer-entry.js   — bundle entry point
+  ├── src/                — application source modules (.ts, strict mode)
+  ├── css/                — stylesheets (template literal preprocessing)
+  ├── dist/               — bundled output (generated, gitignored)
+src/types/globals.d.ts    — ambient declarations (settings, bridges, DOM expandos)
+src/lib/                  — shared utilities (path-utils, sql-validator)
+scripts/
+  build-renderer.js       — esbuild bundler
+  package-and-zip.js      — packaging script (builds the bundle first)
+  build-msi.js            — Windows MSI builder (WiX)
+  smoke.js                — boot verification test
+tests/
+  unit/                   — vitest suite (main-process + jsdom renderer harness)
+docs/                     — developer documentation
 ```
 
 ### Bug Fixes (v1.3.x)
@@ -121,8 +151,8 @@ In practice, this means:
 
 - **The AI reads, analyzes, and modifies the codebase** — tracing execution paths, identifying bugs, refactoring modules, and writing tests
 - **The human sets the goals and reviews the results** — defining what "done" looks like, verifying behavior, and making architectural decisions
-- **Iterative and evidence-driven** — every change is verified with tests, smoke checks, and live UI screenshots before moving on
-- **Fast modernization** — the 8-phase modernization, the full TypeScript migration, and the editor-freedom enhancements were all delivered this way
+- **Iterative and evidence-driven** — every change is verified with tests, smoke checks, and live UI measurements before moving on
+- **Fast modernization** — the 8-phase modernization, the full TypeScript migration, the strict-mode burn-down, and the editor-freedom enhancements were all delivered this way
 
 ---
 
@@ -143,7 +173,8 @@ npm start
 ### Packaging
 
 ```bash
-# Current platform (win32 on Windows, linux on Linux, darwin on macOS)
+# Current platform (win32 on Windows, linux on Linux, darwin on macOS).
+# The renderer bundle is built automatically before packaging.
 npm run make:zip
 
 # Cross-build Linux from any OS (macOS must be built on macOS — see CI)
@@ -160,15 +191,16 @@ The GitHub Actions workflow builds all six targets on native runners and attache
 ### Testing
 
 ```bash
-npm test          # 88 tests via vitest
-npm run typecheck # tsc --noEmit over the TS renderer
+npm test          # 98 tests via vitest (main-process + jsdom renderer)
+npm run typecheck # tsc --noEmit over the TS renderer (strict mode, zero errors)
 npm run lint      # ESLint (airbnb-base config)
 ```
 
-The renderer is TypeScript (all 56 source files migrated). `tsc` uses
-`moduleResolution: bundler` and esbuild consumes `.ts` natively in
-`npm run build:renderer` / `npm start`, so no build step is required
-between editing and running.
+The renderer is TypeScript (all 56 source files migrated, full `strict: true`).
+`tsc` uses `moduleResolution: bundler` and esbuild consumes `.ts` natively in
+`npm run build:renderer` / `npm start`, so no build step is required between
+editing and running — but the bundle **is** rebuilt by `make:zip` so packaged
+builds always match the source.
 
 ### Debugging
 
@@ -193,6 +225,10 @@ The project database uses [sql.js](https://github.com/sql-js/sql.js/) (SQLite co
 
 CSS files use JavaScript template literals (e.g., `${css_vh(10)}`) for responsive sizing. These are preprocessed at load time via `preprocessAndLoadCss()` — now fully async to support the sandboxed preload bridge.
 
+### Renderer Bundling
+
+The renderer is bundled by [esbuild](https://esbuild.github.io/) into `src/app/dist/app.bundle.js` (`npm run build:renderer`). The bundle is **gitignored** — it is generated, never committed — and `make:zip` / CI run the build automatically before packaging.
+
 ---
 
 ## Directory Structure
@@ -201,17 +237,17 @@ CSS files use JavaScript template literals (e.g., `${css_vh(10)}`) for responsiv
 package.json          — dependencies, scripts, ESLint config
 forge.config.js       — Electron Forge packaging config
 vitest.config.mjs     — test runner config
-tsconfig.json         — TypeScript config (strict-lite: noImplicitThis etc.)
+tsconfig.json         — TypeScript config (full strict mode)
 src/
   main.js             — entry point (orchestrator)
   main/               — modular main process components
   preload.js          — contextBridge API
   electronClient.js   — renderer adapter
   app/                — renderer (TypeScript, HTML, CSS, assets)
-    appEntry.ts       — page bootstrap
+    renderer-entry.js — bundle entry point
     src/              — application source modules (.ts)
     css/              — stylesheets (template literal preprocessing)
-    dist/             — bundled output (generated)
+    dist/             — bundled output (generated, gitignored)
   types/              — ambient type declarations (globals.d.ts)
   lib/                — shared utilities (path-utils, sql-validator)
   icons/              — platform icons
@@ -221,7 +257,7 @@ scripts/
   build-msi.js        — Windows MSI builder (WiX)
   smoke.js            — boot verification test
 tests/
-  unit/               — vitest test suite
+  unit/               — vitest test suite (incl. jsdom renderer harness)
 docs/                 — developer documentation
 ```
 
@@ -233,7 +269,7 @@ docs/                 — developer documentation
 
 **ScratchJr:** [LLK/ScratchJr](https://github.com/LLK/scratchjr) by MIT
 
-**Reborn modernization:** [richiesamlie/ScratchJr-Desktop](https://github.com/richiesamlie/ScratchJr-Desktop) — maintained through Vibe Coding
+**Reborn modernization:** [richiesamlie/ScratchJr-Desktop-Reborn](https://github.com/richiesamlie/ScratchJr-Desktop-Reborn) — maintained through Vibe Coding
 
 ### Acknowledgments
 
