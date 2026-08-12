@@ -73,6 +73,7 @@ div.frame {
     top: ${css_vh(2.60)};
     width:  ${css_vh(21.09)};
     height: ${css_vh(57.29)};
+    overflow-y: auto;
 }
 
 .pagethumb {

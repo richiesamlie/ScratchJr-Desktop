@@ -45,6 +45,11 @@ export default class Thumbs {
             ScriptsPane.updateScriptsPageBlocks(JSON.parse(page.sprites));
             prev = th;
         }
+        // Keep the current page visible when the strip is scrolled
+        const currentThumb = pthumbs.querySelector('.pagethumb.on');
+        if (currentThumb) {
+            currentThumb.scrollIntoView({ block: 'nearest' });
+        }
         // Cap on pages per project — configurable via settings.json maxPages (default 4)
         if ((ScratchJr.stage.pages.length >= (window.Settings.maxPages ?? 4)) || !ScratchJr.isEditable()) {
             return;
@@ -218,7 +223,10 @@ export default class Thumbs {
         const pageSecond = gn('pagecc').childNodes[1] as HTMLElement;
         const pageFirst = gn('pagecc').childNodes[0] as HTMLElement;
         var delta = pageSecond.offsetTop - pageFirst.offsetTop;
-        var pos = Math.floor(localy(gn('pagecc'), dy + (delta / 2)) / delta);
+        // localy() measures from the container's layout top; add the scroll
+        // offset so the drop caret lands on the right page when the strip
+        // is scrolled (no-op when scrollTop is 0)
+        var pos = Math.floor((localy(gn('pagecc'), dy + (delta / 2)) + gn('pagecc').scrollTop) / delta);
         pos = Math.max(0, pos);
         var max = Thumbs.getPageOrder().length;
         return Math.min(max, pos);
