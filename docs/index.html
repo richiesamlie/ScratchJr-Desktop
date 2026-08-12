@@ -1,302 +1,146 @@
-
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Scratch JR for Desktop | Open Source Community Port</title>
-    
-  <link href="https://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet">
-        <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
- 
-    <!-- Custom styles for this template -->
-    <link href="pricing.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ScratchJr Reborn — Desktop Edition</title>
+    <meta name="description" content="A modernized desktop port of ScratchJr for Windows, macOS, and Linux.">
     <style>
-        .standard-indent {
-            margin-left: 6em;
-              margin-right: 6em;
+        :root {
+            --blue: #3099c9;
+            --dark: #173f5f;
+            --accent: #f6c445;
         }
-       
-       .bg-blue {
-         background-color: #3099C9;
-         padding: 4em;
-       }
-       .title {
-        font-family: 'Architects Daughter', cursive;
-       }
-       h1, h2, h3, h4, h5 {
-        font-family: 'Architects Daughter', cursive;
-       
-       }
-       .experimental {
-          color: #e08a20;
-       }
-       footer {
-        padding: 2em;
-        background-color: #f0f0f0;
-       }
-        .orangeBar {
-            background-color: #f5a322;
-            color: #ffffff;
-            padding: 2em;
-            
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #333;
+            line-height: 1.6;
         }
-        .scratchDisclaimer {
-            padding: 2em;
-            
+        header.hero {
+            background: linear-gradient(135deg, var(--blue), var(--dark));
+            color: #fff;
+            text-align: center;
+            padding: 4rem 1rem;
         }
+        header.hero h1 { font-size: 2.6rem; margin-bottom: .5rem; }
+        header.hero p { font-size: 1.15rem; opacity: .92; max-width: 46rem; margin: 0 auto; }
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: .8rem 2rem;
+            background: var(--accent);
+            color: var(--dark);
+            font-weight: 700;
+            border-radius: 2rem;
+            text-decoration: none;
+        }
+        .btn:hover { filter: brightness(1.05); }
+        main { max-width: 60rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+        section { margin-top: 2.5rem; }
+        h2 {
+            color: var(--dark);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: .35rem;
+            margin-bottom: 1rem;
+        }
+        .shots { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .shots figure { flex: 1 1 16rem; }
+        .shots img {
+            width: 100%;
+            border-radius: .5rem;
+            box-shadow: 0 4px 14px rgba(0,0,0,.18);
+        }
+        .shots figcaption { font-size: .85rem; color: #666; text-align: center; margin-top: .4rem; }
+        ul.features { list-style: none; }
+        ul.features li { padding: .45rem 0 .45rem 1.6rem; position: relative; }
+        ul.features li::before { content: "✦"; color: var(--blue); position: absolute; left: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: .75rem; }
+        th, td { text-align: left; padding: .55rem .75rem; border-bottom: 1px solid #e2e2e2; }
+        th { color: var(--dark); }
+        .note { font-size: .85rem; color: #666; margin-top: .6rem; }
+        footer {
+            background: var(--dark);
+            color: #cfd8e3;
+            text-align: center;
+            padding: 2rem 1rem;
+            font-size: .9rem;
+        }
+        footer a { color: #fff; }
     </style>
-  </head>
+</head>
+<body>
+    <header class="hero">
+        <h1>ScratchJr Reborn</h1>
+        <p>A modernized desktop port of ScratchJr for Windows, macOS, and Linux —
+        with more room to create, a hardened sandbox, and a fully strict,
+        tested codebase.</p>
+        <a class="btn" href="https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/releases/latest">Download the latest release</a>
+    </header>
 
-  <body>
-
-<div class='orangeBar'>
-      <h3 class="my-0 mr-md-auto font-weight-normal title">Scratch Jr for Desktop - Open Source Community Port</h3>
-</div>
-
-<div class=" bg-blue ">
-<div class=" bg-white">
-   <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center ">
-      <h1 class="display-4">About</h1>
-      
-      <p class="lead">
-        A community open source port of a well-loved early educational programming tool.
-        
-
-        
-      </p>
-      <div class='text-left standard-indent'>
-         
-           We are very excited about the use of  <a href='https://www.scratchjr.org/about/info'>Scratch Jr</a> in the classroom, especially for children in early school years.
-           
-           When we discovered the schools in our area did not have access to tablets, we decided to turn the tablet app into a full
-           fledged desktop app.  In order to do this, we have taken the original code recompiled it for Mac and Windows.  
-           
-           <br/>
-           <br/>
-           
-           While we have chatted to the official Scratch team, they have asked us to let you know 
-           this <span class='experimental'>important disclaimer about this experimental version</span>:
-           <br/>
-           <div class='scratchDisclaimer'>
-           Scratch and ScratchJr are trademarks of Massachusetts Institute of Technology, which does not sponsor, endorse, or authorize this content. See <a href="scratchjr.org">scratchjr.org</a> for more information.
-           </div>
-           
-           
-        </div>
-     
-    </div>
-
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-      <h1 class="display-4">Downloads</h1>
-      <p class="lead">
-      
-      <br/>
-      Download the latest install to your Mac or Windows computer.  
-      <br/>For tablets, <a href='https://www.scratchjr.org/'> please see the official build</a>.
-      
-      </p>
-    </div>
-
-    <div class="container">
-      <div class="card-deck mb-3 text-center">
-        <div class="card mb-4 box-shadow">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">Mac (Beta 1.3.6)</h4>
-          </div>
-        
-          <div class="card-body">
-            Download a Zip and extract it to install Scratch JR to your Mac.   
-            <div style='height: 300px'>
-                <img src='./scratchformac.png' width='400px'></img>
+    <main>
+        <section>
+            <h2>Screenshots</h2>
+            <div class="shots">
+                <figure>
+                    <img src="screenshot-lobby.webp" alt="Project lobby">
+                    <figcaption>Project lobby</figcaption>
+                </figure>
+                <figure>
+                    <img src="screenshot-editor.webp" alt="Editor">
+                    <figcaption>Editor</figcaption>
+                </figure>
+                <figure>
+                    <img src="screenshot-start.webp" alt="Start screen">
+                    <figcaption>Start screen</figcaption>
+                </figure>
             </div>
-            By downloading this software, you agree to the <a href='https://github.com/JustSch/ScratchJr-Desktop/blob/master/LICENSE'>terms and conditions of the MIT license</a>.
-          
-            <a href='https://github.com/JustSch/ScratchJr-Desktop/releases/download/v1.3.6/ScratchJr-darwin-x64-1.3.6.zip'><button type="button" class="btn btn-lg btn-block btn-primary">Download (.Zip for Mac)</button></a>
-          
-          </div>
-        </div>
-        <div class="card mb-4 box-shadow">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">Windows (Beta 1.3.6)</h4>
-          </div>
-          <div class="card-body">
-            Download a setup MSI (Recommended for System-Wide Install) or Zip to install Scratch JR to your PC.
-            <div style='height: 300px'>
-             <img src='./scratchforwin.png' width='400px'></img>
-            </div>
-            By downloading this software, you agree to the <a href='https://github.com/JustSch/ScratchJr-Desktop/blob/master/LICENSE'>terms and conditions of the MIT license</a>.
-          
-            <a href='https://github.com/JustSch/ScratchJr-Desktop/releases/download/v1.3.6/ScratchJr.msi'><button type="button" class="btn btn-lg btn-block btn-primary">Download (.MSI for Win)</button></a>
-            <a href='https://github.com/JustSch/ScratchJr-Desktop/releases/download/v1.3.6/ScratchJr-win32-x64-1.3.6.zip'><button type="button" class="btn btn-lg btn-block btn-primary">Download (.Zip for Win)</button></a>
-          
-            (<a href='https://support.microsoft.com/en-us/help/17443/windows-internet-explorer-smartscreen-filter-faq'>About Windows 10 Smart Screen</a>: Since this app is unsigned, you will need to click 'More Info' and 'Run anyway' to install.) 
-          </div>
-        </div>
-        <div class="card mb-4 box-shadow">
-          <div class="card-header">
-            <h4 class="my-0 font-weight-normal">Linux (Beta 1.3.6)</h4>
-          </div>
-          <div class="card-body">
-            Download a the deb, rpm, or, AppImage file to install Scratch JR to your Linux PC.
-            <div style='height: 300px'>
-             <img src='./scratchforwin.png' width='400px'></img>
-            </div>
-            By downloading this software, you agree to the <a href='https://github.com/JustSch/ScratchJr-Desktop/blob/master/LICENSE'>terms and conditions of the MIT license</a>.
-          
-            <a href='https://github.com/JustSch/ScratchJr-Desktop/releases/download/v1.3.6/ScratchJr-1.3.6-x64.AppImage'><button type="button" class="btn btn-lg btn-block btn-primary">Download (.Appimage For Linux)</button></a>
-            <a href='https://github.com/JustSch/ScratchJr-Desktop/releases/download/v1.3.6/scratchjr_1.3.6_amd64.deb'><button type="button" class="btn btn-lg btn-block btn-primary">Download (.deb For Linux)</button></a>
-            <a href='https://github.com/JustSch/ScratchJr-Desktop/releases/download/v1.3.6/ScratchJr-1.3.6-1.x86_64.rpm'><button type="button" class="btn btn-lg btn-block btn-primary">Download (.rpm For Linux)</button></a>
-          </div>
-        </div>
-      </div>
+        </section>
 
-    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-      <h1 class="display-4">The nitty gritty </h1>
-       <div class='text-left standard-indent'>
-       <br/>
-        <h3>Same app, new platform.</h3>
-        
-          To port to the desktop, a small database and filesystem layer was rewritten, as well as access to video and sound. 
-          
-          <br/><br/>  
-           This was accomplished using 
-           <a href="https://electronjs.org/">Electron</a> for the app hosting, the original html source of ScratchJR and <a href="https://github.com/kripken/sql.js/">SQL.js</a> for the project database.
-           Electron is like having your own chrome browser to run one html webpage.   And in our case, that webpage is ScratchJR.
-         
-         <br/><br/><br/>    
-         
-            <h3>Offline mode</h3>
-        Once installed, this app should not require an internet connection to work.
-       
-         <br/><br/><br/>    
-         
-         
-         <h3>Deleting stuff (press and hold mouse)</h3>
-     Because this is a tablet app, there is no right click support.  In order to delete stuff you need to click
-     and hold the left mouse button until everything wiggles.  When you get a red X, click this to remove 
-     characters and projects. 
-         
-         
-         <br/><br/><br/>   
-             <h3>Where's the cat?</h3>
-     Sadly, the cat is not allowed to make an official appearance 
-     in our app but has sent along all of his friends.  Everything (else) you
-     know and love about Scratch Jr on the tablet is there. 
-         
-         
-         <br/><br/><br/>   
-         
-         <h3>Getting Started with your Class</h3>
-         Scratch Jr has a set of programming <a href='https://www.scratchjr.org/teach/activities'>worksheets your class can follow</a>. 
-              <br/><br/><br/>    
-    
-         
-             <h3>Where's the data?</h3>
-        All projects are stored locally on the machine inside of a file (which happens to be a sql lite database.)
-        
-        Inside your documents/ScratchJR folder, there will be a scratchjr.sqllite file.  
-        
-      
-              
-         <br/><br/><br/>    
-          
-         <h3>Reloading saved projects</h3>
-         For classroom use, sometimes it is handy to pre-configure a set of projects.  All of the projects all save into the same Documents/ScratchJR/scratchjr.sqllite file.
-         
-         To set up projects beforehand, you can make a backup copy of this file.  
-         <br/><br/>
-         Here's how.  
-     
-        <ul>
-            <li> Make starter projects for your class - set up Scratch Jr with the projects you want everyone to use. </li>
-            <li> Open up the ScratchJR folder inside of Documents</li>
-            <li>Copy the scratchjr.sqllite file to scratchjr.sqllite.restore</li>
-            <li>Re-open ScratchJR for desktop.</li>
-        </ul>
-         After completing, there will be a menu option for restoring the projects.  This will reset all the projects back 
-         to a clean copy of your projects.  This is handy for a shared classroom setting where you don't wish to 
-         save the work between students.
-         
-         
-           <br/><br/><br/>    
-         
-       
-           <h3>Thanks</h3>
-           
-            Thank you to the  <a href='https://github.com/LLK/scratchjr'>official Scratch Jr team and their supporters</a>.
-            
-In addition, thank you to the folks working on Electron, ElectronForge, and Sql.js.  Thank you to <a href="https://github.com/jfo8000">jfo8000</a> the original creator of this desktop version of Scratch JR. Thank you to Github and its workflows for providing free Mac, Windows and Linux systems to build on.
-<br/> <br/>
-Finally, a special thank you to <a href="https://www.scopeiteducation.edu.au/">ScopeIT Education</a> for donating their technical expertise to this project.
-<br/>
-         For more exciting projects by this author, see:
-         <br/>
-<ul>
-    <li><a href="https://buildbee.com/landing/hive/scratch">How to 3D print your Scratch Projects</a></li>
- <li><a href="https://makecode.buildbee.com">Making 3D shapes using block coding</a></li>
-         </ul>
-
-  <h3>Support</h3>
-        Note we are working on a volunteer basis and only limited support is available. 
-        <br/><br/>
-        Having problems? Here's what to do.
-          <ul> 
-          <li> If you have a problem with mac, windows, or, linux app:  <a href='https://github.com/JustSch/ScratchJr-Desktop/issues'>file a bug report with us</a> 
-          <li> If you are unsure how to use ScratchJr, follow the in-app help guide. 
-          <li> If you want more resources for Scratch Jr: <a href='https://github.com/LLK/scratchjr'> please visit the official page</a>
-          </ul>
-          
-       <br/> <br/> <br/>
-
-         
-            
-         </div>
-      
-    </div>
-    
-  
-    </div>
-  
-  <footer>
-  <div class="row">
-          <div class="col-12 col-md">
-              You are viewing an unoffical Scratch Jr for Desktop site.<br/><br/> Go to the
-              <a href='https://www.scratchjr.org/'> Scratch Jr Official website</a>.
-            <small class="d-block mb-3 text-muted">© 2017-2018</small>
-          </div>
-          <div class="col-6 col-md">
-            <h5>Scratch Jr</h5>
-            <ul class="list-unstyled text-small">
-              <li> <a href='https://www.scratchjr.org/'>Scratch Jr Official page</a></li>
-              <li><a href='https://www.scratchjr.org/learn/interface'>Learn Scratch Jr</a></li>
-              <li><a href='https://www.scratchjr.org/teach/activities'>Teach Scratch Jr</a></li>
+        <section>
+            <h2>Why Reborn?</h2>
+            <ul class="features">
+                <li><strong>More room to create</strong> — 8 pages by default (configurable), a scrollable page strip, a bigger character sidebar, and + buttons that never disappear</li>
+                <li><strong>Scrolling that just works</strong> — native mouse-wheel scrolling with a scrollbar that matches your position</li>
+                <li><strong>Safe by design</strong> — sandboxed renderer, content security policy, SQL injection guards, a narrow preload bridge</li>
+                <li><strong>Modern stack</strong> — Electron 42, Node 22/26, an esbuild-bundled renderer, fully async IPC</li>
+                <li><strong>Trustworthy codebase</strong> — all 56 renderer files in strict TypeScript with zero errors and zero <code>any</code>, 98 tests including a jsdom harness for the project file format</li>
+                <li><strong>Reliable releases</strong> — all six platforms built natively with SHA256 checksums</li>
             </ul>
-          </div>
-          <div class="col-6 col-md">
-            <h5>Scratch Jr for Desktop</h5>
-            <ul class="list-unstyled text-small">
-              <li><a class="text-muted" href="https://github.com/JustSch/ScratchJr-Desktop/releases/latest">Download</a></li>
-              <li><a class="text-muted" href="https://github.com/JustSch/ScratchJr-Desktop/">View on Github</a></li>
+        </section>
+
+        <section>
+            <h2>Downloads</h2>
+            <table>
+                <thead><tr><th>File</th><th>Platform</th></tr></thead>
+                <tbody>
+                    <tr><td>ScratchJr-win32-x64.msi</td><td>Windows x64 (installer)</td></tr>
+                    <tr><td>ScratchJr-win32-x64.zip</td><td>Windows x64 (portable)</td></tr>
+                    <tr><td>ScratchJr-darwin-x64.zip</td><td>macOS x64</td></tr>
+                    <tr><td>ScratchJr-darwin-arm64.zip</td><td>macOS ARM64</td></tr>
+                    <tr><td>ScratchJr-linux-x64.zip</td><td>Linux x64</td></tr>
+                    <tr><td>ScratchJr-linux-arm64.zip</td><td>Linux ARM64</td></tr>
+                </tbody>
+            </table>
+            <p class="note">Each release includes SHA256 checksums for integrity verification.</p>
+        </section>
+
+        <section>
+            <h2>Documentation</h2>
+            <ul class="features">
+                <li><a href="README.md">Project readme</a> — downloads, enhancements, building from source</li>
+                <li><a href="development.md">Development guide</a> — build pipeline, editor layout, testing, releasing</li>
+                <li><a href="engine.md">Engine architecture</a> — how the editor runtime works</li>
+                <li><a href="ipc-inventory.md">IPC inventory</a> — the async channel map</li>
             </ul>
-          </div>
-        
-        </div>
-  
-    
-      </div>
-    </div>
+        </section>
+    </main>
 
-</footer>
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
-  </body>
+    <footer>
+        <p>ScratchJr Reborn — a modernized port of <a href="https://scratchjr.org/">ScratchJr</a>.
+        Original port by <a href="https://github.com/JustSch/ScratchJr-Desktop">JustSch</a>.
+        ScratchJr by <a href="https://github.com/LLK/scratchjr">LLK</a> (MIT).</p>
+        <p>Source: <a href="https://github.com/richiesamlie/ScratchJr-Desktop-Reborn">github.com/richiesamlie/ScratchJr-Desktop-Reborn</a></p>
+    </footer>
+</body>
 </html>
