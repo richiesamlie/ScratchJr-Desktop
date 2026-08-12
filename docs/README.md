@@ -2,6 +2,7 @@
 
 - **[ipc-inventory.md](./ipc-inventory.md)** — the IPC channel map: all 19 channels, async transport model, bridge API, and how to add a channel
 - **[development.md](./development.md)** — how the project is built, tested, and released, plus the editor layout/limits map and known quirks
+- **[engine.md](./engine.md)** — the editor engine architecture: module graph, runtime execution model (Runtime/Thread/Prims), file format flow, and how to extend the editor
 
 ## Quick orientation
 
