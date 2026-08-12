@@ -8,13 +8,29 @@ import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';
 import Vector from '../../geom/Vector';
-import Page from './Page.js';
+import Page from './Page';
+import type Sprite from './Sprite';
+import type Scripts from '../ui/Scripts.js';
+
+// Named-form access: document.forms.activetextbox etc.
+const namedForms = document.forms as HTMLCollectionOf<HTMLFormElement> & Record<string, HTMLFormElement>;
 import {newHTML, newDiv, gn,
     getIdFor, setProps,
     scaleMultiplier, setCanvasSize,
     globaly, globalx} from '../../utils/lib';
 
 export default class Stage {
+    currentPage: Page;
+    div: HTMLElement;
+    pages: Page[];
+    pagesdiv: HTMLElement;
+    width: number;
+    height: number;
+    stageScale: number;
+    currentZoom: number;
+    initialPoint: { x: number; y: number };
+    deltaPoint: { x: number; y: number };
+
     constructor (div) {
         this.currentPage = undefined;
         this.div = newHTML('div', 'stage', div);
@@ -111,7 +127,8 @@ export default class Stage {
         ScratchJr.stopStrips();
         var sc = ScratchJr.getSprite() ? gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts') : undefined;
         if (sc) {
-            sc.owner.deactivate();
+            const scriptsOwner = sc.owner as Scripts;
+            scriptsOwner.deactivate();
         }
         this.currentPage.div.style.visibility = 'hidden';
         this.currentPage.setPageSprites('hidden');
@@ -121,7 +138,7 @@ export default class Stage {
         //  if (page == obj['currentPage'])	 this.currentPage.currentSpriteName = obj[page]["lastSprite"];
         Thumbs.updateSprites();
         Thumbs.updatePages();
-        var spr = ScratchJr.getSprite();
+        var spr = ScratchJr.getSprite() as Sprite;
         if (spr) {
             spr.activate();
         }
@@ -134,7 +151,7 @@ export default class Stage {
         ScratchJr.blur();
         var page = this.currentPage;
         for (var i = 0; i < page.div.childElementCount; i++) {
-            var spr = page.div.childNodes[i].owner;
+            var spr = page.div.childNodes[i].owner as Sprite;
             if (!spr) {
                 continue;
             }
@@ -143,7 +160,8 @@ export default class Stage {
             if (!sc) {
                 continue;
             }
-            var topblocks = sc.owner.getBlocksType(['onflag', 'ontouch']);
+            const scriptsOwner = sc.owner as Scripts;
+            var topblocks = scriptsOwner.getBlocksType(['onflag', 'ontouch']);
             for (var j = 0; j < topblocks.length; j++) {
                 var b = topblocks[j];
                 ScratchJr.runtime.addRunScript(spr, b);
@@ -169,7 +187,7 @@ export default class Stage {
         if (Number(a[a.length - 1]).toString() != 'NaN') {
             a.pop();
         }
-        var page = gn(thumb.owner).owner;
+        var page = gn(thumb.owner).owner as Page;
         var name = getIdFor(a.join(' '));
         data.id = name;
         var stg = this;
@@ -182,10 +200,11 @@ export default class Stage {
             }
             Thumbs.updateSprites();
             Thumbs.updatePages();
+            const ownerPage = gn(thumb.owner).owner as Page;
             Undo.record({
                 action: 'copy',
                 who: name,
-                where: gn(thumb.owner).owner.id
+                where: ownerPage.id
             });
             ScratchJr.storyStart('Stage.prototype.copySprite');
         };
@@ -201,7 +220,7 @@ export default class Stage {
         ScratchJr.storyStart('Stage.prototype.deletePage'); // Record a change for sample projects in story-starter mode
         var pageid = getIdFor('page');
         var sprAttr = UI.mascotData();
-        var newp = {};
+        var newp: Record<string, unknown> = {};
         var catid = sprAttr.id;
         newp.sprites = [catid];
         newp.num = 1;
@@ -213,7 +232,7 @@ export default class Stage {
         if (indx < 0) {
             return;
         }
-        var form = document.forms.activetextbox;
+        var form = namedForms.activetextbox;
         var cnv = form.textsprite;
         if (cnv && gn(cnv.id)) {
             ScratchJr.blur();
@@ -266,7 +285,7 @@ export default class Stage {
         for (var n = 0; n < this.pages.length; n++) {
             var page = this.pages[n];
             for (var i = 0; i < page.div.childElementCount; i++) {
-                var spr = page.div.childNodes[i].owner;
+                var spr = page.div.childNodes[i].owner as Sprite;
                 if (!spr) {
                     continue;
                 }
@@ -274,7 +293,8 @@ export default class Stage {
                 if (!sc) {
                     continue;
                 }
-                var gotoblocks = sc.owner.getBlocksType(['gotopage']);
+                const scriptsOwner = sc.owner as Scripts;
+                var gotoblocks = scriptsOwner.getBlocksType(['gotopage']);
                 for (var j = 0; j < gotoblocks.length; j++) {
                     var b = gotoblocks[j];
                     var pageindex = b.getArgValue() - 1;
@@ -312,7 +332,7 @@ export default class Stage {
         if (!this.currentPage) {
             return;
         }
-        if (document.forms.activetextbox.textsprite) {
+        if (namedForms.activetextbox.textsprite) {
             return;
         }
         var pt = this.getStagePt(e);
@@ -327,7 +347,8 @@ export default class Stage {
         var hitobj = this.whoIsIt(ctx, pt);
         if (ScratchJr.shaking && hitobj && (hitobj.id == ScratchJr.shaking.id)) { // check grid case
             var sprname = ScratchJr.shaking.id;
-            if (((pt.x - gn(sprname).owner.screenLeft()) < 45) && ((pt.y - gn(sprname).owner.screenTop()) < 45)) {
+            const sprnameOwner = gn(sprname).owner as Sprite;
+        if (((pt.x - sprnameOwner.screenLeft()) < 45) && ((pt.y - sprnameOwner.screenTop()) < 45)) {
                 this.removeSprite(ScratchJr.shaking.owner);
                 return;
             }
@@ -449,7 +470,7 @@ export default class Stage {
         ScratchJr.stopShaking = undefined;
     }
 
-    startSpriteDrag () {
+    startSpriteDrag (e?) {
         var spr = Events.dragthumbnail.owner;
         spr.threads = ScratchJr.runtime.removeRunScript(spr);
         this.currentPage.div.appendChild(Events.dragthumbnail);
@@ -613,7 +634,7 @@ export default class Stage {
             return;
         }
         var th = spr.thumbnail;
-        var sprite = ScratchJr.getSprite();
+        var sprite = ScratchJr.getSprite() as Sprite;
         list.splice(n, 1);
         spr.div.parentNode.removeChild(spr.div);
         if (sc) {
@@ -632,7 +653,7 @@ export default class Stage {
         for (var n = 0; n < this.pages.length; n++) {
             var page = this.pages[n];
             for (var i = 0; i < page.div.childElementCount; i++) {
-                var spr = page.div.childNodes[i].owner;
+                var spr = page.div.childNodes[i].owner as Sprite;
                 if (!spr) {
                     continue;
                 }
@@ -640,7 +661,8 @@ export default class Stage {
                 if (!sc) {
                     continue;
                 }
-                var gotoblocks = sc.owner.getBlocksType(['gotopage']);
+                const scriptsOwner = sc.owner as Scripts;
+                var gotoblocks = scriptsOwner.getBlocksType(['gotopage']);
                 for (var j = 0; j < gotoblocks.length; j++) {
                     var b = gotoblocks[j];
                     var indx = b.getArgValue() - 1;

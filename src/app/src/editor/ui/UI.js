@@ -3,13 +3,13 @@
 /////////////////////////////////////
 
 import ScratchJr from '../ScratchJr.js';
-import BlockSpecs from '../blocks/BlockSpecs.js';
+import BlockSpecs from '../blocks/BlockSpecs';
 import Alert from './Alert.js';
 import Project from './Project.js';
 import Thumbs from './Thumbs.js';
 import Palette from './Palette.js';
 import Grid from './Grid.js';
-import Stage from '../engine/Stage.js';
+import Stage from '../engine/Stage';
 import ScriptsPane from './ScriptsPane.js';
 import Undo from './Undo.js';
 import Library from './Library.js';

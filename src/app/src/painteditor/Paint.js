@@ -1,5 +1,5 @@
 import ScratchJr from '../editor/ScratchJr.js';
-import BlockSpecs from '../editor/blocks/BlockSpecs.js';
+import BlockSpecs from '../editor/blocks/BlockSpecs';
 import SVGTools from './SVGTools.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import Ghost from './Ghost.js';

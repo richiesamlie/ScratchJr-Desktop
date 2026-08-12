@@ -16,15 +16,15 @@
 | 1 | TypeScript scaffolding | ✅ done (tsconfig, typecheck CI step, esbuild .ts proof) | ba68b08 |
 | 2 | Leaf modules (lib, geom, small utils) | ✅ done 9 files, tests/lint/typecheck green | 34c3088 |
 | 3 | Mid-size utils & entry points | ✅ done 8 files, all pages load (smoke PASS), main-process sql-validator.ts require fixed | 5de8407 |
-| 4 | Lobby + iPad shim | ☐ not started | |
-| 5 | Engine core | ☐ not started | |
+| 4 | Lobby + iPad shim | ✅ done 6 files, persistence tests added (88 tests), smoke PASS | aaa81ef, 7c77ae5, e4c095b |
+| 5 | Engine core | ☐ in progress | |
 | 6 | Editor UI | ☐ not started | |
 | 7 | Paint editor | ☐ not started | |
 | 8 | ScratchJr.js + globals teardown | ☐ not started | |
 | 9 | Strict mode + cleanup | ☐ not started | |
 
 **Global metrics** (fill in at each phase end):
-- Files converted: `17 / 56`
+- Files converted: `23 / 56`
 - eslint `globals` entries remaining in package.json: `12` (AndroidInterface, window, WebKitCSSMatrix, webkitAudioContext, electron, require, ScratchJr, Undo, Home, loadPage, devicePixelRatio, globalThis, isTouch — count at baseline, then shrink)
 - `tsc --noEmit` errors: `0`
 
@@ -151,7 +151,7 @@
 ---
 
 ## Phase 4 — Lobby + iPad shim
-**Status:** ☐ not started
+**Status:** ✅ done
 **Effort:** ~1 day
 
 - [ ] `src/app/src/iPad/MediaLib.js` (61 ln)

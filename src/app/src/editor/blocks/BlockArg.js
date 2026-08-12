@@ -1,5 +1,5 @@
 import ScratchJr from '../ScratchJr.js';
-import BlockSpecs from './BlockSpecs.js';
+import BlockSpecs from './BlockSpecs';
 import Menu from './Menu.js';
 import Undo from '../ui/Undo.js';
 import {setCanvasSize, setProps, writeText, scaleMultiplier,

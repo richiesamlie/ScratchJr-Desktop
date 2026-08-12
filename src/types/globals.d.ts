@@ -12,6 +12,9 @@ interface AndroidInterfaceStatic {
     scratchjr_getgettingstartedvideopath(): string;
     notifySplashDone(): void;
     notifyDoneLoading(): void;
+    scratchjr_setsoftkeyboardscrolllocation(x: number, y: number): void;
+    scratchjr_forceShowKeyboard(): void;
+    scratchjr_forceHideKeyboard(): void;
     // filled in as more call sites are typed
     [key: string]: unknown;
 }
@@ -135,6 +138,37 @@ interface SqlPayload {
     items?: string[];
     order?: string;
     [key: string]: unknown;
+}
+
+/**
+ * Expando properties attached to DOM elements by the editor/lobby code
+ * (sprite divs carry `owner`, thumbs carry `md5`/`thumb`/`pos`, dragged
+ * elements get `left`/`top` bookkeeping). Structural; only ever written
+ * and read by this codebase.
+ */
+interface HTMLElement {
+    owner?: unknown;
+    md5?: string;
+    thumb?: string;
+    pos?: number;
+    type?: string;
+    left?: number;
+    top?: number;
+    img?: HTMLImageElement;
+    originalImg?: HTMLImageElement;
+}
+
+interface ChildNode {
+    owner?: unknown;
+}
+
+interface ParentNode {
+    owner?: unknown;
+}
+
+interface HTMLFormElement {
+    // Named form bag expando: the active text Sprite (or null)
+    textsprite?: { id?: string } | null;
 }
 
 interface Window {

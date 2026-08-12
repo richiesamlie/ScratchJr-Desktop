@@ -1,9 +1,14 @@
 import ScratchJr from '../ScratchJr.js';
 import Project from '../ui/Project.js';
-import Prims from './Prims.js';
-import Thread from './Thread.js';
+import Prims from './Prims';
+import Thread from './Thread';
 
 export default class Runtime {
+    threadsRunning: Thread[];
+    thread: Thread;
+    intervalId: number | undefined;
+    yield: boolean;
+
     constructor () {
         this.threadsRunning = [];
         this.thread = undefined;
@@ -19,8 +24,10 @@ export default class Runtime {
         this.intervalId = window.setInterval(function () {
             rt.tickTask();
         }, 32);
-        Project.saving = false;
-        // Prims.time = (new Date() - 0);
+        // Project.js static attached at module scope; typed once Project converts (Phase 6)
+        const projectWithSaving = Project as unknown as { saving: boolean };
+        projectWithSaving.saving = false;
+        // Prims.time = Date.now();
         this.threadsRunning = [];
     }
 
@@ -146,7 +153,7 @@ export default class Runtime {
                 this.thread.thisblock.highlight();
                 this.thread.oldblock = this.thread.thisblock;
             }
-            Prims.time = (new Date() - 0);
+            Prims.time = Date.now();
             token(this.thread);
         }
     }
@@ -164,7 +171,7 @@ export default class Runtime {
         }
     }
 
-    restartThread (spr, b, active) {
+    restartThread (spr, b, active?) {
         var newThread = new Thread(spr, b);
         var wasRunning = false;
         for (var i = 0; i < this.threadsRunning.length; i++) {

@@ -79,7 +79,7 @@ export default class ScratchAudio {
         projectSounds[name].playing = false;
     }
 
-    static loadProjectSound (md5, fcn) {
+    static loadProjectSound (md5, fcn?) {
         if (!md5) {
             return;
         }
@@ -91,7 +91,7 @@ export default class ScratchAudio {
         ScratchAudio.loadFromLocal(dir, md5, fcn);
     }
 
-    static loadFromLocal (dir, md5, fcn) {
+    static loadFromLocal (dir, md5, fcn?) {
         if (projectSounds[md5] != undefined) {
             if (fcn) fcn(md5);
             return;

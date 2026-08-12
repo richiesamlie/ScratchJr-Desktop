@@ -1,7 +1,7 @@
 import Project from './ui/Project.js';
 import ScratchAudio from '../utils/ScratchAudio';
 import Paint from '../painteditor/Paint.js';
-import Prims from './engine/Prims.js';
+import Prims from './engine/Prims';
 import Undo from './ui/Undo.js';
 import Alert from './ui/Alert.js';
 import Palette from './ui/Palette.js';
@@ -14,8 +14,8 @@ import Library from './ui/Library.js';
 import Grid from './ui/Grid.js';
 import ScriptsPane from './ui/ScriptsPane.js';
 import Events from '../utils/Events';
-import BlockSpecs from './blocks/BlockSpecs.js';
-import Runtime from './engine/Runtime.js';
+import BlockSpecs from './blocks/BlockSpecs';
+import Runtime from './engine/Runtime';
 import Localization from '../utils/Localization';
 import {libInit, gn, scaleMultiplier, newHTML,
     isAndroid, getUrlVars, CSSTransition3D, frame} from '../utils/lib';
@@ -221,7 +221,7 @@ export default class ScratchJr {
     // Event handler for when a story is started
     // When called and enabled, this will trigger sample projects to save copies
     // Here for debugging, run-time filtering, etc.
-    static storyStart (/*eventName*/) {
+    static storyStart (_eventName) {
         // console.log("Story started: " + eventName);
         storyStarted = true;
     }

@@ -1,8 +1,38 @@
-import Prims from './Prims.js';
+import Prims from './Prims';
 import Grid from '../ui/Grid.js';
 import Vector from '../../geom/Vector';
+import Sprite from './Sprite';
+
+// Blocks are created by the (still .js) blocks/ classes; this is the surface
+// the runtime walks while executing.
+export interface BlockLike {
+    aStart?: boolean;
+    inside?: BlockLike;
+    next?: BlockLike;
+    repeatCounter?: number;
+    blocktype?: string;
+    unhighlight(): void;
+    highlight(): void;
+    getArgValue(): unknown;
+    findFirst(): BlockLike;
+}
 
 export default class Thread {
+    // Instance state assigned by the constructor and step loop
+    firstBlock: BlockLike;
+    thisblock: BlockLike;
+    oldblock: BlockLike | undefined;
+    spr: Sprite;
+    audio: { stop(): void } | undefined;
+    stack: BlockLike[];
+    firstTime: boolean;
+    count: number;
+    waitTimer: number;
+    distance: number;
+    called: unknown[];
+    vector: { x: number; y: number };
+    isRunning: boolean;
+    time: number;
     constructor (s, block) {
         this.firstBlock = block.findFirst();
         this.thisblock = block;
@@ -69,19 +99,19 @@ export default class Thread {
         }
     }
 
-    stop (b) {
+    stop (b?) {
         this.stopping(b);
         this.isRunning = false;
     }
 
-    stopping (b) {
+    stopping (b?) {
         this.endPrim(b);
         this.deselect(this.firstBlock);
         this.clear();
         this.spr.closeBalloon();
     }
 
-    endPrim (stopMine) {
+    endPrim (stopMine?) {
         if (!this.thisblock) {
             return;
         }
@@ -133,13 +163,13 @@ export default class Thread {
             }
             break;
         case 'hide':
-            s.div.style.opacity = 0;
+            s.div.style.opacity = '0';
             if (!this.firstBlock.aStart && !stopMine) {
                 s.homeshown = false;
             }
             break;
         case 'show':
-            s.div.style.opacity = 1;
+            s.div.style.opacity = '1';
             if (!this.firstBlock.aStart && !stopMine) {
                 s.homeshown = true;
             }

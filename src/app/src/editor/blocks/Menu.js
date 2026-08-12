@@ -1,4 +1,4 @@
-import BlockSpecs from './BlockSpecs.js';
+import BlockSpecs from './BlockSpecs';
 import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTouch,
     newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly} from '../../utils/lib';
 

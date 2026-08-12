@@ -11,7 +11,7 @@ import ScratchJr from '../ScratchJr.js';
 import Project from '../ui/Project.js';
 import Thumbs from '../ui/Thumbs.js';
 import UI from '../ui/UI.js';
-import BlockSpecs from '../blocks/BlockSpecs.js';
+import BlockSpecs from '../blocks/BlockSpecs';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
@@ -29,9 +29,56 @@ import {newHTML, newDiv, newP, gn,
     DEGTOR, getIdFor, setProps, isTouch, isiOS,
     isAndroid, fitInRect, scaleMultiplier, setCanvasSize,
     globaly, globalx, rgbToHex} from '../../utils/lib';
+import type Stage from './Stage';
+import type Page from './Page';
+
+// Named-form access: namedForms.activetextbox etc.
+const namedForms = document.forms as HTMLCollectionOf<HTMLFormElement> & Record<string, HTMLFormElement>;
 
 export default class Sprite {
-    constructor (attr, whenDone) {
+    // Instance state — populated from project attrs and during asset load
+    div: HTMLElement;
+    img: HTMLImageElement;
+    originalImg: HTMLImageElement;
+    svg: Element;
+    code: Scripts;
+    id: string;
+    md5: string;
+    name: string;
+    type: string;
+    sounds: string[];
+    borderOn: boolean;
+    outline: HTMLCanvasElement;
+    scale: number;
+    defaultScale: number;
+    xcoor: number;
+    ycoor: number;
+    w: number;
+    h: number;
+    cx: number;
+    cy: number;
+    angle: number;
+    dirx: number;
+    diry: number;
+    speed: number;
+    shown: boolean;
+    flip: boolean;
+    homex: number;
+    homey: number;
+    homescale: number;
+    homeshown: boolean;
+    homeflip: boolean;
+    str: string;
+    fontsize: number;
+    color: string;
+    border: HTMLCanvasElement;
+    balloon: HTMLElement;
+    watermark: unknown;
+    thumbnail: HTMLElement;
+    oldvalue: string;
+    readOnly: boolean;
+
+    constructor (attr, whenDone?) {
         if (attr.type == 'sprite') {
             this.createSprite(attr.page, attr.md5, attr.id, attr, whenDone);
         } else {
@@ -115,7 +162,7 @@ export default class Sprite {
         img.src = dataurl;
         this.img = img;
         // Make a copy that is not affected by zoom transformation
-        this.originalImg = img.cloneNode(false);
+        this.originalImg = img.cloneNode(false) as HTMLImageElement;
         setProps(this.img.style, {
             position: 'absolute',
             left: '0px',
@@ -210,7 +257,7 @@ export default class Sprite {
         if (!tb) {
             return;
         }
-        var cnv = tb.childNodes[0];
+        var cnv = tb.childNodes[0] as HTMLCanvasElement;
         this.drawMyImage(cnv, cnv.width, cnv.height);
         tb.childNodes[1].textContent = this.name;
     }
@@ -255,7 +302,7 @@ export default class Sprite {
         this.scale = this.homescale;
         this.shown = this.homeshown;
         //	this.flip = this.homeflip;  // kept here just in case we want it
-        this.div.style.opacity = this.shown ? 1 : 0;
+        this.div.style.opacity = this.shown ? '1' : '0';
         this.setHeading(0);
         this.render();
     }
@@ -269,7 +316,7 @@ export default class Sprite {
         var page = this.div.parentNode;
         var box = this.getBoxWithEffects(); // box with effects is a scale  and 1.5 times to count for rotations
         for (var i = 0; i < page.childElementCount; i++) {
-            var other = page.childNodes[i].owner;
+            var other = page.childNodes[i].owner as Sprite;
             if (!other) {
                 continue;
             }
@@ -598,7 +645,9 @@ Math.floor(h));
         if (w > 200) {
             w = 200;
         }
-        w += (10 * gn('stage').owner.currentZoom);
+        // stage div owner is the Stage instance
+        const stageOwner = gn('stage').owner as Stage;
+        w += (10 * stageOwner.currentZoom);
         setProps(p.style, {
             position: 'absolute',
             width: w + 'px'
@@ -647,7 +696,7 @@ Math.floor(h));
     }
 
     drawBalloon () {
-        var img = this.balloon.childNodes[0];
+        var img = this.balloon.childNodes[0] as HTMLImageElement;
         var w = this.balloon.offsetWidth;
         var h = this.balloon.offsetHeight;
         var curve = 6;
@@ -680,7 +729,7 @@ Math.floor(h));
     // Sprite rendering
     ////////////////////////////////////
 
-    stamp (ctx, deltax, deltay) {
+    stamp (ctx, deltax?, deltay?) {
         var w = this.outline.width * this.scale;
         var h = this.outline.height * this.scale;
         var dx = deltax ? deltax : 0;
@@ -738,10 +787,10 @@ Math.floor(h));
     }
 
     setTextBox () {
-        var sform = document.forms.activetextbox;
+        var sform = namedForms.activetextbox;
         sform.textsprite = this;
         var box = this.getBox();
-        var ti = document.forms.activetextbox.typing;
+        var ti = namedForms.activetextbox.typing;
         ti.value = this.str;
 
         // TODO: Merge these for iOS
@@ -766,7 +815,7 @@ Math.floor(h));
         if (isAndroid) {
             dy = box.y * scaleMultiplier + globaly(gn('stage')) - 10 * scaleMultiplier;
         } else {
-            dy = box.y + globaly(gn('stage'), gn('stage').offsetTop) - 10;
+            dy = box.y + globaly(gn('stage')) - 10;
         }
         var formsize = 470;
         gn('textbox').className = 'pagetext on';
@@ -789,7 +838,7 @@ Math.floor(h));
                 AndroidInterface.scratchjr_forceShowKeyboard();
             }, 500);
         } else {
-            dx = -10 + 240 - Math.round(formsize / 2) + globalx(gn('stage'), gn('stage').offsetLeft);
+            dx = -10 + 240 - Math.round(formsize / 2) + globalx(gn('stage'));
             setProps(gn('textbox').style, {
                 top: dy + 'px',
                 left: dx + 'px',
@@ -805,7 +854,7 @@ Math.floor(h));
         ScratchJr.blur();
         document.body.scrollTop = 0;
         document.body.scrollLeft = 0;
-        var form = document.forms.activetextbox;
+        var form = namedForms.activetextbox;
         var changed = (this.oldvalue != form.typing.value);
         if (this.noChars(form.typing.value)) {
             this.deleteText(this.oldvalue != '');
@@ -823,9 +872,10 @@ Math.floor(h));
             form.textsprite = null;
             this.deactivateInput();
             if (changed) {
-                Undo.record({
+                const parentPage = this.div.parentNode.owner as Page;
+            Undo.record({
                     action: 'edittext',
-                    where: this.div.parentNode.owner.id,
+                    where: parentPage.id,
                     who: this.id
                 });
                 ScratchJr.storyStart('Sprite.prototype.unfocusText');
@@ -850,7 +900,7 @@ Math.floor(h));
         list.splice(n, 1);
         this.div.parentNode.removeChild(this.div);
         page.sprites = JSON.stringify(list);
-        var form = document.forms.activetextbox;
+        var form = namedForms.activetextbox;
         gn('textbox').style.visibility = 'hidden';
         form.textsprite = null;
         if (record) {
@@ -873,7 +923,7 @@ Math.floor(h));
     }
 
     contractText () {
-        var form = document.forms.activetextbox;
+        var form = namedForms.activetextbox;
         this.str = form.typing.value.substring(0, form.typing.maxLength);
         this.recalculateText();
     }
@@ -888,7 +938,7 @@ Math.floor(h));
 
     activateInput () {
         this.oldvalue = this.str;
-        var ti = document.forms.activetextbox.typing;
+        var ti = namedForms.activetextbox.typing;
         gn('textbox').style.visibility = 'visible';
         var me = this;
         ti.onblur = function () {
@@ -945,7 +995,7 @@ Math.floor(h));
     }
 
     deactivateInput () {
-        var ti = document.forms.activetextbox.typing;
+        var ti = namedForms.activetextbox.typing;
         ti.onblur = undefined;
         ti.onkeypress = undefined;
         ti.onsubmit = undefined;
@@ -1073,7 +1123,7 @@ Math.floor(h));
             return;
         }
         var p = this.div;
-        this.div = this.div.childNodes[0];
+        this.div = this.div.childNodes[0] as HTMLElement;
         ScratchJr.stage.currentPage.div.appendChild(this.div);
         if (p.id == 'shakediv') {
             p.parentNode.removeChild(p);
@@ -1097,12 +1147,13 @@ Math.floor(h));
     }
 
     drawCloseButton () {
-        var ctx = this.div.getContext('2d');
+        const canvasDiv = this.div as HTMLCanvasElement;
+        var ctx = canvasDiv.getContext('2d');
         var img = document.createElement('img');
         img.src = 'assets/ui/closeit.svg';
         if (!img.complete) {
             img.onload = function () {
-                ctx.drawImage(0, 0);
+                ctx.drawImage(img, 0, 0);
             };
         } else {
             ctx.drawImage(img, 0, 0);
@@ -1118,9 +1169,9 @@ Math.floor(h));
         if (this.type != 'sprite') {
             return data;
         }
-        var sc = gn(this.id + '_scripts').owner;
+        const scriptsOwner = gn(this.id + '_scripts').owner as Scripts;
         var res = [];
-        var topblocks = sc.getEncodableBlocks();
+        var topblocks = scriptsOwner.getEncodableBlocks();
         for (var i = 0; i < topblocks.length; i++) {
             res.push(Project.encodeStrip(topblocks[i]));
         }
@@ -1129,7 +1180,7 @@ Math.floor(h));
     }
 
     getSpriteData () {
-        var data = {};
+        var data: Record<string, unknown> = {};
         data.shown = this.shown;
         data.type = this.type;
         data.md5 = this.md5;
@@ -1156,7 +1207,7 @@ Math.floor(h));
     }
 
     getTextBoxData () {
-        var data = {};
+        var data: Record<string, unknown> = {};
         data.shown = this.shown;
         data.type = this.type;
         data.id = this.id;

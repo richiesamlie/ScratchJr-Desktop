@@ -29,6 +29,43 @@ let sendshapes = ['LetterSend_Orange', 'LetterSend_Red', 'LetterSend_Yellow', 'L
 let speeds = ['speed0', 'speed1', 'speed2'];
 
 export default class BlockSpecs {
+    // Dynamic statics populated by initBlocks()/loadGraphics()
+    static defs: Record<string, unknown>;
+    static palettes: string[][];
+    static categories: (HTMLImageElement | string)[][];
+    static canvasMask: HTMLImageElement;
+    static balloon: string;
+    static projectThumb: HTMLImageElement;
+    static mic: HTMLImageElement;
+    static yellowStart: HTMLImageElement;
+    static yellowStartH: HTMLImageElement;
+    static yellowCmd: HTMLImageElement;
+    static yellowCmdH: HTMLImageElement;
+    static redEnd: HTMLImageElement;
+    static redEndH: HTMLImageElement;
+    static orangeCmd: HTMLImageElement;
+    static orangeCmdH: HTMLImageElement;
+    static limeCmd: HTMLImageElement;
+    static limeCmdH: HTMLImageElement;
+    static pinkCmd: HTMLImageElement;
+    static pinkCmdH: HTMLImageElement;
+    static redEndLong: HTMLImageElement;
+    static redEndLongH: HTMLImageElement;
+    static cShape: HTMLImageElement;
+    static cShapeH: HTMLImageElement;
+    static blueCmd: HTMLImageElement;
+    static blueCmdH: HTMLImageElement;
+    static textfieldimg: HTMLImageElement;
+    static numfieldimg: HTMLImageElement;
+    static pressbutton: HTMLImageElement;
+    static pressbuttonSmall: HTMLImageElement;
+    static caretrepeat: HTMLImageElement;
+    static cmdS: HTMLImageElement;
+    static startS: HTMLImageElement;
+    static endS: HTMLImageElement;
+    static endLongS: HTMLImageElement;
+    static repeatS: HTMLImageElement;
+
     static get loadCount () {
         return loadCount;
     }
@@ -115,7 +152,7 @@ export default class BlockSpecs {
 
     }
 
-    static getImageFrom (url, ext) {
+    static getImageFrom (url, ext?) {
         var img = document.createElement('img');
         img.src = url + (ext ? '.' + ext : '.png');
         if (!img.complete) {

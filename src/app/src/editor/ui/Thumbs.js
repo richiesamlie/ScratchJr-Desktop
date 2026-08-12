@@ -4,7 +4,7 @@
 
 import ScratchJr from '../ScratchJr.js';
 import Palette from './Palette.js';
-import Page from '../engine/Page.js';
+import Page from '../engine/Page';
 import ScriptsPane from './ScriptsPane.js';
 import Undo from './Undo.js';
 import UI from './UI.js';

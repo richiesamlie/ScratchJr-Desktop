@@ -4,7 +4,7 @@
 
 import ScratchJr from '../ScratchJr.js';
 import Block from '../blocks/Block.js';
-import BlockSpecs from '../blocks/BlockSpecs.js';
+import BlockSpecs from '../blocks/BlockSpecs';
 import ScriptsPane from './ScriptsPane.js';
 import Undo from './Undo.js';
 import iOS from '../../iPad/iOS';

@@ -2,9 +2,9 @@ import ScratchJr from '../ScratchJr.js';
 import Project from '../ui/Project.js';
 import Thumbs from '../ui/Thumbs.js';
 import UI from '../ui/UI.js';
-import Sprite from './Sprite.js';
+import Sprite from './Sprite';
 import Palette from '../ui/Palette.js';
-import BlockSpecs from '../blocks/BlockSpecs.js';
+import BlockSpecs from '../blocks/BlockSpecs';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
@@ -16,6 +16,17 @@ import {newHTML, newDiv, gn,
     DEGTOR, getIdFor, setProps} from '../../utils/lib';
 
 export default class Page {
+    div: HTMLElement;
+    bkg: HTMLElement;
+    currentSpriteName: string;
+    id: string;
+    md5: string;
+    num: number;
+    sprites: string;
+    svg: Element;
+    textstartat: number;
+    thumbnail: unknown;
+
     constructor (id, data, fcn) {
         var container = ScratchJr.stage.pagesdiv;
         this.div = newHTML('div', 'stagepage', container); // newDiv(container,0,0, 480, 360, {position: 'absolute'});
@@ -87,7 +98,7 @@ export default class Page {
 
     setCurrentSprite (spr) { // set the sprite and toggles UI if no sprite is available
         if (ScratchJr.getSprite()) {
-            ScratchJr.getSprite().unselect();
+            (ScratchJr.getSprite() as Sprite).unselect();
         }
         if (spr) {
             this.currentSpriteName = spr.id;
@@ -168,7 +179,7 @@ export default class Page {
     setBackgroundImage (url, fcn) {
         var img = document.createElement('img');
         img.src = url;
-        this.bkg.originalImg = img.cloneNode(false);
+        this.bkg.originalImg = img.cloneNode(false) as HTMLImageElement;
         this.bkg.appendChild(img);
         setProps(img.style, {
             position: 'absolute',
@@ -214,7 +225,7 @@ export default class Page {
     // page thumbnail
     /////////////////////////////////////
 
-    updateThumb (page) {
+    updateThumb (page?) {
         var me = page ? page : ScratchJr.stage.currentPage;
         if (!me.thumbnail) {
             return;
@@ -326,7 +337,7 @@ export default class Page {
         ctx.restore();
     }
 
-    getMatrixFor (spr) {
+    getMatrixFor (spr, scale?) {
         var sx = new Matrix();
         var angle = spr.angle ? -spr.angle : 0;
         if (spr.flip) {
@@ -345,7 +356,7 @@ export default class Page {
     encodePage () {
         var p = this.div;
         var spritelist = JSON.parse(this.sprites);
-        var data = {};
+        var data: Record<string, unknown> = {};
         data.textstartat = this.textstartat;
         data.sprites = spritelist;
         var md5 = this.md5;
@@ -353,16 +364,17 @@ export default class Page {
             data.md5 = md5;
         }
         data.num = this.num;
-        this.currentSpriteName = !this.currentSpriteName
-            ? undefined : (gn(this.currentSpriteName).owner.type == 'sprite')
-            ? this.currentSpriteName : this.getSprites()[0];
+        const owner = this.currentSpriteName ? gn(this.currentSpriteName).owner : null;
+        const isSpriteOwner = owner != null && typeof owner === 'object' && 'type' in owner && owner.type == 'sprite';
+        this.currentSpriteName = !this.currentSpriteName ? undefined : isSpriteOwner ? this.currentSpriteName : this.getSprites()[0];
         data.lastSprite = this.currentSpriteName;
         for (var j = 0; j < spritelist.length; j++) {
             data[spritelist[j]] = Project.encodeSprite(spritelist[j]);
         }
         var layers = [];
         for (var i = 1; i < p.childElementCount; i++) {
-            var layerid = p.childNodes[i].id;
+            const layerNode = p.childNodes[i] as HTMLElement;
+            var layerid = layerNode.id;
             if (layerid && (layerid != '')) {
                 layers.push(layerid);
             }
@@ -375,7 +387,8 @@ export default class Page {
         var spritelist = JSON.parse(this.sprites);
         var res = [];
         for (var i = 0; i < spritelist.length; i++) {
-            if (gn(spritelist[i]).owner.type == 'sprite') {
+            const owner = gn(spritelist[i]).owner;
+            if (owner && typeof owner === 'object' && 'type' in owner && owner.type == 'sprite') {
                 res.push(spritelist[i]);
             }
         }
@@ -388,7 +401,7 @@ export default class Page {
     /////////////////////////////
 
     createText () {
-        var textAttr = {
+        var textAttr: Record<string, unknown> = {
             shown: true,
             type: 'text',
             scale: 1,
@@ -480,7 +493,7 @@ export default class Page {
 
     addSprite (scale, md5, cname) {
         ScratchJr.onHold = true;
-        var sprAttr = {
+        var sprAttr: Record<string, unknown> = {
             flip: false,
             angle: 0,
             shown: true,
@@ -510,9 +523,9 @@ export default class Page {
     }
 
     modifySprite (md5, cid, sid) {
-        var sprite = gn(unescape(sid)).owner;
+        var sprite = gn(unescape(sid)).owner as Sprite;
         if (!sprite) {
-            sprite = ScratchJr.getSprite();
+            sprite = ScratchJr.getSprite() as Sprite;
         }
         sprite.md5 = md5;
         sprite.name = cid;
@@ -524,9 +537,9 @@ export default class Page {
     }
 
     modifySpriteName (cid, sid) {
-        var sprite = gn(unescape(sid)).owner;
+        var sprite = gn(unescape(sid)).owner as Sprite;
         if (!sprite) {
-            sprite = ScratchJr.getSprite();
+            sprite = ScratchJr.getSprite() as Sprite;
         }
         sprite.name = cid;
         sprite.thumbnail.childNodes[1].textContent = cid;

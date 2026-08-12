@@ -4,7 +4,7 @@
 
 import ScratchJr from '../ScratchJr.js';
 import Block from '../blocks/Block.js';
-import BlockSpecs from '../blocks/BlockSpecs.js';
+import BlockSpecs from '../blocks/BlockSpecs';
 import ScriptsPane from './ScriptsPane.js';
 import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';

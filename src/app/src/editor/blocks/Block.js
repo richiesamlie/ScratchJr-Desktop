@@ -1,4 +1,4 @@
-import BlockSpecs from './BlockSpecs.js';
+import BlockSpecs from './BlockSpecs';
 import BlockArg from './BlockArg.js';
 import ScratchJr from '../ScratchJr.js';
 import {setProps, setCanvasSize, scaleMultiplier} from '../../utils/lib';

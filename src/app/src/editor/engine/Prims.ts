@@ -3,11 +3,20 @@ import ScratchAudio from '../../utils/ScratchAudio';
 import Grid from '../ui/Grid.js';
 import Vector from '../../geom/Vector';
 import {gn} from '../../utils/lib';
+import type Thread from './Thread';
+import type Scripts from '../ui/Scripts.js';
 
 let tinterval = 1;
 let hopList = [-48, -30, -22, -14, -6, 0, 6, 14, 22, 30, 48];
 
 export default class Prims {
+    // Attached by ScratchJr.js at startup (block implementations)
+    static Bigger: (strip: Thread) => void;
+    static Smaller: (strip: Thread) => void;
+    static SetColor: (strip: Thread) => void;
+    static time: number;
+    static table: Record<string, (strip: Thread) => void>;
+
     static get hopList () {
         return hopList;
     }
@@ -64,10 +73,10 @@ export default class Prims {
     }
 
     static setTime (strip) {
-        strip.time = (new Date()) - 0;
+        strip.time = Date.now();
     }
 
-    static showTime () {
+    static showTime (strip?) {
         //var time = ((new Date()) - strip.time) / 1000;
         // 	ScratchJr.log (strip.thisblock.blocktype, time, "sec") ;
     }
@@ -626,7 +635,8 @@ export default class Prims {
             if (!sc) {
                 continue;
             }
-            var topblocks = sc.owner.getBlocksType(list);
+            const scriptsOwner = sc.owner as Scripts;
+            var topblocks = scriptsOwner.getBlocksType(list);
             for (var j = 0; j < topblocks.length; j++) {
                 fcn(topblocks[j], spr);
             }
