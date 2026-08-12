@@ -9,7 +9,7 @@ import Path from './Path.js';
 import Paint from './Paint.js';
 import Layer from './Layer.js';
 import Transform from './Transform.js';
-import Rectangle from '../geom/Rectangle.js';
+import Rectangle from '../geom/Rectangle';
 import SVGTools from './SVGTools.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import PaintAction from './PaintAction.js';

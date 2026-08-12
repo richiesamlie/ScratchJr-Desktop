@@ -1,6 +1,6 @@
 import { IntlMessageFormat } from 'intl-messageformat';
 
-import Cookie from './Cookie.js';
+import Cookie from './Cookie';
 import IO from '../iPad/IO.js';
 
 let currentLocale;

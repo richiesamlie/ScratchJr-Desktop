@@ -9,8 +9,8 @@ import iOS from '../../iPad/iOS.js';
 import IO from '../../iPad/IO.js';
 import MediaLib from '../../iPad/MediaLib.js';
 import Undo from '../ui/Undo.js';
-import Matrix from '../../geom/Matrix.js';
-import Vector from '../../geom/Vector.js';
+import Matrix from '../../geom/Matrix';
+import Vector from '../../geom/Vector';
 import {newHTML, newDiv, gn,
     setCanvasSizeScaledToWindowDocumentHeight,
     DEGTOR, getIdFor, setProps} from '../../utils/lib.js';

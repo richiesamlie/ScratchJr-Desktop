@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-const { normalizeAndValidateSqlPayload, SQL_ALLOWED_VERBS, SQL_FORBIDDEN_KEYWORDS } = require('../../src/lib/sql-validator.js');
+import { normalizeAndValidateSqlPayload, SQL_ALLOWED_VERBS, SQL_FORBIDDEN_KEYWORDS } from '../../src/lib/sql-validator.ts';
 
 describe('normalizeAndValidateSqlPayload', () => {
     // --- Valid inputs ---

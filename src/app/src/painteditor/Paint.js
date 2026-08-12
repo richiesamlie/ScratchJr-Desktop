@@ -15,7 +15,7 @@ import PaintUndo from './PaintUndo.js';
 import Camera from './Camera.js';
 import Events from '../utils/Events.js';
 import Transform from './Transform.js';
-import Vector from '../geom/Vector.js';
+import Vector from '../geom/Vector';
 import {gn, newHTML, setCanvasSize, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib.js';
 
 // Originally several files (Paint.js, PaintIO.js, PaintLayout.js)

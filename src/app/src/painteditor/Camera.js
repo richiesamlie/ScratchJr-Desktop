@@ -6,7 +6,7 @@ import PaintUndo from './PaintUndo.js';
 import SVGImage from './SVGImage.js';
 import SVGTools from './SVGTools.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
-import Rectangle from '../geom/Rectangle.js';
+import Rectangle from '../geom/Rectangle';
 import Layer from './Layer.js';
 import Ghost from './Ghost.js';
 import {gn, globalx, globaly, DEGTOR, setCanvasSize, isAndroid} from '../utils/lib.js';

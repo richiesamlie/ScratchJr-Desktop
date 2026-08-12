@@ -1,6 +1,6 @@
 import Prims from './Prims.js';
 import Grid from '../ui/Grid.js';
-import Vector from '../../geom/Vector.js';
+import Vector from '../../geom/Vector';
 
 export default class Thread {
     constructor (s, block) {

@@ -10,7 +10,7 @@ import SVG2Canvas from '../utils/SVG2Canvas.js';
 import SVGImage from './SVGImage.js';
 import SVGTools from './SVGTools.js';
 import Layer from './Layer.js';
-import Vector from '../geom/Vector.js';
+import Vector from '../geom/Vector';
 import Transform from './Transform.js';
 import Paint from './Paint.js';
 import PaintUndo from './PaintUndo.js';

@@ -10,8 +10,8 @@ import Undo from './Undo.js';
 import iOS from '../../iPad/iOS.js';
 import MediaLib from '../../iPad/MediaLib.js';
 import Events from '../../utils/Events.js';
-import Rectangle from '../../geom/Rectangle.js';
-import DrawPath from '../../utils/DrawPath.js';
+import Rectangle from '../../geom/Rectangle';
+import DrawPath from '../../utils/DrawPath';
 import ScratchAudio from '../../utils/ScratchAudio.js';
 import Record from './Record.js';
 import {frame, gn, localx, newHTML, scaleMultiplier, isTouch, newDiv,

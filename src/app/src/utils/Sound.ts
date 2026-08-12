@@ -2,6 +2,12 @@ import {isAndroid} from './lib.js';
 import iOS from '../iPad/iOS.js';
 
 export default class Sound {
+    url;
+    soundPlayId;
+    name;
+    time;
+    playing;
+
     constructor (name, time) {
         if (isAndroid) {
             this.url = name;

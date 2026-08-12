@@ -1,4 +1,4 @@
-import Vector from '../geom/Vector.js';
+import Vector from '../geom/Vector';
 import {setCanvasSize, rgb2hsb, colorToRGBA} from './lib.js';
 import SVGImage from '../painteditor/SVGImage.js';
 

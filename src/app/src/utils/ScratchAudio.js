@@ -1,5 +1,5 @@
 import {isAndroid} from './lib.js';
-import Sound from './Sound.js';
+import Sound from './Sound';
 import iOS from '../iPad/iOS.js';
 
 ////////////////////////////////////////////////////

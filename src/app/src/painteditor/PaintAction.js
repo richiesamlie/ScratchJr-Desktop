@@ -6,13 +6,13 @@ import SVGTools from './SVGTools.js';
 import Path from './Path.js';
 import Transform from './Transform.js';
 import Ghost from './Ghost.js';
-import Vector from '../geom/Vector.js';
+import Vector from '../geom/Vector';
 import Layer from './Layer.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import SVGImage from './SVGImage.js';
 import Camera from './Camera.js';
 import Events from '../utils/Events.js';
-import Rectangle from '../geom/Rectangle.js';
+import Rectangle from '../geom/Rectangle';
 import {gn, isTouch, getIdFor} from '../utils/lib.js';
 /*
 Type of objects:

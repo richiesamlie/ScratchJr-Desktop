@@ -1,6 +1,6 @@
 import {preprocessAndLoadCss} from './src/utils/lib.js';
 import Localization from './src/utils/Localization.js';
-import AppUsage from './src/utils/AppUsage.js';
+import AppUsage from './src/utils/AppUsage';
 import iOS from './src/iPad/iOS.js';
 import IO from './src/iPad/IO.js';
 import MediaLib from './src/iPad/MediaLib.js';

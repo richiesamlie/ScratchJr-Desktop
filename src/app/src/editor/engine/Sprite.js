@@ -19,7 +19,7 @@ import Undo from '../ui/Undo.js';
 import ScriptsPane from '../ui/ScriptsPane.js';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';
 import SVGTools from '../../painteditor/SVGTools.js';
-import Rectangle from '../../geom/Rectangle.js';
+import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events.js';
 import Localization from '../../utils/Localization.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';

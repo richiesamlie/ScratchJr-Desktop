@@ -154,6 +154,13 @@
             "semi": 0,
             "no-restricted-globals": 0
         },
+        "settings": {
+            "import/resolver": {
+                "node": {
+                    "extensions": [".js", ".ts", ".d.ts"]
+                }
+            }
+        },
         "globals": {
             "AndroidInterface": true,
             "window": true,

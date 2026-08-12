@@ -5,7 +5,7 @@ import SVGTools from './SVGTools.js';
 import Paint from './Paint.js';
 import PaintAction from './PaintAction.js';
 import Layer from './Layer.js';
-import Vector from '../geom/Vector.js';
+import Vector from '../geom/Vector';
 import Transform from './Transform.js';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 import {gn, setCanvasSize, newDiv} from '../utils/lib.js';

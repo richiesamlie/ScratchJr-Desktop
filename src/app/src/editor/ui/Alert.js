@@ -1,4 +1,4 @@
-import DrawPath from '../../utils/DrawPath.js';
+import DrawPath from '../../utils/DrawPath';
 import {globalx, globaly, scaleMultiplier, newCanvas,
     setCanvasSize, setProps, writeText, getStringSize} from '../../utils/lib.js';
 

@@ -3,7 +3,7 @@ import IO from './IO.js';
 import Lobby from '../lobby/Lobby.js';
 import Alert from '../editor/ui/Alert.js';
 import ScratchAudio from '../utils/ScratchAudio.js';
-import AppUsage from '../utils/AppUsage.js';
+import AppUsage from '../utils/AppUsage';
 
 //////////////////////////////////////////////////
 //  Tablet interface functions

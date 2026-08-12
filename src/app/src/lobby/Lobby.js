@@ -6,7 +6,7 @@ import {libInit, getUrlVars, gn, isAndroid, newHTML, preprocessAndLoad} from '..
 import ScratchAudio from '../utils/ScratchAudio.js';
 import iOS from '../iPad/iOS.js';
 import Localization from '../utils/Localization.js';
-import Cookie from '../utils/Cookie.js';
+import Cookie from '../utils/Cookie';
 
 import Home from './Home.js';
 import Samples from './Samples.js';

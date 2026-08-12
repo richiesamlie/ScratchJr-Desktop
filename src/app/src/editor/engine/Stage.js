@@ -4,10 +4,10 @@ import Thumbs from '../ui/Thumbs.js';
 import UI from '../ui/UI.js';
 import Undo from '../ui/Undo.js';
 import ScriptsPane from '../ui/ScriptsPane.js';
-import Rectangle from '../../geom/Rectangle.js';
+import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events.js';
 import ScratchAudio from '../../utils/ScratchAudio.js';
-import Vector from '../../geom/Vector.js';
+import Vector from '../../geom/Vector';
 import Page from './Page.js';
 import {newHTML, newDiv, gn,
     getIdFor, setProps,

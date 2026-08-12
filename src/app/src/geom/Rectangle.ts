@@ -1,76 +1,68 @@
+import type { Point } from './Vector';
+
 export default class Rectangle {
-    constructor (x, y, w, h) {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    // assigned transiently inside union() — kept optional so the class shape stays readable
+    extentsw?: number;
+    extentsh?: number;
+
+    constructor(x: number, y: number, w: number, h: number) {
         this.x = x;
         this.y = y;
         this.width = w;
         this.height = h;
     }
 
-    hitRect (pt) {
-        var x = pt.x;
-        var y = pt.y;
-        if (x < this.x) {
-            return false;
-        }
-        if (x > this.x + this.width) {
-            return false;
-        }
-        if (y < this.y) {
-            return false;
-        }
-        if (y > this.y + this.height) {
-            return false;
-        }
+    hitRect(pt: Point): boolean {
+        const x = pt.x;
+        const y = pt.y;
+        if (x < this.x) return false;
+        if (x > this.x + this.width) return false;
+        if (y < this.y) return false;
+        if (y > this.y + this.height) return false;
         return true;
     }
 
-    intersects (r) {
-        var x0 = Math.max(this.x, r.x);
-        var x1 = Math.min(this.x + this.width, r.x + r.width);
+    intersects(r: Rectangle): boolean {
+        const x0 = Math.max(this.x, r.x);
+        const x1 = Math.min(this.x + this.width, r.x + r.width);
         if (x0 <= x1) {
-            var y0 = Math.max(this.y, r.y);
-            var y1 = Math.min(this.y + this.height, r.y + r.height);
-            if (y0 <= y1) {
-                return true;
-            }
+            const y0 = Math.max(this.y, r.y);
+            const y1 = Math.min(this.y + this.height, r.y + r.height);
+            if (y0 <= y1) return true;
         }
         return false;
     }
 
-    overlapElemBy (box2, percent) {
+    overlapElemBy(box2: Rectangle, percent: number): boolean {
         return this.overlapElem(box2) >= percent;
     }
 
-    overlapElem (box2) {
-        var boxi = this.intersection(box2);
-        if (boxi.isEmpty()) {
-            return 0;
-        }
-        if (boxi.isEqual(box2)) {
-            return 1;
-        }
-        if (boxi.isEqual(this)) {
-            return 1;
-        }
+    overlapElem(box2: Rectangle): number {
+        const boxi = this.intersection(box2);
+        if (boxi.isEmpty()) return 0;
+        if (boxi.isEqual(box2)) return 1;
+        if (boxi.isEqual(this)) return 1;
         return (boxi.width * boxi.height) / (box2.width * box2.height);
     }
 
-    intersection (box2) {
-        var dx = Math.max(this.x, box2.x);
-        var dw = Math.min(this.x + this.width, box2.x + box2.width);
+    intersection(box2: Rectangle): Rectangle {
+        const dx = Math.max(this.x, box2.x);
+        const dw = Math.min(this.x + this.width, box2.x + box2.width);
         if (dx <= dw) {
-            var dy = Math.max(this.y, box2.y);
-            var dh = Math.min(this.y + this.height, box2.y + box2.height);
-            if (dy > dh) {
-                return new Rectangle(0, 0, 0, 0);
-            }
+            const dy = Math.max(this.y, box2.y);
+            const dh = Math.min(this.y + this.height, box2.y + box2.height);
+            if (dy > dh) return new Rectangle(0, 0, 0, 0);
             return new Rectangle(dx, dy, dw - dx, dh - dy);
         }
         return new Rectangle(0, 0, 0, 0);
     }
 
-    union (box2) {
-        var box = new Rectangle(0, 0, 0, 0);
+    union(box2: Rectangle): Rectangle {
+        const box = new Rectangle(0, 0, 0, 0);
         box.x = (this.x < box2.x) ? this.x : box2.x;
         box.y = (this.y < box2.y) ? this.y : box2.y;
         this.extentsw = (this.x == 9999999) ? 0 : this.x + this.width;
@@ -82,17 +74,12 @@ export default class Rectangle {
         box.width -= box.x;
         box.height -= box.y;
         if (box.isEmpty()) {
-            box = {
-                x: 9999999,
-                y: 9999999,
-                width: 0,
-                height: 0
-            };
+            return new Rectangle(9999999, 9999999, 0, 0);
         }
         return box;
     }
 
-    expandBy (sw) {
+    expandBy(sw: number): this {
         this.x -= sw / 2;
         this.y -= sw / 2;
         this.width += sw;
@@ -100,13 +87,9 @@ export default class Rectangle {
         return this;
     }
 
-    crop (box) {
-        if (this.x < box.x) {
-            this.x = box.x;
-        }
-        if (this.y < box.y) {
-            this.y = box.y;
-        }
+    crop(box: Rectangle): void {
+        if (this.x < box.x) this.x = box.x;
+        if (this.y < box.y) this.y = box.y;
         if ((this.width + this.x) > (box.width + box.x)) {
             this.width += ((box.width + box.x) - (this.width + this.x));
         }
@@ -115,11 +98,11 @@ export default class Rectangle {
         }
     }
 
-    getArea () {
+    getArea(): number {
         return this.width * this.height;
     }
 
-    rounded () {
+    rounded(): Rectangle {
         return new Rectangle(
             Math.floor(this.x),
             Math.floor(this.y),
@@ -128,16 +111,16 @@ export default class Rectangle {
         );
     }
 
-    isEqual (box2) {
+    isEqual(box2: Rectangle): boolean {
         return (this.x == box2.x) && (this.y == box2.y)
             && (this.width == box2.width) && (this.height == box2.height);
     }
 
-    isEmpty () {
+    isEmpty(): boolean {
         return (this.x == 0) && (this.y == 0) && (this.width == 0) && (this.height == 0);
     }
 
-    scale (sx, sy) {
+    scale(sx: number, sy: number): void {
         this.x *= sx;
         this.y *= sy;
         this.width *= sx;
