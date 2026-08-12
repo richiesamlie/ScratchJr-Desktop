@@ -206,7 +206,7 @@ export default class Lobby {
                 let newLocale = window.Settings.supportedLocales[e.target.textContent];
                 Cookie.set('localization', newLocale);
                 iOS.analyticsEvent('lobby', 'language_changed', newLocale);
-                window.location = '?place=gear';
+                window.location.href = '?place=gear';
             };
         }
     }

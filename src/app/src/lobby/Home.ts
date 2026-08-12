@@ -17,6 +17,13 @@ let version;
 let timeoutEvent;
 
 export default class Home {
+    // Dynamic statics used by the touch handlers below
+    static dragging = false;
+    static holding = false;
+    static actionTarget: ThumbElement | null = null;
+    static initialPt: { x: number; y: number };
+    static scrolltop: number;
+
     static init () {
         version = Lobby.version;
         frame = gn('htmlcontents');
@@ -33,7 +40,7 @@ export default class Home {
     ////////////////////////////
 
     static emptyProjectThumbnail (parent) {
-        var tb = newHTML('div', 'projectthumb', parent);
+        var tb = newHTML('div', 'projectthumb', parent) as ThumbElement;
         newHTML('div', 'aproject empty', tb);
         tb.id = 'newproject';
     }
@@ -48,18 +55,20 @@ export default class Home {
         // if ((t.nodeName == "INPUT") || (t.nodeName == "FORM")) return;
         var mytarget = Home.getMouseTarget(e);
         if ((mytarget != Home.actionTarget) && Home.actionTarget && (Home.actionTarget.childElementCount > 2)) {
-            Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1].style.visibility = 'hidden';
+            const actionChild = Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1] as HTMLElement;
+            actionChild.style.visibility = 'hidden';
         }
         Home.actionTarget = mytarget;
         Home.initialPt = Events.getTargetPoint(e);
         if (Home.actionTarget) {
-            holdit(Home.actionTarget);
+            holdit();
         }
         function holdit () {
             frame.onmousemove = Home.handleMove;
             var repeat = function () {
                 if (Home.actionTarget && (Home.actionTarget.childElementCount > 2)) {
-                    Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1].style.visibility = 'visible';
+                    const actionChild = Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1] as HTMLElement;
+                    actionChild.style.visibility = 'visible';
 
                     Home.holding = true;
                 }
@@ -132,7 +141,7 @@ export default class Home {
                 Home.createNewProject();
             } else if (md5) {
                 iOS.setfile('homescroll.sjr', gn('wrapc').scrollTop, function () {
-                    doNext(md5);
+                    doNext();
                 });
             }
             break;
@@ -147,7 +156,8 @@ export default class Home {
             break;
         default:
             if (Home.actionTarget && (Home.actionTarget.childElementCount > 2)) {
-                Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1].style.visibility = 'hidden';
+                const actionChild = Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1] as HTMLElement;
+                actionChild.style.visibility = 'hidden';
             }
             break;
         }
@@ -159,7 +169,7 @@ export default class Home {
 
     static createNewProject () {
         iOS.analyticsEvent('lobby', 'project_created');
-        var obj = {};
+        var obj: Record<string, string> = {};
         // XXX: for localization, the new project name should likely be refactored
         obj.name = Home.getNextName(Localization.localize('NEW_PROJECT_PREFIX'));
         obj.version = version;
@@ -181,7 +191,8 @@ export default class Home {
         var pn = [];
         var div = gn('scrollarea');
         for (var i = 0; i < div.childElementCount; i++) {
-            if (div.childNodes[i].id == 'newproject') {
+            const child = div.childNodes[i] as HTMLElement;
+            if (child.id == 'newproject') {
                 continue;
             }
             pn.push(div.childNodes[i].childNodes[1].childNodes[0].textContent);
@@ -204,9 +215,11 @@ export default class Home {
         if (!Home.actionTarget) {
             return 'none';
         }
-        var shown = (Home.actionTarget.childElementCount > 2)
-            ? Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1].style.visibility == 'visible'
-            : false;
+        var shown = false;
+        if (Home.actionTarget.childElementCount > 2) {
+            const actionChild = Home.actionTarget.childNodes[Home.actionTarget.childElementCount - 1] as HTMLElement;
+            shown = actionChild.style.visibility == 'visible';
+        }
         if (e && shown) {
             var t;
             if (window.event) {
@@ -230,7 +243,7 @@ export default class Home {
         function gotScrollsState (str) {
             var num = Number(atob(str));
             scrollvalue = (num.toString() == 'NaN') ? 0 : num;
-            var json = {};
+            var json: SqlPayload = {};
             json.cond = 'deleted = ? AND version = ? AND gallery IS NULL';
             json.items = ['name', 'thumbnail', 'id', 'isgift'];
             json.values = ['NO', version];
@@ -292,7 +305,7 @@ export default class Home {
 
     static insertThumbnail (p, w, h, data) {
         var md5 = data.md5;
-        var img = newHTML('img', undefined, p);
+        var img = newHTML('img', undefined, p) as HTMLImageElement;
         if (md5) {
             IO.getAsset(md5, drawMe);
         }

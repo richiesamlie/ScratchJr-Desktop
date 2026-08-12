@@ -1,7 +1,7 @@
 import {gn} from '../utils/lib';
 import Localization from '../utils/Localization';
 import iOS from '../iPad/iOS';
-import Lobby from '../lobby/Lobby.js';
+import Lobby from '../lobby/Lobby';
 
 export function homeMain () {  // eslint-disable-line import/prefer-default-export
     gn('logotab').onmousedown = homeGoBack;

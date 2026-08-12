@@ -52,7 +52,7 @@ export default class Samples {
             var name = mt.childNodes[1];
 
             // Localize sample project names
-            var sampleName = data.name;
+            var sampleName = (typeof data.name === 'string') ? data.name : '';
             sampleName = Localization.localize('SAMPLE_' + sampleName);
 
             name.textContent = sampleName;
@@ -89,7 +89,7 @@ export default class Samples {
     }
 
     static addLink (parent, pos, md5) {
-        var tb = newHTML('div', 'samplethumb', parent);
+        var tb = newHTML('div', 'samplethumb', parent) as ThumbElement;
         tb.setAttribute('id', 'sample-' + pos);
         tb.md5 = md5;
         tb.type = 'samplethumb';

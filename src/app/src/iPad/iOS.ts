@@ -1,6 +1,6 @@
 import {isiOS, gn} from '../utils/lib';
 import IO from './IO.js';
-import Lobby from '../lobby/Lobby.js';
+import Lobby from '../lobby/Lobby';
 import Alert from '../editor/ui/Alert.js';
 import ScratchAudio from '../utils/ScratchAudio';
 import AppUsage from '../utils/AppUsage';
@@ -363,7 +363,7 @@ export default class iOS {
         fcn(tabletInterface.deviceName());
     }
 
-    static analyticsEvent (category, action, label, value?) {
+    static analyticsEvent (category, action, label?, value?) {
         if (!value) {
             value = 1;
         }

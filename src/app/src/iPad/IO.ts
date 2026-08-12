@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import iOS from './iOS.js';
 import MediaLib from './MediaLib.js';
 import {setCanvasSize, drawThumbnail, gn} from '../utils/lib';
-import Lobby from '../lobby/Lobby.js';
+import Lobby from '../lobby/Lobby';
 import SVG2Canvas from '../utils/SVG2Canvas.js';
 
 const database = 'projects';
