@@ -1,5 +1,6 @@
 import ScratchJr from '../ScratchJr';
 import ScratchAudio from '../../utils/ScratchAudio';
+import type Sound from '../../utils/Sound';
 import Grid from '../ui/Grid';
 import Vector from '../../geom/Vector';
 import {gn} from '../../utils/lib';
@@ -66,7 +67,7 @@ export default class Prims {
         Prims.table.say = Prims.Say;
     }
 
-    static Done (strip) {
+    static Done (strip: Thread) {
         if (strip.oldblock != null) {
             strip.oldblock.unhighlight();
         }
@@ -74,25 +75,25 @@ export default class Prims {
         strip.isRunning = false;
     }
 
-    static setTime (strip) {
+    static setTime (strip: Thread) {
         strip.time = Date.now();
     }
 
-    static showTime (strip?) {
+    static showTime (strip?: Thread) {
         //var time = ((new Date()) - strip.time) / 1000;
         // 	ScratchJr.log (strip.thisblock.blocktype, time, "sec") ;
     }
 
-    static DoNextBlock (strip) {
+    static DoNextBlock (strip: Thread) {
         strip.waitTimer = tinterval * 10;
-        strip.thisblock = strip.thisblock.next;
+        strip.thisblock = strip.thisblock.next!;
     }
 
     static StopAll () {
         ScratchJr.stopStrips();
     }
 
-    static StopMine (strip) {
+    static StopMine (strip: Thread) {
         var spr = strip.spr;
         for (var i = 0; i < ScratchJr.runtime.threadsRunning.length; i++) {
             if ((ScratchJr.runtime.threadsRunning[i].spr == spr)
@@ -100,18 +101,18 @@ export default class Prims {
                 ScratchJr.runtime.threadsRunning[i].stop(true);
             }
         }
-        strip.thisblock = strip.thisblock.next;
+        strip.thisblock = strip.thisblock.next!;
         ScratchJr.runtime.yield = true;
     }
 
-    static playSound (strip) {
+    static playSound (strip: Thread) {
         var b = strip.thisblock;
-        var name = b.getSoundName(strip.spr.sounds);
+        var name = b.getSoundName(strip.spr.sounds) as string;
         //	console.log ('playSound', name);
         if (!strip.audio) {
-            var snd = ScratchAudio.projectSounds[name];
+            var snd = (ScratchAudio.projectSounds as Record<string, Sound>)[name];
             if (!snd) {
-                strip.thisblock = strip.thisblock.next;
+                strip.thisblock = strip.thisblock.next!;
                 return;
             }
             strip.audio = snd;
@@ -120,16 +121,16 @@ export default class Prims {
         }
         if (strip.audio && strip.audio.done()) {
             strip.audio.clear();
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.audio = undefined;
         }
         strip.waitTimer = tinterval * 4;
     }
 
-    static Say (strip) {
+    static Say (strip: Thread) {
         var b = strip.thisblock;
         var s = strip.spr;
-        var str = b.getArgValue();
+        var str = b.getArgValue() as string;
         if (strip.count < 0) {
             strip.count = Math.max(30, Math.round(str.length / 8) * 30); // 7 chars per seconds;
             s.openBalloon(str);
@@ -141,7 +142,7 @@ export default class Prims {
                 strip.count = -1;
                 s.closeBalloon();
                 Prims.showTime(strip);
-                strip.thisblock = strip.thisblock.next;
+                strip.thisblock = strip.thisblock.next!;
             } else {
                 strip.waitTimer = tinterval;
                 strip.count = count;
@@ -149,7 +150,7 @@ export default class Prims {
         }
     }
 
-    static GotoPage (strip) {
+    static GotoPage (strip: Thread) {
         var b = strip.thisblock;
         var n = Number(b.getArgValue());
         if (strip.count < 0) {
@@ -169,59 +170,59 @@ export default class Prims {
         }
     }
 
-    static Forever (strip) {
-        strip.thisblock = strip.firstBlock.aStart ? strip.firstBlock.next : strip.firstBlock;
+    static Forever (strip: Thread) {
+        strip.thisblock = strip.firstBlock.aStart ? strip.firstBlock.next! : strip.firstBlock;
         ScratchJr.runtime.yield = true;
     }
 
-    static Repeat (strip) {
+    static Repeat (strip: Thread) {
         var b = strip.thisblock;
         var n = Number(b.getArgValue());
         if (n < 1) {
             n = 1;
         }
-        if (b.repeatCounter < 0) {
+        if (b.repeatCounter! < 0) {
             b.repeatCounter = n;
         }
         if (b.repeatCounter == 0) {
             b.repeatCounter = -1;
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.waitTimer = tinterval;
         } else {
             strip.stack.push(strip.thisblock);
-            b.repeatCounter--;
-            strip.thisblock = strip.thisblock.inside;
+            b.repeatCounter!--;
+            strip.thisblock = strip.thisblock.inside!;
             ScratchJr.runtime.yield = true;
         }
     }
 
-    static Ignore (strip) {
-        strip.thisblock = strip.thisblock.next;
+    static Ignore (strip: Thread) {
+        strip.thisblock = strip.thisblock.next!;
     }
 
-    static Wait (strip) {
-        var n = strip.thisblock.getArgValue();
+    static Wait (strip: Thread) {
+        var n = Number(strip.thisblock.getArgValue());
         strip.waitTimer = Math.round(n * 3.125); // thenth of a second
         Prims.setTime(strip);
-        strip.thisblock = strip.thisblock.next;
+        strip.thisblock = strip.thisblock.next!;
     }
 
-    static Home (strip) {
+    static Home (strip: Thread) {
         var spr = strip.spr;
         spr.goHome();
         strip.waitTimer = tinterval;
-        strip.thisblock = strip.thisblock.next;
+        strip.thisblock = strip.thisblock.next!;
     }
 
-    static SetSpeed (strip) {
+    static SetSpeed (strip: Thread) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()); // 0 - 1 - 2
         s.speed = 2 ** num; // eslint-disable-line no-restricted-properties
         strip.waitTimer = tinterval;
-        strip.thisblock = strip.thisblock.next;
+        strip.thisblock = strip.thisblock.next!;
     }
 
-    static Hop (strip) {
+    static Hop (strip: Thread) {
         if (strip.count < 0) { // setup the hop
             strip.count = hopList.length;
             Prims.setTime(strip);
@@ -229,7 +230,7 @@ export default class Prims {
         Prims.hopTo(strip);
     }
 
-    static hopTo (strip) {
+    static hopTo (strip: Thread) {
         var s = strip.spr;
         var b = strip.thisblock;
         var n = Number(b.getArgValue());
@@ -242,7 +243,7 @@ export default class Prims {
                 y: 0
             };
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         } else {
             strip.vector = {
                 x: 0,
@@ -261,11 +262,11 @@ export default class Prims {
         }
     }
 
-    static Down (strip) {
+    static Down (strip: Thread) {
         var num = Number(strip.thisblock.getArgValue()) * 24;
         var distance = Math.abs(num);
         if (num == 0) {
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.waitTimer = tinterval;
             strip.distance = -1;
             strip.vector = {
@@ -285,11 +286,11 @@ export default class Prims {
         Prims.moveAtSpeed(strip);
     }
 
-    static Up (strip) {
+    static Up (strip: Thread) {
         var num = Number(strip.thisblock.getArgValue()) * 24;
         var distance = Math.abs(num);
         if (num == 0) {
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.waitTimer = tinterval;
             strip.distance = -1;
             strip.vector = {
@@ -308,7 +309,7 @@ export default class Prims {
         Prims.moveAtSpeed(strip);
     }
 
-    static Forward (strip) {
+    static Forward (strip: Thread) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()) * 24;
         var distance = Math.abs(num);
@@ -317,7 +318,7 @@ export default class Prims {
             s.render();
         }
         if (num == 0) {
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.waitTimer = tinterval * 2 ** (2 - Math.floor(s.speed / 2)); // eslint-disable-line no-restricted-properties
             strip.vector = {
                 x: 0,
@@ -336,7 +337,7 @@ export default class Prims {
         Prims.moveAtSpeed(strip);
     }
 
-    static Back (strip) {
+    static Back (strip: Thread) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()) * 24;
         var distance = Math.abs(num);
@@ -345,7 +346,7 @@ export default class Prims {
             s.render();
         }
         if (num == 0) {
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.vector = {
                 x: 0,
                 y: 0
@@ -364,7 +365,7 @@ export default class Prims {
         Prims.moveAtSpeed(strip);
     }
 
-    static moveAtSpeed (strip) {
+    static moveAtSpeed (strip: Thread) {
         var s = strip.spr;
         var distance = strip.distance;
         var num = Number(strip.thisblock.getArgValue()) * 12; // 1/2 cell size since vector is double
@@ -379,7 +380,7 @@ export default class Prims {
                 y: 0
             };
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         } else {
             s.setPos(s.xcoor + vector.x, s.ycoor + vector.y);
             strip.waitTimer = tinterval;
@@ -387,7 +388,7 @@ export default class Prims {
         }
     }
 
-    static Right (strip) {
+    static Right (strip: Thread) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()) * 30;
         if (strip.count < 0) {
@@ -406,7 +407,7 @@ export default class Prims {
         Prims.turning(strip);
     }
 
-    static Left (strip) {
+    static Left (strip: Thread) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()) * 30;
         if (strip.count < 0) {
@@ -425,7 +426,7 @@ export default class Prims {
         Prims.turning(strip);
     }
 
-    static turning (strip) {
+    static turning (strip: Thread) {
         var s = strip.spr;
         var count = strip.count;
         count--;
@@ -433,7 +434,7 @@ export default class Prims {
             strip.count = -1;
             s.setHeading(strip.finalAngle);
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         } else {
             s.setHeading(s.angle + strip.angleStep);
             strip.waitTimer = tinterval;
@@ -441,12 +442,12 @@ export default class Prims {
         }
     }
 
-    static Same (strip) {
+    static Same (strip: Thread) {
         var s = strip.spr;
         var n = (s.defaultScale - s.scale) / s.defaultScale * 10;
         if (n == 0) {
             strip.waitTimer = tinterval;
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.count = -1;
             strip.distance = -1;
             if (!strip.firstBlock.aStart) {
@@ -467,7 +468,7 @@ export default class Prims {
             s.noScaleFor();
             strip.distance = -1;
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         } else {
             s.changeSizeBy(strip.distance * 2);
             strip.waitTimer = tinterval;
@@ -475,7 +476,7 @@ export default class Prims {
         }
     }
 
-    static Grow (strip) {
+    static Grow (strip: Thread) {
         var s = strip.spr;
         var n = Number(strip.thisblock.getArgValue());
         if (strip.count < 0) {
@@ -492,7 +493,7 @@ export default class Prims {
             }
             strip.distance = -1;
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         } else {
             s.changeSizeBy(s.defaultScale * 2 * s.speed * Math.abs(n) / n);
             strip.waitTimer = tinterval;
@@ -500,7 +501,7 @@ export default class Prims {
         }
     }
 
-    static Shrink (strip) {
+    static Shrink (strip: Thread) {
         var s = strip.spr;
         var n = Number(strip.thisblock.getArgValue());
         if (strip.count < 0) {
@@ -517,7 +518,7 @@ export default class Prims {
             }
             strip.distance = -1;
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         } else {
             s.changeSizeBy(-s.defaultScale * 2 * s.speed * Math.abs(n) / n);
             strip.waitTimer = tinterval;
@@ -525,7 +526,7 @@ export default class Prims {
         }
     }
 
-    static Show (strip) {
+    static Show (strip: Thread) {
         var s = strip.spr;
         s.shown = true;
         if (strip.count < 0) {
@@ -534,20 +535,20 @@ export default class Prims {
         }
         if (strip.count == 0) {
             strip.count = -1;
-            s.div.style.opacity = 1;
+            s.div.style.opacity = '1';
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             if (!strip.firstBlock.aStart) {
                 s.homeshown = true;
             }
         } else {
-            s.div.style.opacity = Math.min(1, Number(s.div.style.opacity) + (s.speed / 15));
+            s.div.style.opacity = String(Math.min(1, Number(s.div.style.opacity) + (s.speed / 15)));
             strip.waitTimer = tinterval * 2;
             strip.count = strip.count - 1;
         }
     }
 
-    static Hide (strip) { // same
+    static Hide (strip: Thread) { // same
         var s = strip.spr;
         s.shown = false;
         if (strip.count < 0) {
@@ -556,29 +557,29 @@ export default class Prims {
         }
         if (strip.count == 0) {
             strip.count = -1;
-            s.div.style.opacity = 0;
+            s.div.style.opacity = '0';
             Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             if (!strip.firstBlock.aStart) {
                 s.homeshown = false;
             }
         } else {
-            s.div.style.opacity = Math.max(0, Number(s.div.style.opacity) - (s.speed / 15));
+            s.div.style.opacity = String(Math.max(0, Number(s.div.style.opacity) - (s.speed / 15)));
             strip.waitTimer = tinterval * 2;
             strip.count = strip.count - 1;
         }
     }
 
-    static OnTouch (strip) {
+    static OnTouch (strip: Thread) {
         var s = strip.spr;
         if (s.touchingAny()) {
             strip.stack.push(strip.firstBlock);
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
         }
         strip.waitTimer = tinterval;
     }
 
-    static Message (strip) {
+    static Message (strip: Thread) {
         var b = strip.thisblock;
         var pair;
         if (strip.firstTime) {
@@ -601,8 +602,8 @@ export default class Prims {
 
         // after first time
         var done = true;
-        for (var j = 0; j < strip.called.length; j++) {
-            if (strip.called[j].isRunning) {
+        for (var j = 0; j < strip.called!.length; j++) {
+            if (strip.called![j].isRunning) {
                 done = false;
             }
         }
@@ -610,14 +611,14 @@ export default class Prims {
         if (done) {
             strip.called = null;
             strip.firstTime = true;
-            strip.thisblock = strip.thisblock.next;
+            strip.thisblock = strip.thisblock.next!;
             strip.waitTimer = tinterval * 2;
         } else {
             ScratchJr.runtime.yield = true;
         }
     }
 
-    static applyToAllStrips (list, fcn) {
+    static applyToAllStrips (list: string[], fcn: (block: BlockLike, s: Sprite) => void) {
         if (!ScratchJr.stage) {
             return;
         }
@@ -629,7 +630,7 @@ export default class Prims {
             return;
         }
         for (var i = 0; i < page.div.childElementCount; i++) {
-            var spr = page.div.childNodes[i].owner;
+            var spr = page.div.childNodes[i].owner as Sprite;
             if (!spr) {
                 continue;
             }

@@ -10,7 +10,7 @@ import ScratchAudio from '../utils/ScratchAudio';
 import Localization from '../utils/Localization';
 import {gn, newHTML} from '../utils/lib';
 
-let frame;
+let frame: HTMLElement;
 // Should ScratchJr projects be saved when the sample project is changed?
 // Enabled for the PBS version; disabled for the ScratchJr version
 // window.Settings.useStoryStarters
@@ -28,7 +28,7 @@ export default class Samples {
     // Show Me How
     ////////////////////////////
 
-    static playHowTo (e) {
+    static playHowTo (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         ScratchAudio.sndFX('tap.wav');
@@ -39,14 +39,14 @@ export default class Samples {
     // Learn Samples
     ////////////////////////////
 
-    static display (key) {
-        var files = MediaLib[key];
+    static display (key: string) {
+        var files = MediaLib[key as keyof typeof MediaLib] as string[];
         var div = gn(key)!;
         for (var i = 0; i < files.length; i++) {
             Samples.addLink(div, i, files[i]);
             Samples.requestFromServer(i, files[i], displayThumb);
         }
-        function displayThumb (pos, str) {
+        function displayThumb (pos: number, str: string) {
             var mt = gn('sample-' + pos)!;
             var data = IO.parseProjectData(JSON.parse(str)[0]);
             var name = mt.childNodes[1];
@@ -57,7 +57,7 @@ export default class Samples {
 
             name.textContent = sampleName;
             var cnv = mt.childNodes[0].childNodes[1];
-            Samples.insertThumbnail(cnv, data.thumbnail);
+            Samples.insertThumbnail(cnv as HTMLElement, data.thumbnail as { md5?: string; pagecount?: number });
             mt.onclick = function (evt) {
                 Samples.loadMe(evt, mt);
             };
@@ -67,11 +67,11 @@ export default class Samples {
 
     static show () {
         Lobby.busy = false;
-        frame.parentNode.scrollTop = 0;
+        (frame.parentNode as HTMLElement).scrollTop = 0;
         gn('samples')!.className = 'samples on';
     }
 
-    static loadMe (e, mt) {
+    static loadMe (e: MouseEvent, mt: HTMLElement) {
         e.preventDefault();
         e.stopPropagation();
         ScratchAudio.sndFX('tap.wav');
@@ -81,14 +81,14 @@ export default class Samples {
             + ((window.Settings!.useStoryStarters) ? 'storyStarter' : 'look');
     }
 
-    static insertThumbnail (img, data) {
+    static insertThumbnail (img: HTMLElement, data: { md5?: string; pagecount?: number }) {
         var md5 = data.md5;
         if (md5) {
             img.style.backgroundImage = 'url(\'' + md5 + '\')';
         }
     }
 
-    static addLink (parent, pos, md5) {
+    static addLink (parent: HTMLElement, pos: number, md5: string) {
         var tb = newHTML('div', 'samplethumb', parent) as ThumbElement;
         tb.setAttribute('id', 'sample-' + pos);
         tb.md5 = md5;
@@ -100,7 +100,7 @@ export default class Samples {
         name.textContent = 'Sample ' + pos;
     }
 
-    static requestFromServer (pos, url, whenDone) {
+    static requestFromServer (pos: number, url: string, whenDone: (pos: number, str: string) => void) {
         var xmlrequest = new XMLHttpRequest();
         xmlrequest.addEventListener('error', transferFailed, false);
         xmlrequest.onreadystatechange = function () {
@@ -110,7 +110,7 @@ export default class Samples {
         };
         xmlrequest.open('GET', url, true);
         xmlrequest.send(null);
-        function transferFailed (e) {
+        function transferFailed (e: Event) {
             e.preventDefault();
             e.stopPropagation();
             // Failed loading

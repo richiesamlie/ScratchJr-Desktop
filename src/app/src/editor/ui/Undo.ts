@@ -15,7 +15,7 @@ import {newHTML, isTouch, gn} from '../../utils/lib';
 
 let buffer: Record<string, unknown>[] = [];
 let index = 0;
-let tryCounter;
+let tryCounter: number;
 
 export default class Undo {
     static init () {
@@ -23,29 +23,29 @@ export default class Undo {
         Undo.update();
     }
 
-    static setup (p) {
+    static setup (p: HTMLElement) {
         var div = newHTML('div', 'controlundo', p);
         div.setAttribute('id', 'undocontrols');
-        var lib = [['undo', Undo.prevStep], ['redo', Undo.nextStep]];
+        var lib: Array<[string, (e: MouseEvent) => void]> = [['undo', Undo.prevStep], ['redo', Undo.nextStep]];
         for (var i = 0; i < lib.length; i++) {
             Undo.newToggleClicky(div, 'id_', lib[i][0], lib[i][1]);
         }
         Undo.update();
     }
 
-    static newToggleClicky (p, prefix, key, fcn) {
+    static newToggleClicky (p: HTMLElement, prefix: string, key: string, fcn: (e: MouseEvent) => void) {
         var div = newHTML('div', key + 'button', p);
         div.setAttribute('type', 'toggleclicky');
         div.setAttribute('id', prefix + key);
         if (fcn) {
-            div.onmousedown = function (evt) {
+            div.onmousedown = function (evt: MouseEvent) {
                     fcn(evt);
                 };
         }
         return div;
     }
 
-    static record (obj) {
+    static record (obj: Record<string, unknown>) {
         //console.log ("record", index, JSON.stringify(obj));
         if (ScratchJr.getActiveScript()) {
             const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
@@ -72,7 +72,7 @@ export default class Undo {
     //
     ////////////////////////////////
 
-    static prevStep (e) {
+    static prevStep (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -93,7 +93,7 @@ export default class Undo {
         }
     }
 
-    static nextStep (e) {
+    static nextStep (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -111,7 +111,7 @@ export default class Undo {
         }
     }
 
-    static smartRecreate (cmd, elem, data) {
+    static smartRecreate (cmd: string, elem: any, data: any) {
         ScratchJr.stopStrips();
         var action = elem.action;
         var page = elem.where;
@@ -121,13 +121,13 @@ export default class Undo {
         case 'pageorder':
             ScratchJr.stage.pages = Undo.getPageOrder(data);
             Undo.recreateAllScripts(data);
-            ScratchJr.stage.setPage(gn(data.currentPage)!.owner, false);
+            ScratchJr.stage.setPage(gn(data.currentPage)!.owner as Page, false);
             if (Palette.numcat == 5) {
                 Palette.selectCategory(5);
             }
             break;
         case 'changepage':
-            ScratchJr.stage.setPage(gn(data.currentPage)!.owner, false);
+            ScratchJr.stage.setPage(gn(data.currentPage)!.owner as Page, false);
             break;
         case 'changebkg':
             (gn(page)!.owner as Page).redoChangeBkg(data);
@@ -194,7 +194,7 @@ export default class Undo {
         Undo.update();
     }
 
-    static copyPage (obj, page) {
+    static copyPage (obj: any, page: string) {
         var sc = ScratchJr.getSprite() ? gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts')! : undefined;
         if (sc) {
             (sc.owner as Scripts).deactivate();
@@ -202,7 +202,7 @@ export default class Undo {
         Project.recreatePage(page, obj[page], nextStep2);
         function nextStep2 () {
             ScratchJr.stage.pages = Undo.getPageOrder(obj);
-            ScratchJr.stage.setPage(gn(obj.currentPage)!.owner, false);
+            ScratchJr.stage.setPage(gn(obj.currentPage)!.owner as Page, false);
             Undo.recreateAllScripts(obj);
             var spritename = obj[obj.currentPage].lastSprite;
             if (spritename && gn(spritename)!) {
@@ -217,7 +217,7 @@ export default class Undo {
         }
     }
 
-    static getPageOrder (data) {
+    static getPageOrder (data: any) {
         var pages = data.pages;
         var res: Page[] = [];
         for (var i = 0; i < pages.length; i++) {
@@ -226,7 +226,7 @@ export default class Undo {
         return res;
     }
 
-    static recreateAllScripts (data) {
+    static recreateAllScripts (data: any) {
         for (var n = 0; n < data.pages.length; n++) {
             var page = data[data.pages[n]];
             var sprnames = page.sprites;
@@ -247,11 +247,11 @@ export default class Undo {
         }
     }
 
-    static removePage (data, str) {
+    static removePage (data: any, str: string) {
         if (!gn(str)!) {
             return;
         }
-        var page = gn(str)!.owner;
+        var page = gn(str)!.owner as Page;
         if (!page) {
             return;
         }
@@ -261,13 +261,13 @@ export default class Undo {
         if (ScratchJr.stage.pages.length == 0) {
             Undo.copyPage(data, data.currentPage);
         } else {
-            ScratchJr.stage.setViewPage(gn(data.currentPage)!.owner);
+            ScratchJr.stage.setViewPage(gn(data.currentPage)!.owner as Page);
             Thumbs.updateSprites();
             Thumbs.updatePages();
         }
     }
 
-    static redoScripts (data, page, spr) {
+    static redoScripts (data: any, page: string, spr: string) {
         var div = gn(spr + '_scripts')!;
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
@@ -279,9 +279,9 @@ export default class Undo {
         }
     }
 
-    static copySprite (data, page, spr) {
+    static copySprite (data: any, page: string, spr: string) {
         var obj = data[page][spr];
-        var fcn = function (spr) {
+        var fcn = function (spr: Sprite) {
             if (spr.type == 'sprite') {
                 if (page == ScratchJr.stage.currentPage.id) {
                     spr.div.style.visibility = 'visible';
@@ -295,10 +295,10 @@ export default class Undo {
                 Thumbs.updatePages();
             }
         };
-        Project.recreateObject(gn(page)!.owner, spr, obj, fcn, (data[page].lastSprite == spr));
+        Project.recreateObject(gn(page)!.owner as Page, spr, obj, fcn, (data[page].lastSprite == spr));
     }
 
-    static setSprite (page, data) {
+    static setSprite (page: string, data: any) {
         Thumbs.updatePages();
         if (page != ScratchJr.stage.currentPage.id) {
             return;
@@ -316,7 +316,7 @@ export default class Undo {
         }
     }
 
-    static removeSprite (data, page, spr) {
+    static removeSprite (data: any, page: string, spr: string) {
         if (!gn(spr)!) {
             return;
         }
@@ -343,7 +343,7 @@ export default class Undo {
         Undo.setSprite(page, data);
     }
 
-    static recreate (data) {
+    static recreate (data: any) {
         Project.mediaCount = 0;
         ScratchJr.stage.pages = [];
         var pages = data.pages;
@@ -357,7 +357,7 @@ export default class Undo {
         Undo.loadPage(data.currentPage);
     }
 
-    static loadPage (pageid) {
+    static loadPage (pageid: string) {
         var pages = ScratchJr.stage.getPagesID();
         if (pages.indexOf(pageid) < 0) {
             ScratchJr.stage.currentPage = ScratchJr.stage.pages[0];
@@ -388,7 +388,7 @@ export default class Undo {
         }
     }
 
-    static flashIcon (div, press) {
+    static flashIcon (div: HTMLElement, press: string) {
         div.setAttribute('class', press);
         setTimeout(function () {
             Undo.update();
@@ -419,13 +419,13 @@ export default class Undo {
         }
     }
 
-    static tunOnButton (kid) {
-        var kclass = kid.getAttribute('class').split(' ')[0];
+    static tunOnButton (kid: HTMLElement) {
+        var kclass = kid.getAttribute('class')!.split(' ')[0];
         kid.setAttribute('class', kclass + ' enable');
     }
 
-    static tunOffButton (kid) {
-        var kclass = kid.getAttribute('class').split(' ')[0];
+    static tunOffButton (kid: HTMLElement) {
+        var kclass = kid.getAttribute('class')!.split(' ')[0];
         kid.setAttribute('class', kclass + ' disable');
     }
 }

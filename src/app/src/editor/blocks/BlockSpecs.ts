@@ -1,9 +1,11 @@
 import Localization from '../../utils/Localization';
 import IO from '../../iPad/IO';
+import type Block from './Block';
+import type Sprite from '../engine/Sprite';
 
 let loadCount = 0;
 
-let loadassets = {};
+let loadassets: Record<string, HTMLImageElement> = {};
 let fontwhite = '#f2f3f2';
 let fontpink = '#ff8ae9';
 let fontdarkgray = '#6d6e6c';
@@ -30,7 +32,7 @@ let speeds = ['speed0', 'speed1', 'speed2'];
 
 export default class BlockSpecs {
     // Dynamic statics populated by initBlocks()/loadGraphics()
-    static defs: Record<string, unknown>;
+    static defs: Record<string, unknown[]>;
     static palettes: string[][];
     static categories: (HTMLImageElement | string)[][];
     static canvasMask: HTMLImageElement;
@@ -104,7 +106,7 @@ export default class BlockSpecs {
         loadCount++;
     }
 
-    static setBalloon (str) {
+    static setBalloon (str: string) {
         loadCount--;
         BlockSpecs.balloon = str;
     }
@@ -152,7 +154,7 @@ export default class BlockSpecs {
 
     }
 
-    static getImageFrom (url, ext?) {
+    static getImageFrom (url: string, ext?: string) {
         var img = document.createElement('img');
         img.src = url + (ext ? '.' + ext : '.png');
         if (!img.complete) {
@@ -314,16 +316,18 @@ export default class BlockSpecs {
         };
     }
 
-    static blockDesc (b, spr) {
-        var str = b.getArgValue() ? b.getArgValue().toString() : (b.blocktype == 'playsnd') ? 'SOUND' : '';
+    static blockDesc (b: Block, spr: unknown) {
+        // sprite comes out of a DOM owner expando (ScratchJr.getSprite() -> unknown)
+        const s = spr as Sprite;
+        var str = b.getArgValue() ? String(b.getArgValue()) : (b.blocktype == 'playsnd') ? 'SOUND' : '';
 
         return {
             'onflag': Localization.localize('BLOCK_DESC_GREEN_FLAG'),
             'onclick': Localization.localize('BLOCK_DESC_ON_TAP', {
-                CHARACTER_NAME: spr.name
+                CHARACTER_NAME: s.name
             }),
             'ontouch': Localization.localize('BLOCK_DESC_ON_BUMP', {
-                CHARACTER_NAME: spr.name ? spr.name : ''
+                CHARACTER_NAME: s.name ? s.name : ''
             }),
             'onmessage': Localization.localize('BLOCK_DESC_ON_MESSAGE', {
                 COLOR: Localization.localize('BLOCK_DESC_MESSAGE_COLOR_ORANGE')
@@ -340,7 +344,7 @@ export default class BlockSpecs {
             'wait': Localization.localize('BLOCK_DESC_WAIT'),
             'setspeed': Localization.localize('BLOCK_DESC_SET_SPEED'),
             'stopmine': Localization.localize('BLOCK_DESC_STOP', {
-                CHARACTER_NAME: spr.name ? spr.name : spr.str
+                CHARACTER_NAME: s.name ? s.name : s.str
             }),
             'say': Localization.localize('BLOCK_DESC_SAY'),
             'show': Localization.localize('BLOCK_DESC_SHOW'),
@@ -354,7 +358,7 @@ export default class BlockSpecs {
             'playusersnd': Localization.localize('BLOCK_DESC_PLAY_RECORDED_SOUND'),
             'endstack': Localization.localize('BLOCK_DESC_END'),
             'stopall': Localization.localize('BLOCK_DESC_STOP', {
-                CHARACTER_NAME: spr.name ? spr.name : ''
+                CHARACTER_NAME: s.name ? s.name : ''
             }),
             'forever': Localization.localize('BLOCK_DESC_REPEAT_FOREVER'),
             'gotopage': Localization.localize('BLOCK_DESC_GO_TO_PAGE', {

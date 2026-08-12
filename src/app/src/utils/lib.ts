@@ -1,4 +1,6 @@
-export var frame;  // eslint-disable-line import/no-mutable-exports
+import type {Point} from '../geom/Vector';
+
+export var frame: HTMLElement;  // eslint-disable-line import/no-mutable-exports
 // XXX: isTablet is legacy code that can be used to detect if we're running on a desktop browser
 // There are references to it throughout the codebase, should possibly be removed at some point
 export const isTablet = (typeof window.orientation !== 'undefined');
@@ -12,9 +14,9 @@ export const isiOS = (typeof AndroidInterface == 'undefined');
 export const isAndroid = (typeof AndroidInterface != 'undefined');
 
 export function libInit () {
-    frame = document.getElementById('frame');
+    frame = document.getElementById('frame')!;
 }
-function evaluatePreprocessExpression (expression) {
+function evaluatePreprocessExpression (expression: string) {
     var trimmed = expression.trim();
     if (!trimmed) {
         return '';
@@ -22,7 +24,7 @@ function evaluatePreprocessExpression (expression) {
     if (!/^[\w\s()+\-*/.,]+$/.test(trimmed)) {
         return '${' + expression + '}';
     }
-    var allowedNames = {
+    var allowedNames: Record<string, boolean> = {
         css_vh: true,
         css_vw: true,
         scaleMultiplier: true,
@@ -52,7 +54,7 @@ function evaluatePreprocessExpression (expression) {
 /**
  * Takes a string and evaluates all ${} as JavaScript and returns the resulting string.
  */
-export function preprocess (s) {
+export function preprocess (s: string) {
     var result = '';
     var len = s.length;
     var i = 0;
@@ -83,7 +85,7 @@ export function preprocess (s) {
 /**
  * Load the URL, preprocess the result and return the string.
  */
-export async function preprocessAndLoad (url) {
+export async function preprocessAndLoad (url: string) {
 
     var responseText: string | null = null;
     if (window.tablet) {
@@ -102,7 +104,7 @@ export async function preprocessAndLoad (url) {
  * Load a CSS file, preprocess it using preprocessAndLoad() and then returns it as a style tag.
  * Also rewrites all instances of url() with a different base
  */
-export async function preprocessAndLoadCss (baseUrl, url) {
+export async function preprocessAndLoadCss (baseUrl: string, url: string) {
 
 	// write the url into the tag so we don't keep loading styles <style id='url'>
 	// into the head tag
@@ -138,7 +140,7 @@ export function rl () {
     window.location.reload();
 }
 
-export function newDiv (parent, x, y, w, h, styles) {
+export function newDiv (parent: HTMLElement, x: number, y: number, w: number, h: number, styles?: Record<string, string | number>) {
     var el = document.createElement('div');
     el.style.position = 'absolute';
     el.style.top = y + 'px';
@@ -154,7 +156,7 @@ export function newDiv (parent, x, y, w, h, styles) {
     return el;
 }
 
-export function newImage (parent, src, styles?) {
+export function newImage (parent: HTMLElement | null, src: string, styles?: Record<string, string | number>) {
     var img = document.createElement('img');
     img.src = src;
     setProps(img.style, styles);
@@ -164,7 +166,7 @@ export function newImage (parent, src, styles?) {
     return img;
 }
 
-export function newCanvas (parent, x, y, w, h, styles) {
+export function newCanvas (parent: HTMLElement, x: number, y: number, w: number, h: number, styles?: Record<string, string | number>) {
     var canvas = document.createElement('canvas');
     canvas.style.position = 'absolute';
     canvas.style.top = y + 'px';
@@ -175,7 +177,7 @@ export function newCanvas (parent, x, y, w, h, styles) {
     return canvas;
 }
 
-export function newHTML (type, c, p) {
+export function newHTML (type: string, c?: string, p?: HTMLElement) {
     var e = document.createElement(type);
     if (c) {
         e.setAttribute('class', c);
@@ -186,7 +188,7 @@ export function newHTML (type, c, p) {
     return e;
 }
 
-export function newP (parent, text, styles) {
+export function newP (parent: HTMLElement, text: string, styles?: Record<string, string | number>) {
     var p = document.createElement('p');
     p.appendChild(document.createTextNode(text));
     setProps(p.style, styles);
@@ -194,7 +196,7 @@ export function newP (parent, text, styles) {
     return p;
 }
 
-export function hitRect (c, pt) {
+export function hitRect (c: HTMLElement, pt: Point | null) {
     if (!pt) {
         return false;
     }
@@ -224,13 +226,13 @@ export function hitRect (c, pt) {
     return true;
 }
 
-export function hit3DRect (c, pt) {
+export function hit3DRect (c: HTMLElement, pt: Point | null) {
     if (!pt) {
         return false;
     }
     var x = pt.x;
     var y = pt.y;
-    var mtx = new WebKitCSSMatrix(window.getComputedStyle(c).webkitTransform);
+    var mtx = new WebKitCSSMatrix(window.getComputedStyle(c as Element).webkitTransform);
     if (mtx.m41 == undefined) {
         return false;
     }
@@ -252,7 +254,7 @@ export function hit3DRect (c, pt) {
     return true;
 }
 
-export function hitTest (c, pt) {
+export function hitTest (c: HTMLCanvasElement, pt: Point | null) {
     if (!pt) {
         return false;
     }
@@ -272,7 +274,7 @@ export function hitTest (c, pt) {
     }
     var dx = pt.x - c.offsetLeft,
         dy = pt.y - c.offsetTop;
-    var ctx = c.getContext('2d');
+    var ctx = c.getContext('2d')!;
     var pixel = ctx.getImageData(dx, dy, 1, 1).data;
     if (pixel[3] == 0) {
         return false;
@@ -280,14 +282,14 @@ export function hitTest (c, pt) {
     return true;
 }
 
-export function setCanvasSize (c, w, h) {
+export function setCanvasSize (c: HTMLElement & {width?: number; height?: number}, w: number, h: number) {
     c.width = w;
     c.height = h;
     c.style.width = w + 'px';
     c.style.height = h + 'px';
 }
 
-export function setCanvasSizeScaledToWindowDocumentHeight (c, w, h) {
+export function setCanvasSizeScaledToWindowDocumentHeight (c: HTMLElement & {width?: number; height?: number}, w: number, h: number) {
     var multiplier = window.devicePixelRatio * scaleMultiplier;
     var scaledWidth = Math.floor(w * multiplier);
     var scaledHeight = Math.floor(h * multiplier);
@@ -295,68 +297,75 @@ export function setCanvasSizeScaledToWindowDocumentHeight (c, w, h) {
     c.height = scaledHeight;
     c.style.width = scaledWidth + 'px';
     c.style.height = scaledHeight + 'px';
-    c.style.zoom = scaleMultiplier / multiplier;
+    c.style.zoom = String(scaleMultiplier / multiplier);
 }
 
-export function localx (el, gx) {
+export function localx (el: HTMLElement, gx: number) {
     var lx = gx;
     while (el && el.offsetTop != undefined) {
         lx -= el.offsetLeft + el.clientLeft
-            + (new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform)).m41;
-        el = el.parentNode;
+            + (new WebKitCSSMatrix(window.getComputedStyle(el as Element).webkitTransform)).m41;
+        el = el.parentNode as HTMLElement;
     }
     return lx;
 }
 
-export function globalx (el) {
+export function globalx (el: HTMLElement) {
     var lx = 0;
     while (el && el.offsetLeft != undefined) {
-        var webkitTransform = new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform);
+        var webkitTransform = new WebKitCSSMatrix(window.getComputedStyle(el as Element).webkitTransform);
         var transformScale = webkitTransform.m11;
         lx += (el.clientWidth - (transformScale * el.clientWidth)) / 2;
         var transformX = webkitTransform.m41;
         lx += transformX;
         lx += el.offsetLeft + el.clientLeft;
-        el = el.parentNode;
+        el = el.parentNode as HTMLElement;
     }
     return lx;
 }
 
-export function localy (el, gy) {
+export function localy (el: HTMLElement, gy: number) {
     var ly = gy;
     while (el && el.offsetTop != undefined) {
-        ly -= el.offsetTop + el.clientTop + (new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform)).m42;
-        el = el.parentNode;
+        ly -= el.offsetTop + el.clientTop + (new WebKitCSSMatrix(window.getComputedStyle(el as Element).webkitTransform)).m42;
+        el = el.parentNode as HTMLElement;
     }
     return ly;
 }
 
-export function globaly (el) {
+export function globaly (el: HTMLElement) {
     var ly = 0;
     while (el && el.offsetTop != undefined) {
-        var webkitTransform = new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform);
+        var webkitTransform = new WebKitCSSMatrix(window.getComputedStyle(el as Element).webkitTransform);
         var transformScale = webkitTransform.m22;
         ly += (el.clientHeight - (transformScale * el.clientHeight)) / 2;
         var transformY = webkitTransform.m42;
         ly += transformY;
         ly += el.offsetTop + el.clientTop;
-        el = el.parentNode;
+        el = el.parentNode as HTMLElement;
     }
     return ly;
 }
 
-export function setProps (object, props) {
+export function setProps (object: object, props: object | undefined) {
     for (var i in props) {
-        object[i] = props[i];
+        (object as Record<string, unknown>)[i] = (props as Record<string, unknown>)[i];
     }
 }
 
 // ["ease", "linear", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"];
-export function CSSTransition (el, obj) {
+interface TransitionOptions {
+    duration?: number;
+    transition?: string;
+    style?: Record<string, string | number>;
+    onComplete?: () => void;
+}
+
+export function CSSTransition (el: HTMLElement, obj: TransitionOptions) {
     // default
     var duration = 1;
     var transition = 'ease';
-    var style = {
+    var style: Record<string, string | number> = {
         left: el.offsetLeft + 'px',
         top: el.offsetTop + 'px'
     };
@@ -385,11 +394,11 @@ export function CSSTransition (el, obj) {
     }
 }
 
-export function CSSTransition3D (el, obj) {
+export function CSSTransition3D (el: HTMLElement, obj: TransitionOptions) {
     // default
     var duration = 1;
     var transition = 'ease';
-    var style = {
+    var style: Record<string, string | number> = {
         left: el.left + 'px',
         top: el.top + 'px'
     }; // keepit where it is
@@ -411,7 +420,7 @@ export function CSSTransition3D (el, obj) {
     el.style.transform = translate;
     function transitionDone () {
         el.style.transition = '';
-        var mtx = new DOMMatrix(window.getComputedStyle(el).transform);
+        var mtx = new DOMMatrix(window.getComputedStyle(el as Element).transform);
         el.left = mtx.m41;
         el.top = mtx.m42;
         if (obj.onComplete) {
@@ -420,7 +429,10 @@ export function CSSTransition3D (el, obj) {
     }
 }
 
-export function drawThumbnail (img, c) {
+// Thumbnail sources may be <img> elements (naturalWidth) or canvases (width only).
+type DrawImageSource = (HTMLImageElement | HTMLCanvasElement) & { naturalWidth?: number; naturalHeight?: number };
+
+export function drawThumbnail (img: DrawImageSource, c: HTMLCanvasElement) {
     // naturalWidth Height it gets the zoom scaling properly
     var w = img.naturalWidth ? img.naturalWidth : img.width;
     var h = img.naturalHeight ? img.naturalHeight : img.height;
@@ -446,12 +458,12 @@ export function drawThumbnail (img, c) {
         dy = (c.height - he) / 2;
         break;
     }
-    var ctx = c.getContext('2d');
+    var ctx = c.getContext('2d')!;
     ctx.drawImage(img, dx, dy, wi, he);
 }
 
 // Like drawThumbnail, but scales up if needed
-export function drawScaled (img, c) {
+export function drawScaled (img: DrawImageSource, c: HTMLCanvasElement) {
     var imgWidth = img.naturalWidth ? img.naturalWidth : img.width;
     var imgHeight = img.naturalHeight ? img.naturalHeight : img.height;
     var boxWidth = c.width;
@@ -466,11 +478,11 @@ export function drawScaled (img, c) {
     }
     var x0 = (boxWidth - w) / 2;
     var y0 = (boxHeight - h) / 2;
-    var ctx = c.getContext('2d');
+    var ctx = c.getContext('2d')!;
     ctx.drawImage(img, x0, y0, w, h);
 }
 
-export function fitInRect (srcw, srch, destw, desth) {
+export function fitInRect (srcw: number, srch: number, destw: number, desth: number) {
     var dx = (destw - srcw) / 2;
     var dy = (desth - srch) / 2;
     var dw = destw / srcw;
@@ -496,7 +508,7 @@ export function fitInRect (srcw, srch, destw, desth) {
     return [dx, dy, wi, he];
 }
 
-export function getFit (dw, dh) {
+export function getFit (dw: number, dh: number) {
     if ((dw >= 1) && (dh >= 1)) {
         return 'noscale';
     }
@@ -520,12 +532,12 @@ export function getDocumentWidth () {
     return Math.max(document.body.clientWidth, document.documentElement.clientWidth);
 }
 
-export function getStringSize (ctx, f, label) {
+export function getStringSize (ctx: CanvasRenderingContext2D, f: string, label: string) {
     ctx.font = f;
     return ctx.measureText(label);
 }
 
-export function writeText (ctx, f, c, label, dy, dx) {
+export function writeText (ctx: CanvasRenderingContext2D, f: string, c: string, label: string, dy: number, dx: number) {
     dx = (dx == undefined) ? 0 : dx;
     ctx.font = f;
     ctx.fillStyle = c;
@@ -534,11 +546,11 @@ export function writeText (ctx, f, c, label, dy, dx) {
     ctx.fillText(label, dx, dy);
 }
 
-export function gn (str) {
+export function gn (str: string) {
     return document.getElementById(str);
 }
 
-export function newForm (parent, str, x, y, w, h, styles) {
+export function newForm (parent: HTMLElement, str: string, x: number, y: number, w: number, h: number, styles?: Record<string, string | number>) {
     var el = document.createElement('form');
     el.style.position = 'absolute';
     el.style.top = y + 'px';
@@ -555,9 +567,9 @@ export function newForm (parent, str, x, y, w, h, styles) {
     return el;
 }
 
-export function newTextInput (p, type, str?, mstyle?) {
+export function newTextInput (p: HTMLElement, type: string, str?: string, mstyle?: Record<string, string | number>) {
     var input = document.createElement('input');
-    input.value = str;
+    input.value = str!;
     setProps(input.style, mstyle);
     input.type = type;
     p.appendChild(input);
@@ -581,7 +593,7 @@ export function getUrlVars (): Record<string, string> {
     return vars as unknown as Record<string, string>;
 }
 
-export function getIdFor (name) {
+export function getIdFor (name: string) {
     var n = 1;
     while (gn(name + ' ' + n) != undefined) {
         n++;
@@ -590,7 +602,7 @@ export function getIdFor (name) {
 }
 
 
-export function getIdForCamera (name) {
+export function getIdForCamera (name: string) {
     var n = 1;
     while (gn(name + '_' + n) != undefined) {
         n++;
@@ -602,7 +614,7 @@ export function getIdForCamera (name) {
 // Color
 /////////////////////
 
-export function rgb2hsb (str) {
+export function rgb2hsb (str: string | null) {
     if (str == null) {
         return [24, 1, 1];
     }
@@ -629,7 +641,7 @@ export function rgb2hsb (str) {
     return [hue, sat / 100, val / 100];
 }
 
-export function rgbToHex (str) {
+export function rgbToHex (str: string) {
     if (str.indexOf('rgb') < 0) {
         return str;
     }
@@ -645,7 +657,7 @@ export function rgbToHex (str) {
     });
 }
 
-export function rgbaToHex (str) {
+export function rgbaToHex (str: string) {
     if (str.indexOf('rgba') < 0) {
         return str;
     }
@@ -662,11 +674,11 @@ export function rgbaToHex (str) {
 }
 
 
-export function rgbToString (obj) {
+export function rgbToString (obj: {r: number; g: number; b: number}) {
     return '#' + getHex(obj.r) + getHex(obj.g) + getHex(obj.b);
 }
 
-export function getRGB (color) {
+export function getRGB (color: number) {
     return [
         (Number((color >> 16) & 255)),
         (Number((color >> 8) & 255)),
@@ -674,7 +686,7 @@ export function getRGB (color) {
     ];
 }
 
-export function getHex (num) {
+export function getHex (num: number) {
     var hex = num.toString(16);
     if (hex.length == 1) {
         return '0' + hex;
@@ -716,7 +728,7 @@ export function findKeyframesRule (rule: string) {
     return null;
 }
 
-export function colorToRGBA (color, opacity) {
+export function colorToRGBA (color: string, opacity: string) {
     var val = parseInt('0x' + color.substr(1, color.length));
     return 'rgba(' + (val >> 16) % 256 + ',' + (val >> 8) % 256 + ',' + (val % 256) + ',' + opacity + ')';
 }
@@ -726,11 +738,11 @@ export function colorToRGBA (color, opacity) {
  * here we introduce functioncs (called from the preprocessed css) that emulate their behavior by
  * turning them into pixel values.
  */
-export function css_vh (y) {
+export function css_vh (y: number) {
     return (y * window.innerHeight  / 100.0) + 'px';
 }
 
-export function css_vw (x) {
+export function css_vw (x: number) {
     return (x *  window.innerWidth / 100.0) + 'px';
 }
 

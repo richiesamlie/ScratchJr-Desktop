@@ -1,6 +1,6 @@
 import {gn, isiOS, getUrlVars} from '../utils/lib';
 
-let place;
+let place: string;
 
 export function gettingStartedMain () { // eslint-disable-line import/prefer-default-export
     gn('closeHelp')!.onclick = gettingStartedCloseMe;

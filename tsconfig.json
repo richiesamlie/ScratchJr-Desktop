@@ -5,7 +5,7 @@
     "moduleResolution": "bundler",
     "allowJs": true,
     "checkJs": false,
-    "strict": false, "strictNullChecks": true, "noImplicitThis": true, "useUnknownInCatchVariables": true,
+    "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

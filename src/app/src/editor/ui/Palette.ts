@@ -45,7 +45,7 @@ export default class Palette {
         helpballoon = newHelpballoon;
     }
 
-    static setup (parent) {
+    static setup (parent: HTMLElement) {
         blockscale *= scaleMultiplier;
         blockdy *= scaleMultiplier;
         Palette.blockdx *= scaleMultiplier; // XXX
@@ -53,14 +53,14 @@ export default class Palette {
         Palette.createCategorySelectors(parent);
         var div = newHTML('div', 'palette', parent);
         div.setAttribute('id', 'palette');
-        div.onmousedown = function (evt) {
+        div.onmousedown = function (evt: MouseEvent) {
             Palette.paletteMouseDown(evt);
         };
         var pc = newHTML('div', 'papercut', parent);
         newHTML('div', 'withstyle', pc);
     }
 
-    static createCategorySelectors (parent) {
+    static createCategorySelectors (parent: HTMLElement) {
         var sel = newHTML('div', 'categoryselector', parent);
         sel.setAttribute('id', 'selectors');
         var bkg = newHTML('div', 'catbkg', sel);
@@ -72,7 +72,7 @@ export default class Palette {
         }
     }
 
-    static paletteMouseDown (e) {
+    static paletteMouseDown (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -88,7 +88,7 @@ export default class Palette {
             y: localy(pal, spt.y)
         };
         for (var i = 0; i < pal.childElementCount; i++) {
-            var ths = pal.childNodes[i];
+            var ths = pal.childNodes[i] as HTMLElement;
             if (!hitRect(ths, pt)) {
                 continue;
             }
@@ -101,16 +101,16 @@ export default class Palette {
         ScratchJr.clearSelection();
     }
 
-    static isRecorded (ths) {
-        var val = ths.owner.getArgValue();
+    static isRecorded (ths: HTMLElement) {
+        var val = (ths.owner as Block).getArgValue() as string;
         const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
         var list = activeScripts.spr.sounds;
         return list.indexOf(val) > 0;
     }
 
-    static removeSound (ths) {
+    static removeSound (ths: HTMLElement) {
         ScratchAudio.sndFX('cut.wav');
-        var indx = ths.owner.getArgValue();
+        var indx = (ths.owner as Block).getArgValue() as number;
         var spr = ScratchJr.getSprite() as Sprite;
         if (!spr) {
             return;
@@ -144,9 +144,9 @@ export default class Palette {
         Palette.selectCategory(3);
     }
 
-    static showHelp (e, b) {
-        var block = b.owner;
-        var help = BlockSpecs.blockDesc(block, ScratchJr.getSprite());
+    static showHelp (e: Event | null, b: HTMLElement) {
+        var block = b.owner as Block;
+        var help = BlockSpecs.blockDesc(block, ScratchJr.getSprite()) as { [key: string]: string };
         var str = help[block.blocktype];
         if (!str) {
             return;
@@ -155,11 +155,11 @@ export default class Palette {
         timeoutid = setTimeout(Palette.closeHelpBalloon, 2000);
     }
 
-    static startShaking (b) {
+    static startShaking (b: HTMLElement) {
         if (!b.owner) {
             return;
         }
-        if (b.owner.blocktype != 'playusersnd') {
+        if ((b.owner as Block).blocktype != 'playusersnd') {
             Palette.showHelp(null, b); return;
         }
         ScratchJr.shaking = b;
@@ -168,7 +168,7 @@ export default class Palette {
         newHTML('div', 'deletesound', b);
     }
 
-    static clickBlock (e, b) {
+    static clickBlock (e: Event | null, b: HTMLElement) {
         if (ScratchJr.shaking && (b == ScratchJr.shaking)) {
             Palette.removeSound(b);
         } else {
@@ -177,20 +177,20 @@ export default class Palette {
         }
     }
 
-    static stopShaking (b) {
+    static stopShaking (b: HTMLElement) {
         if (!b.owner) {
             return;
         }
         ScratchJr.shaking = undefined;
         ScratchJr.stopShaking = undefined;
         b.setAttribute('class', '');
-        var ic = b.childNodes[b.childElementCount - 1];
+        var ic = b.childNodes[b.childElementCount - 1] as HTMLElement;
         if (ic.getAttribute('class') == 'deletesound') {
             b.removeChild(ic);
         }
     }
 
-    static openPaletteBalloon (obj, label) {
+    static openPaletteBalloon (obj: HTMLElement, label: string) {
         if (helpballoon) {
             Palette.closeHelpBalloon();
         }
@@ -203,7 +203,7 @@ export default class Palette {
             zIndex: 1000
         });
         helpballoon!.icon = obj;
-        var ctx = helpballoon!.getContext('2d');
+        var ctx = helpballoon!.getContext('2d')!;
         w = 16 * window.devicePixelRatio * scaleMultiplier
             + getStringSize(ctx, 'bold ' + fontSize + 'px ' + window.Settings!.paletteBalloonFont, label).width;
         if (w < 36 * scaleMultiplier) {
@@ -216,7 +216,7 @@ export default class Palette {
             webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
                 + 'scale(' + (1 / window.devicePixelRatio) + ') translate(' + (dx + (w / 2)) + 'px, ' + (h / 2) + 'px)'
         });
-        Palette.drawBalloon(helpballoon!.getContext('2d'), w, h);
+        Palette.drawBalloon(helpballoon!.getContext('2d')!, w, h);
         writeText(ctx, 'bold ' + fontSize + 'px ' + window.Settings!.paletteBalloonFont, 'white', label, 21 * window.devicePixelRatio * scaleMultiplier, 8 * window.devicePixelRatio * scaleMultiplier);
     }
 
@@ -246,7 +246,7 @@ export default class Palette {
         timeoutid = null;
     }
 
-    static drawBalloon (ctx, w, h) {
+    static drawBalloon (ctx: CanvasRenderingContext2D, w: number, h: number) {
         var curve = 4;
         var path = [
             ['M', 0, curve], ['q', 0, -curve, curve, -curve], ['h', w - curve * 2],
@@ -264,7 +264,7 @@ export default class Palette {
     //  ctx.stroke();
     }
 
-    static prepareForDrag (e) {
+    static prepareForDrag (e: MouseEvent) {
         e.preventDefault();
         ScratchAudio.sndFX('grab.wav');
         if (!ScratchJr.runtime.inactive()) {
@@ -293,7 +293,7 @@ export default class Palette {
         sc.prepareCaret(Events.dragcanvas.owner);
     }
 
-    static getBlockNamed (str) {
+    static getBlockNamed (str: string) {
         var pal = gn('palette')!;
         for (var i = 0; i < pal.childElementCount; i++) {
             const owner = pal.childNodes[i].owner as Block;
@@ -304,14 +304,14 @@ export default class Palette {
         return null;
     }
 
-    static createSelector (parent, n, dx, dy, spec) {
+    static createSelector (parent: HTMLElement, n: number, dx: number, dy: number, spec: (HTMLImageElement | string)[]) {
         var pxWidth = 51 * scaleMultiplier;
         var pxHeight = 57 * scaleMultiplier;
         var div = newDiv(parent, dx, dy, pxWidth, pxHeight, {
             position: 'absolute'
         });
         div.index = n;
-        var officon = spec[1].cloneNode(true);
+        var officon = (spec[1] as HTMLImageElement).cloneNode(true) as HTMLImageElement;
         officon.width = pxWidth;
         officon.height = pxHeight;
         div.appendChild(officon);
@@ -320,11 +320,11 @@ export default class Palette {
             zIndex: 6,
             visibility: 'visible'
         });
-        var onicon = spec[0].cloneNode(true);
+        var onicon = (spec[0] as HTMLImageElement).cloneNode(true) as HTMLImageElement;
         onicon.width = pxWidth;
         onicon.height = pxHeight;
         div.appendChild(onicon);
-        div.bkg = spec[2];
+        div.bkg = spec[2] as string;
         setProps(onicon.style, {
             position: 'absolute',
             zIndex: 8,
@@ -341,19 +341,19 @@ export default class Palette {
         return last.offsetLeft + last.offsetWidth - first.offsetLeft;
     }
 
-    static clickOnCategory (e) {
+    static clickOnCategory (e: Event) {
         if (!e) {
             return;
         }
         e.preventDefault();
         ScratchJr.unfocus(e);
-        var t = e.target;
+        var t = e.target as HTMLElement;
         ScratchAudio.sndFX('keydown.wav');
-        var index = t.parentNode ? t.parentNode.index : 2;
+        var index = t.parentNode ? (t.parentNode as HTMLElement).index! : 2;
         Palette.selectCategory(index);
     }
 
-    static selectCategory (n) {
+    static selectCategory (n: number) {
         var div = gn('selectors')!;
         // set the icons for text or sprite
         numcat = n;
@@ -403,7 +403,7 @@ export default class Palette {
         }
     }
 
-    static showSelectors (b) {
+    static showSelectors (b: boolean) {
         var n = numcat;
         var div = gn('selectors')!;
         for (var i = 0; i < div.childElementCount; i++) {
@@ -419,7 +419,7 @@ export default class Palette {
         }
     }
 
-    static addPagesBlocks (dx) {
+    static addPagesBlocks (dx: number) {
         var pal = gn('palette')!;
         var spec = BlockSpecs.defs.gotopage as unknown[];
         for (var i = 0; i < ScratchJr.stage.pages.length; i++) {
@@ -433,7 +433,7 @@ export default class Palette {
         }
     }
 
-    static addSoundsBlocks (dx) {
+    static addSoundsBlocks (dx: number) {
         var pal = gn('palette')!;
         var spr = ScratchJr.getSprite() as Sprite;
         var list = spr ? spr.sounds : [];
@@ -451,7 +451,7 @@ export default class Palette {
         }
     }
 
-    static addBlockSound (parent, op, val, dx, dy) {
+    static addBlockSound (parent: HTMLElement, op: string, val: string | number, dx: number, dy: number) {
         var spec = BlockSpecs.defs[op] as unknown[];
         var old = spec[4];
         spec[4] = val;
@@ -460,7 +460,7 @@ export default class Palette {
         return newb;
     }
 
-    static drawRecordSound (w, h, dx) {
+    static drawRecordSound (w: number, h: number, dx: number) {
         var pal = gn('palette')!;
         var div = newDiv(pal, dx, 0, w, h, {
             top: (6 * scaleMultiplier) + 'px'
@@ -486,7 +486,7 @@ export default class Palette {
         }
     }
 
-    static recordSound (e) {
+    static recordSound (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         ScratchJr.clearSelection();
@@ -500,20 +500,20 @@ export default class Palette {
     }
 
     // move to scratch jr app
-    static getLandingPlace (el, e, scale?) {
+    static getLandingPlace (el: HTMLElement, e: MouseEvent | TouchEvent | null, scale?: number) {
         scale = typeof scale !== 'undefined' ? scale : 1;
         var sc = ScratchJr.getActiveScript().owner as Scripts;
         var pt = e ? Events.getTargetPoint(e) : null;
         if (pt && !pt.x) {
             pt = null;
         }
-        var box = new Rectangle(el.left / scale, el.top / scale, el.offsetWidth / scale, el.offsetHeight / scale);
+        var box = new Rectangle(el.left! / scale, el.top! / scale, el.offsetWidth / scale, el.offsetHeight / scale);
         var box2 = new Rectangle(globalx(gn('palette')!), globaly(gn('palette')!), gn('palette')!.offsetWidth, gn('palette')!.offsetHeight);
         if ((sc.flowCaret != null) && ((sc.flowCaret.prev != null)
             || (sc.flowCaret.next != null) || (sc.flowCaret.inside != null))) {
             return 'scripts';
         }
-        if (box2.overlapElemBy(box, 0.66) && box2.hitRect({x: el.left / scale, y: el.top / scale})) {
+        if (box2.overlapElemBy(box, 0.66) && box2.hitRect({x: el.left! / scale, y: el.top! / scale})) {
             return 'palette';
         }
         if (pt && box2.hitRect(pt)) {
@@ -534,35 +534,35 @@ export default class Palette {
         return null;
     }
 
-    static overlapsWith (el, box) {
+    static overlapsWith (el: HTMLElement, box: Rectangle) {
         var box2 = new Rectangle(globalx(el), globaly(el), el.offsetWidth, el.offsetHeight);
         return box.intersects(box2);
     }
 
-    static overlapsWith2 (el, box) {
+    static overlapsWith2 (el: HTMLElement, box: Rectangle) {
         var box2 = new Rectangle(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight);
         return box.intersects(box2);
     }
 
 
-    static getBlockfromChild (div) {
+    static getBlockfromChild (div: HTMLElement | null) {
         while (div != null) {
             if (div.owner) {
                 return div;
             }
-            div = div.parentNode;
+            div = div.parentNode as HTMLElement | null;
         }
         return null;
     }
 
-    static getHittedThumb (el, div, scale?) {
+    static getHittedThumb (el: HTMLElement, div: HTMLElement, scale?: number) {
         scale = typeof scale !== 'undefined' ? scale : 1;
-        var box1 = new Rectangle(el.left / scale, el.top / scale, el.offsetWidth / scale, el.offsetHeight / scale);
+        var box1 = new Rectangle(el.left! / scale, el.top! / scale, el.offsetWidth / scale, el.offsetHeight / scale);
         var area = 0;
         var res = null;
-        var dh = div.parentNode.scrollTop;
+        var dh = (div.parentNode as HTMLElement).scrollTop;
         for (var i = 0; i < div.childElementCount; i++) {
-            var node = div.childNodes[i];
+            var node = div.childNodes[i] as HTMLElement;
             if (node.nodeName == 'FORM') {
                 continue;
             }
@@ -581,7 +581,7 @@ export default class Palette {
     //  Palette Block
     /////////////////////////////////////
 
-    static newScaledBlock (parent, op, scale, dx, dy) {
+    static newScaledBlock (parent: HTMLElement, op: string, scale: number, dx: number, dy: number) {
         var bbx = new Block(BlockSpecs.defs[op], true, scale);
         setProps(bbx.div.style, {
             position: 'absolute',
@@ -592,14 +592,14 @@ export default class Palette {
         return bbx;
     }
 
-    static dropBlockFromPalette (e, element) {
+    static dropBlockFromPalette (e: MouseEvent | TouchEvent, element: HTMLElement) {
         e.preventDefault();
         switch (Palette.getLandingPlace(element, e)) {
         case 'scripts':
-            iOS.analyticsEvent('editor', 'new_block', element.owner.blocktype);
+            iOS.analyticsEvent('editor', 'new_block', (element.owner as Block).blocktype);
             var sc = ScratchJr.getActiveScript();
-            var dx = localx(sc, element.left);
-            var dy = localy(sc, element.top);
+            var dx = localx(sc, element.left!);
+            var dy = localy(sc, element.top!);
             ScriptsPane.blockDropped(sc, dx, dy);
             const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
             var spr = activeScripts.spr;

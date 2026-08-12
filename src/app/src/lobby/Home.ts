@@ -11,16 +11,16 @@ import ScratchAudio from '../utils/ScratchAudio';
 import Vector from '../geom/Vector';
 import {gn, newHTML, isTouch} from '../utils/lib';
 
-let frame;
-let scrollvalue;
-let version;
-let timeoutEvent;
+let frame: HTMLElement;
+let scrollvalue: number;
+let version: string;
+let timeoutEvent: NodeJS.Timeout | null = null;
 
 export default class Home {
     // Dynamic statics used by the touch handlers below
     static dragging = false;
     static holding = false;
-    static actionTarget: ThumbElement | null = null;
+    static actionTarget: HTMLElement | null = null;
     static initialPt: { x: number; y: number };
     static scrolltop: number;
 
@@ -39,7 +39,7 @@ export default class Home {
     // Home Screen
     ////////////////////////////
 
-    static emptyProjectThumbnail (parent) {
+    static emptyProjectThumbnail (parent: HTMLElement) {
         var tb = newHTML('div', 'projectthumb', parent) as ThumbElement;
         newHTML('div', 'aproject empty', tb);
         tb.id = 'newproject';
@@ -49,7 +49,7 @@ export default class Home {
     // Events
     //////////////////////////
 
-    static handleTouchStart (e) {
+    static handleTouchStart (e: MouseEvent & { touches?: TouchList }) {
         Home.dragging = false;
         Home.holding = false;
         // if ((t.nodeName == "INPUT") || (t.nodeName == "FORM")) return;
@@ -78,7 +78,7 @@ export default class Home {
         Home.scrolltop = document.body.scrollTop;
     }
 
-    static handleMove (e) {
+    static handleMove (e: MouseEvent) {
         var pt = Events.getTargetPoint(e);
         var delta = Vector.diff(pt, Home.initialPt);
         if (!Home.dragging && (Vector.len(delta) > 20)) {
@@ -90,41 +90,41 @@ export default class Home {
         if (timeoutEvent) {
             clearTimeout(timeoutEvent);
         }
-        timeoutEvent = undefined;
+        timeoutEvent = null;
     }
 
-    static getMouseTarget (e) {
-        var t = e.target;
+    static getMouseTarget (e: MouseEvent) {
+        var t = e.target as HTMLElement;
         if (t == frame) {
             return null;
         }
-        if (t.parentNode && !t.parentNode.tagName) {
+        if (t.parentNode && !(t.parentNode as HTMLElement).tagName) {
             return null;
         }
-        while (t.parentNode && (t.parentNode != frame) && (t.parentNode.getAttribute('class') != 'scrollarea')) {
-            t = t.parentNode;
+        while (t.parentNode && (t.parentNode != frame) && ((t.parentNode as HTMLElement).getAttribute('class') != 'scrollarea')) {
+            t = t.parentNode as HTMLElement;
         }
         return (!t.parentNode || (t.parentNode == frame)) ? null : t;
     }
 
-    static handleTouchEnd (e) {
+    static handleTouchEnd (e: MouseEvent & { touches?: TouchList }) {
         e.preventDefault();
         e.stopPropagation();
         if (e.touches && (e.touches.length > 1)) {
             return;
         }
-        frame.onmousemove = undefined;
+        frame.onmousemove = null;
         if (timeoutEvent) {
             clearTimeout(timeoutEvent);
         }
-        timeoutEvent = undefined;
+        timeoutEvent = null;
         if (Home.dragging) {
             return;
         }
         Home.performAction(e);
     }
 
-    static performAction (e) {
+    static performAction (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         if (!Home.actionTarget) {
@@ -147,9 +147,9 @@ export default class Home {
             break;
         case 'delete':
             ScratchAudio.sndFX('cut.wav');
-            Project.thumbnailUnique(Home.actionTarget.thumb, Home.actionTarget.id, function (isUnique) {
+            Project.thumbnailUnique(Home.actionTarget.thumb!, Home.actionTarget.id, function (isUnique) {
                 if (isUnique) {
-                    iOS.remove(Home.actionTarget!.thumb, iOS.trace);
+                    iOS.remove(Home.actionTarget!.thumb!, iOS.trace);
                 }
             });
             iOS.setfield(iOS.database, Home.actionTarget.id, 'deleted', 'YES', Home.removeProjThumb);
@@ -177,17 +177,17 @@ export default class Home {
         IO.createProject(obj, Home.gotoEditor);
     }
 
-    static gotoEditor (md5) {
+    static gotoEditor (md5: unknown) {
         iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
             doNext(md5);
         });
-        function doNext (md5) {
+        function doNext (md5: unknown) {
             window.location.href = 'editor.html?pmd5=' + md5 + '&mode=edit';
         }
     }
 
     // Project names are given by reading the DOM elements of existing projects...
-    static getNextName (name) {
+    static getNextName (name: string) {
         var pn: string[] = [];
         var div = gn('scrollarea')!;
         for (var i = 0; i < div.childElementCount; i++) {
@@ -211,7 +211,7 @@ export default class Home {
         Home.actionTarget = null;
     }
 
-    static getAction (e) {
+    static getAction (e: MouseEvent) {
         if (!Home.actionTarget) {
             return 'none';
         }
@@ -227,7 +227,7 @@ export default class Home {
             } else {
                 t = e.target;
             }
-            if (t.getAttribute('class') == 'closex') {
+            if ((t as HTMLElement).getAttribute('class') == 'closex') {
                 return 'delete';
             }
         }
@@ -240,7 +240,7 @@ export default class Home {
 
     static displayYourProjects () {
         iOS.getfile('homescroll.sjr', gotScrollsState);
-        function gotScrollsState (str) {
+        function gotScrollsState (str: string) {
             var num = Number(atob(str));
             scrollvalue = (num.toString() == 'NaN') ? 0 : num;
             var json: SqlPayload = {};
@@ -252,7 +252,7 @@ export default class Home {
         }
     }
 
-    static displayProjects (str) {
+    static displayProjects (str: string) {
         var data = JSON.parse(str);
         var div = gn('scrollarea')!;
         while (div.childElementCount > 0) {
@@ -270,7 +270,7 @@ export default class Home {
         }
     }
 
-    static addProjectLink (parent, aa) {
+    static addProjectLink (parent: HTMLElement, aa: { id?: string; name?: string; isgift?: string; thumbnail?: unknown }) {
         var data = IO.parseProjectData(aa);
         var id = data.id;
         var th = data.thumbnail;
@@ -281,14 +281,14 @@ export default class Home {
         // Page-count badge assets only exist for p1..p4 — clamp larger projects
         var pc = Math.min(thumb.pagecount ? thumb.pagecount : 1, 4);
         var tb = newHTML('div', 'projectthumb', parent);
-        tb.setAttribute('id', id);
+        tb.setAttribute('id', String(id));
         tb.type = 'projectthumb';
         tb.thumb = thumb.md5;
         var mt = newHTML('div', 'aproject p' + pc, tb);
         Home.insertThumbnail(mt, 192, 144, thumb);
         var label = newHTML('div', 'projecttitle', tb);
         var txt = newHTML('h4', undefined, label);
-        txt.textContent = data.name;
+        txt.textContent = data.name as string;
 
         var bow = newHTML('div', 'share', tb);
         var ribbonHorizontal = newHTML('div', 'ribbonHorizontal', tb);
@@ -304,20 +304,20 @@ export default class Home {
         newHTML('div', 'closex', tb);
     }
 
-    static insertThumbnail (p, w, h, data) {
+    static insertThumbnail (p: HTMLElement, w: number, h: number, data: { md5?: string; pagecount?: number }) {
         var md5 = data.md5;
         var img = newHTML('img', undefined, p) as HTMLImageElement;
         if (md5) {
             IO.getAsset(md5, drawMe);
         }
-        function drawMe (url) {
+        function drawMe (url: string) {
             img.src = url;
         }
     }
 }
 
 class Events {
-    static getTargetPoint (e) {
+    static getTargetPoint (e: MouseEvent & { touches?: TouchList; changedTouches?: TouchList }) {
         if (isTouch) {
             if (e.touches && (e.touches.length > 0)) {
                 return {

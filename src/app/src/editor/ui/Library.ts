@@ -10,17 +10,34 @@ import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, newHTML, scaleMultiplier,
     getDocumentWidth, getDocumentHeight, setProps, newCanvas, frame} from '../../utils/lib';
 
-let selectedOne;
+let selectedOne: string | null = null;
 let nativeJr = true;
-let clickThumb;
-let shaking;
-let type;
-let timeoutEvent;
-let libFrame;
+let clickThumb: HTMLElement | null = null;
+let shaking: HTMLElement | null = null;
+let type: string | null = null;
+let timeoutEvent: NodeJS.Timeout | null = null;
+let libFrame: HTMLElement | null = null;
+
+// Asset thumbnails carry a JSON-stringified pointer for drag-distance checks
+interface LibraryThumb extends HTMLElement {
+    pt?: string;
+}
+
+// Media-library asset bag (MediaLib.MediaItem or raw SQL rows); all-optional
+// shape keeps it assignable both from MediaItem[] and from JSON.parse results.
+interface LibraryMediaItem {
+    md5?: string;
+    width?: unknown;
+    height?: unknown;
+    name?: unknown;
+    scale?: unknown;
+    order?: string;
+    altmd5?: unknown;
+}
 
 export default class Library {
     static init () {
-        libFrame = document.getElementById('libframe');
+        libFrame = document.getElementById('libframe')!;
         libFrame.style.minHeight = Math.max(getDocumentHeight(), frame.offsetHeight) + 'px';
         var topbar = newHTML('div', 'topbar', libFrame);
         topbar.setAttribute('id', 'topbar');
@@ -35,7 +52,7 @@ export default class Library {
     }
 
     static createScrollPanel () {
-        var inner = newHTML('div', 'innerlibrary', libFrame);
+        var inner = newHTML('div', 'innerlibrary', libFrame!);
         inner.setAttribute('id', 'asssetsview');
         var div = newHTML('div', 'scrollarea', inner);
         div.setAttribute('id', 'scrollarea');
@@ -43,14 +60,14 @@ export default class Library {
         Library.resizeScroll();
     }
 
-    static open (libType) {
+    static open (libType: string) {
         type = libType;
         gn('assetname')!.textContent = '';
         nativeJr = true;
         frame.style.display = 'none';
-        libFrame.className = 'libframe appear';
-        libFrame.focus();
-        selectedOne = undefined;
+        libFrame!.className = 'libframe appear';
+        libFrame!.focus();
+        selectedOne = null;
         gn('okbut')!.onmousedown = (type == 'costumes') ? Library.closeSpriteSelection : Library.closeBkgSelection;
         Library.clean();
         Library.createScrollPanel();
@@ -75,17 +92,17 @@ export default class Library {
 
     static clean () {
         if (gn('scrollarea')!) {
-            var div = gn('scrollarea')!.parentNode;
-            libFrame.removeChild(div);
+            var div = gn('scrollarea')!.parentNode as Node;
+            libFrame!.removeChild(div);
         }
     }
 
-    static close (e) {
+    static close (e: Event) {
         e.preventDefault();
         e.stopPropagation();
         ScratchAudio.sndFX('tap.wav');
         ScratchJr.blur();
-        libFrame.className = 'libframe disappear';
+        libFrame!.className = 'libframe disappear';
         document.body.scrollTop = 0;
         frame.style.display = 'block';
         ScratchJr.editorEvents();
@@ -103,7 +120,7 @@ export default class Library {
         cancelbut.onmousedown = Library.cancelPick;
     }
 
-    static cancelPick (e) {
+    static cancelPick (e: Event) {
         ScratchJr.onHold = true;
         Library.close(e);
         setTimeout(function () {
@@ -111,7 +128,7 @@ export default class Library {
         }, 1000);
     }
 
-    static addThumbnails (type?) {
+    static addThumbnails (type?: string) {
         var div = gn('scrollarea')!;
         Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier), (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
@@ -132,9 +149,9 @@ export default class Library {
         Library.displayLibAssets((type == 'costumes') ? MediaLib.sprites : MediaLib.backgrounds);
     }
 
-    static getpadding (div) {
-        var w = Math.min(getDocumentWidth(), libFrame.offsetWidth);
-        var dw = div.childNodes[1].offsetLeft - div.childNodes[0].offsetLeft;
+    static getpadding (div: HTMLElement) {
+        var w = Math.min(getDocumentWidth(), libFrame!.offsetWidth);
+        var dw = (div.childNodes[1] as HTMLElement).offsetLeft - (div.childNodes[0] as HTMLElement).offsetLeft;
         var qty = Math.floor(w / dw);
         var pad = Math.floor((w - (qty * dw)) / 2);
         if (pad < 10) {
@@ -143,7 +160,7 @@ export default class Library {
         return pad;
     }
 
-    static displayAssets (str) {
+    static displayAssets (str: string) {
         nativeJr = true;
         var div = gn('scrollarea')!;
         var data = JSON.parse(str);
@@ -158,7 +175,7 @@ export default class Library {
         Library.displayLibAssets(data);
     }
 
-    static displayLibAssets (data) {
+    static displayLibAssets (data: LibraryMediaItem[]) {
         var div = gn('scrollarea')!;
         if (data.length < 1) {
             return;
@@ -180,7 +197,7 @@ export default class Library {
         }
     }
 
-    static addAssetThumbChoose (parent, aa, w, h, fcn) {
+    static addAssetThumbChoose (parent: HTMLElement, aa: Record<string, unknown>, w: number, h: number, fcn: (e: MouseEvent, tb: LibraryThumb) => void) {
         var data = Library.parseAssetData(aa);
         var tb = document.createElement('div');
         parent.appendChild(tb);
@@ -193,15 +210,15 @@ export default class Library {
         tb.w = Number(data.width);
         tb.h = Number(data.height);
         var scale = Math.min(w / tb.w, h / tb.h);
-        var img = newHTML('img', undefined, tb);
+        var img = newHTML('img', undefined, tb) as HTMLImageElement;
         img.style.left = (9 * scaleMultiplier) + 'px';
         img.style.top = (7 * scaleMultiplier) + 'px';
         img.style.position = 'relative';
         img.style.height = (Number(data.height) * scale) + 'px';
         if (data.altmd5) {
-            IO.getAsset(data.altmd5, drawMe);
+            IO.getAsset(data.altmd5 as string, drawMe);
         }
-        function drawMe (dataurl) {
+        function drawMe (dataurl: string) {
             img.src = dataurl;
         }
         tb.onmousedown = function (evt) {
@@ -210,9 +227,9 @@ export default class Library {
         return tb;
     }
 
-    static addLocalThumbChoose (parent, data, w, h, fcn) {
+    static addLocalThumbChoose (parent: HTMLElement, data: LibraryMediaItem, w: number, h: number, fcn: (e: MouseEvent, tb: LibraryThumb) => void) {
         var tb = newHTML('div', 'assetbox off', parent);
-        var md5 = data.md5;
+        var md5 = data.md5 as string;
         tb.byme = nativeJr ? 1 : 0;
         tb.setAttribute('id', md5);
         tb.scale = (!data.scale) ? 0.5 : (data.scale as number);
@@ -220,7 +237,7 @@ export default class Library {
         tb.w = Number(data.width);
         tb.h = Number(data.height);
 
-        var img = newHTML('img', undefined, tb);
+        var img = newHTML('img', undefined, tb) as HTMLImageElement;
         var scale = Math.min(w / tb.w, h / tb.h);
         img.style.height = tb.h * scale + 'px';
         img.style.width = tb.w * scale + 'px';
@@ -233,13 +250,13 @@ export default class Library {
         var pngPath = MediaLib.path.replace('svg', 'png');
         img.src = pngPath + IO.getFilename(md5) + '.png';
 
-        tb.onmousedown = function (evt) {
+        tb.onmousedown = function (evt: MouseEvent) {
             fcn(evt, tb);
         };
         return tb;
     }
 
-    static userAssetThumbnail (img, cnv, sizew, sizeh) {
+    static userAssetThumbnail (img: HTMLImageElement, cnv: HTMLCanvasElement, sizew: number, sizeh: number) {
         var scale = Math.min(sizew / img.width, sizeh / img.height);
         var currentCtx = cnv.getContext('2d')!;
         var iw = Math.floor(scale * img.width);
@@ -249,7 +266,7 @@ export default class Library {
         currentCtx.drawImage(img, 0, 0, img.width, img.height, ix, iy, iw, ih);
     }
 
-    static addEmptyThumb (parent, w, h) {
+    static addEmptyThumb (parent: HTMLElement, w: number, h: number) {
         var tb = document.createElement('div');
         tb.setAttribute('class', 'assetbox off');
         tb.setAttribute('id', 'none');
@@ -268,7 +285,7 @@ export default class Library {
         };
     }
 
-    static addHR (div) {
+    static addHR (div: HTMLElement) {
         var hr = document.createElement('hr');
         div.appendChild(hr);
         hr.setAttribute('class', 'bigdivide');
@@ -278,9 +295,9 @@ export default class Library {
     //selection
 
 
-    static selectAsset (e, tb) {
+    static selectAsset (e: MouseEvent, tb: LibraryThumb) {
         tb.pt = JSON.stringify(Events.getTargetPoint(e));
-        if (shaking && (e.target.className == 'deleteasset')) {
+        if (shaking && ((e.target as HTMLElement).className == 'deleteasset')) {
             Library.removeFromAssetList();
             return;
         } else if (shaking) {
@@ -303,7 +320,7 @@ export default class Library {
                 tb.onmouseup = null;
                 window.onmouseup = null;
                 window.onmousemove = null;
-                timeoutEvent = undefined;
+                timeoutEvent = null;
                 Library.stopShaking();
                 shaking = tb;
                 Library.clearAllSelections();
@@ -311,9 +328,9 @@ export default class Library {
             };
             timeoutEvent = setTimeout(repeat, 500);
         }
-        function clearEvents (e, tb) { // eslint-disable-line no-shadow
+        function clearEvents (e: MouseEvent, tb: LibraryThumb) { // eslint-disable-line no-shadow
             var pt = Events.getTargetPoint(e);
-            var pt2 = JSON.parse(tb.pt);
+            var pt2 = JSON.parse(tb.pt!);
             if (Library.distance(pt, pt2) < 30) {
                 return;
             }
@@ -324,19 +341,19 @@ export default class Library {
             if (clickThumb) {
                 Library.unSelect(clickThumb);
             }
-            timeoutEvent = undefined;
+            timeoutEvent = null;
             tb.onmouseup = null;
             window.onmouseup = function () {
                 window.onmousemove = null;
                 window.onmouseup = null;
             };
         }
-        function clickMe (e, tb) { // eslint-disable-line no-shadow
+        function clickMe (e: MouseEvent, tb: LibraryThumb) { // eslint-disable-line no-shadow
             if (timeoutEvent) {
                 clearTimeout(timeoutEvent);
             }
             Library.selectThisAsset(e, tb);
-            timeoutEvent = undefined;
+            timeoutEvent = null;
             tb.onmouseup = null;
             tb.onmouseup = null;
             window.onmousemove = null;
@@ -344,7 +361,7 @@ export default class Library {
         }
     }
 
-    static startShaking (b) {
+    static startShaking (b: LibraryThumb) {
         b.className = b.className + ' shakeme';
         newHTML('div', 'deleteasset', b);
         shaking = b;
@@ -356,25 +373,25 @@ export default class Library {
         }
         var b = shaking;
         b.setAttribute('class', 'assetbox off');
-        var ic = b.childNodes[b.childElementCount - 1];
+        var ic = b.childNodes[b.childElementCount - 1] as HTMLElement;
         if (ic.getAttribute('class') == 'deleteasset') {
             b.removeChild(ic);
         }
-        shaking = undefined;
+        shaking = null;
     }
 
     static removeFromAssetList () {
         ScratchAudio.sndFX('cut.wav');
-        var b = shaking;
-        b.parentNode.removeChild(b);
+        var b = shaking!;
+        b.parentNode!.removeChild(b);
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
         var json: SqlPayload = {};
         json.cond = 'md5 = ?';
         json.items = ['*'];
         json.values = [b.id];
         IO.query(key, json, Library.removeAssetFromLib);
-        clickThumb = undefined;
-        selectedOne = undefined;
+        clickThumb = null;
+        selectedOne = null;
         return true;
     }
 
@@ -382,20 +399,20 @@ export default class Library {
     // md5: thumbnail md5 to determine uniqueness
     // type: "costumes" or "backgrounds"
     // callback: called with true if unique, false if duplicate exists
-    static assetThumbnailUnique (md5, type, callback) {
+    static assetThumbnailUnique (md5: string, type: string, callback: (isUnique: boolean) => void) {
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
         var json: SqlPayload = {};
         json.cond = 'ext = ? AND altmd5 = ?';
         json.items = ['md5', 'altmd5'];
         json.values = ['svg', md5];
         json.order = 'ctime desc';
-        IO.query(key, json, function (results) {
+        IO.query(key, json, function (results: string) {
             results = JSON.parse(results);
             callback(results.length <= 1);
         });
     }
 
-    static removeAssetFromLib (str) {
+    static removeAssetFromLib (str: string) {
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
         var aa = JSON.parse(str)[0];
         var data = Library.parseAssetData(aa);
@@ -404,14 +421,14 @@ export default class Library {
             // Removes the thumbnail for the asset.
             // First ensure that there aren't other characters/bgs using the same thumb
             // (this is possible if we receive a duplicate project, for example)
-            Library.assetThumbnailUnique(data.altmd5, type, function (isUnique) {
+            Library.assetThumbnailUnique(data.altmd5 as string, type!, function (isUnique: boolean) {
                 if (isUnique) {
-                    iOS.remove(data.altmd5, iOS.trace);
+                    iOS.remove(data.altmd5 as string, iOS.trace);
                 }
             });
         }
 
-        IO.deleteobject(key, data.id, iOS.trace);
+        IO.deleteobject(key, data.id as string, iOS.trace);
     }
 
     static parseAssetData (data: Record<string, unknown>): Record<string, unknown> {
@@ -422,7 +439,7 @@ export default class Library {
         return res;
     }
 
-    static selectThisAsset (e, tb) {
+    static selectThisAsset (e: MouseEvent, tb: LibraryThumb) {
         if (tb.id == selectedOne) {
             if (type == 'costumes') {
                 Library.closeSpriteSelection(e);
@@ -461,15 +478,15 @@ export default class Library {
         }
     }
 
-    static unSelect (tb) {
+    static unSelect (tb: LibraryThumb) {
         gn('assetname')!.textContent = '';
         tb.className = 'assetbox off';
-        selectedOne = undefined;
+        selectedOne = null;
         if (clickThumb) {
             if (tb.byme && (clickThumb.childElementCount > 1)) {
-                clickThumb.childNodes[clickThumb.childElementCount - 1].style.visibility = 'hidden';
+                (clickThumb.childNodes[clickThumb.childElementCount - 1] as HTMLElement).style.visibility = 'hidden';
             }
-            clickThumb = undefined;
+            clickThumb = null;
         }
     }
 
@@ -488,7 +505,7 @@ export default class Library {
     // Object actions
     //////////////////////////////////////////
 
-    static editResource (e) {
+    static editResource (e: Event) {
         Library.close(e);
         if (type != 'costumes') {
             Library.editBackground(e);
@@ -497,33 +514,33 @@ export default class Library {
         }
     }
 
-    static editBackground (e?) {
+    static editBackground (e?: Event) {
         var md5 = selectedOne && (selectedOne != 'none') ? selectedOne : undefined;
         Paint.open(true, md5);
     }
 
-    static editCostume (e?) {
+    static editCostume (e?: Event) {
         var sname;
-        var cname = selectedOne ? clickThumb.fieldname : Localization.localize('LIBRARY_CHARACTER');
-        var scale = selectedOne && (selectedOne != 'none') ? clickThumb.scale : 0.5;
+        var cname = selectedOne ? clickThumb!.fieldname : Localization.localize('LIBRARY_CHARACTER');
+        var scale = selectedOne && (selectedOne != 'none') ? clickThumb!.scale : 0.5;
         var md5 = selectedOne && (selectedOne != 'none') ? selectedOne : undefined;
-        var w = selectedOne && (selectedOne != 'none') ? Math.round(clickThumb.w) : undefined;
-        var h = selectedOne && (selectedOne != 'none') ? Math.round(clickThumb.h) : undefined;
+        var w = selectedOne && (selectedOne != 'none') ? Math.round(clickThumb!.w!) : undefined;
+        var h = selectedOne && (selectedOne != 'none') ? Math.round(clickThumb!.h!) : undefined;
         Paint.open(false, md5, sname, cname, scale, w, h);
     }
 
-    static closeSpriteSelection (e) {
+    static closeSpriteSelection (e: Event) {
         e.preventDefault();
         e.stopPropagation();
-        var id = selectedOne ? clickThumb.fieldname : Localization.localize('LIBRARY_CHARACTER');
+        var id = selectedOne ? clickThumb!.fieldname! : Localization.localize('LIBRARY_CHARACTER');
         if (selectedOne && (selectedOne != 'none')) {
-            ScratchJr.stage.currentPage.addSprite(clickThumb.scale, selectedOne, id);
+            ScratchJr.stage.currentPage.addSprite(clickThumb!.scale!, selectedOne, id);
         }
 
         // Prevent reporting user asset names
         if (clickThumb) {
             var analyticsName = clickThumb.fieldname;
-            if (!(selectedOne in MediaLib.keys)) {
+            if (!((selectedOne as string) in MediaLib.keys)) {
                 analyticsName = 'user_asset';
             }
             iOS.analyticsEvent('editor', 'new_character', analyticsName);
@@ -531,7 +548,7 @@ export default class Library {
         Library.close(e);
     }
 
-    static closeBkgSelection (e) {
+    static closeBkgSelection (e: Event) {
         e.preventDefault();
         e.stopPropagation();
         if (selectedOne) {
@@ -544,7 +561,7 @@ export default class Library {
     //Key Handeling Top Level prevention
     /////////////////////////////////////////
 
-    static distance (pt1, pt2) {
+    static distance (pt1: { x: number; y: number }, pt2: { x: number; y: number }) {
         var dx = pt1.x - pt2.x;
         var dy = pt1.y - pt2.y;
         return Math.round(Math.sqrt((dx * dx) + (dy * dy)));

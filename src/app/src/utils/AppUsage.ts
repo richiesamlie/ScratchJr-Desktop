@@ -1,5 +1,5 @@
 
-let currentUsage;
+let currentUsage!: string;
 
 //  upgraded to local storage from the original cookie implementation
 
@@ -30,7 +30,7 @@ export default class AppUsage {
      * Set the usage cookie for tracking Analytics Events
      * @param {string} kind answer from user to the usage survey (home, school, other, noanswer)
      */
-    static setUsage (kind) {
+    static setUsage (kind: string) {
         if (kind === '') {
            kind = 'noanswer';
             

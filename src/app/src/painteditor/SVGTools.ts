@@ -10,7 +10,7 @@ import Rectangle from '../geom/Rectangle';
 import Layer from './Layer';
 import Path from './Path';
 
-let attributeTable = {
+let attributeTable: Record<string, string[]> = {
     'path': ['d'],
     'image': ['x', 'y', 'width', 'height'],
     'ellipse': ['cx', 'cy', 'rx', 'ry'],
@@ -23,7 +23,7 @@ let attributeTable = {
     'polygon': ['points']
 };
 
-let attributePenTable;
+let attributePenTable: Record<string, string[]> = {};
 
 export default class SVGTools {
     // Getters/setters for globally used properties
@@ -51,20 +51,20 @@ export default class SVGTools {
         };
     }
 
-    static create (parent, w?, h?) {
+    static create (parent: Element, w?: number, h?: number) {
         var el = document.createElementNS(Paint.xmlns, 'svg');
         el.setAttributeNS(null, 'version', '1.1');
         if (w) {
-            el.setAttributeNS(null, 'width', w);
+            el.setAttributeNS(null, 'width', String(w));
         }
         if (h) {
-            el.setAttributeNS(null, 'height', h);
+            el.setAttributeNS(null, 'height', String(h));
         }
         parent.appendChild(el);
         return el;
     }
 
-    static createGroup (parent, id) {
+    static createGroup (parent: Element, id: string) {
         var el = document.createElementNS(Paint.xmlns, 'g');
         if (id) {
             el.setAttribute('id', id);
@@ -79,10 +79,10 @@ export default class SVGTools {
     // Element creation
     /////////////////////////////////////////
 
-    static addChild (div, type, attr) {
+    static addChild (div: Element, type: string, attr: Record<string, unknown>) {
         var shape = document.createElementNS(Paint.xmlns, type);
         for (var val in attr) {
-            shape.setAttribute(val, attr[val]);
+            shape.setAttribute(val, String(attr[val]));
         }
         if (div) {
             div.appendChild(shape);
@@ -90,47 +90,47 @@ export default class SVGTools {
         return shape;
     }
 
-    static addPath (div, x, y) {
+    static addPath (div: Element, x: number, y: number) {
         var shape = document.createElementNS(Paint.xmlns, 'path');
         var str = 'M' + x + ',' + y;
-        var attr = {
+        var attr: Record<string, string | number> = {
             'd': str,
             'id': getIdFor('path'),
             'opacity': 1
         };
         var drawattr = SVGTools.getPolyAttr();
         for (var val in attr) {
-            shape.setAttribute(val, attr[val]);
+            shape.setAttribute(val, String(attr[val]));
         }
         for (var ps in drawattr) {
-            shape.setAttribute(ps, drawattr[ps]);
+            shape.setAttribute(ps, String(drawattr[ps]));
         }
         div.appendChild(shape);
         return shape;
     }
 
-    static addPolyline (div, x, y) {
+    static addPolyline (div: Element, x: number, y: number) {
         var shape = document.createElementNS(Paint.xmlns, 'polyline');
         var str = ' ' + x + ',' + y + ' ';
-        var attr = {
+        var attr: Record<string, string | number> = {
             'points': str,
             'id': getIdFor('polyline'),
             'opacity': 1
         };
         var drawattr = SVGTools.getPolyAttr();
         for (var val in attr) {
-            shape.setAttribute(val, attr[val]);
+            shape.setAttribute(val, String(attr[val]));
         }
         for (var ps in drawattr) {
-            shape.setAttribute(ps, drawattr[ps]);
+            shape.setAttribute(ps, String(drawattr[ps]));
         }
         div.appendChild(shape);
         return shape;
     }
 
-    static addEllipse (div, x, y) {
+    static addEllipse (div: Element, x: number, y: number) {
         var shape = document.createElementNS(Paint.xmlns, 'ellipse');
-        var attr = {
+        var attr: Record<string, string | number> = {
             'cx': x,
             'cy': y,
             'rx': 0,
@@ -139,19 +139,19 @@ export default class SVGTools {
             'opacity': 1
         };
         for (var val in attr) {
-            shape.setAttribute(val, attr[val]);
+            shape.setAttribute(val, String(attr[val]));
         }
         var drawattr = SVGTools.getPenAttr(shape);
         for (var ps in drawattr) {
-            shape.setAttribute(ps, drawattr[ps]);
+            shape.setAttribute(ps, String(drawattr[ps]));
         }
         div.appendChild(shape);
         return shape;
     }
 
-    static addTriangle (div, x, y) {
+    static addTriangle (div: Element, x: number, y: number) {
         var shape = document.createElementNS(Paint.xmlns, 'path');
-        var attr = {
+        var attr: Record<string, unknown> = {
             'id': getIdFor('path'),
             'opacity': 1
         };
@@ -159,18 +159,18 @@ export default class SVGTools {
         (attr as Record<string, unknown>).d = SVG2Canvas.arrayToString(cmds);
         var drawattr = SVGTools.getPenAttr();
         for (var val in attr) {
-            shape.setAttribute(val, attr[val]);
+            shape.setAttribute(val, String(attr[val]));
         }
         for (var ps in drawattr) {
-            shape.setAttribute(ps, drawattr[ps]);
+            shape.setAttribute(ps, String(drawattr[ps]));
         }
         div.appendChild(shape);
         return shape;
     }
 
-    static addRect (div, x, y) {
+    static addRect (div: Element, x: number, y: number) {
         var shape = document.createElementNS(Paint.xmlns, 'rect');
-        var attr = {
+        var attr: Record<string, string | number> = {
             'x': x,
             'y': y,
             'width': 0,
@@ -179,17 +179,17 @@ export default class SVGTools {
             'opacity': 1
         };
         for (var val in attr) {
-            shape.setAttribute(val, attr[val]);
+            shape.setAttribute(val, String(attr[val]));
         }
         var drawattr = SVGTools.getPenAttr(shape);
         for (var ps in drawattr) {
-            shape.setAttribute(ps, drawattr[ps]);
+            shape.setAttribute(ps, String(drawattr[ps]));
         }
         div.appendChild(shape);
         return shape;
     }
 
-    static getPolyAttr () {
+    static getPolyAttr (): Record<string, string | number> {
         return {
             'fill': 'none',
             'stroke': Paint.fillcolor,
@@ -200,7 +200,7 @@ export default class SVGTools {
         };
     }
 
-    static getPenAttr (shape?) {
+    static getPenAttr (shape?: Element): Record<string, string | number> {
         return {
             'fill': 'none',
             'stroke': Paint.fillcolor,
@@ -216,25 +216,25 @@ export default class SVGTools {
     // SVG clones
     ///////////////////////////////////////
 
-    static getCopy (spr) {
+    static getCopy (spr: Element) {
         return SVGTools.toObject(SVGTools.svg2string(spr));
     }
 
-    static svg2string (elem) {
+    static svg2string (elem: Element) {
         var str = (new XMLSerializer()).serializeToString(elem);
         var header = '<svg xmlns="' + Paint.xmlns + '" xmlns:xlink="' + Paint.xmlnslink + '">';
         str = str.replace(/ href="data:image/g, ' xlink:href="data:image');
         return header + str + '</svg>';
     }
 
-    static toObject (str) {
+    static toObject (str: string): Element {
         str.replace(/>\s*</g, '><');
         var xmlDoc = (new DOMParser()).parseFromString(str, 'text/xml');
         var node = document.importNode(xmlDoc.documentElement.firstChild!, true);
-        return node;
+        return node as Element;
     }
 
-    static rename (elem) {
+    static rename (elem: Element) {
         if (elem == undefined) {
             return;
         }
@@ -248,17 +248,18 @@ export default class SVGTools {
                 elem.id = getIdFor(name);
             }
             for (var i = 0; i < elem.childElementCount; i++) {
-                SVGTools.rename(elem.childNodes[i]);
+                SVGTools.rename(elem.childNodes[i] as Element);
             }
             break;
         case 'image':
-            var corner = Transform.point(elem.getAttribute('x'), elem.getAttribute('y'), window.xform!.matrix);
-            elem.setAttributeNS(null, 'x', corner.x);
-            elem.setAttributeNS(null, 'y', corner.y);
+            var corner = Transform.point(elem.getAttribute('x'), elem.getAttribute('y'),
+                window.xform!.matrix as SVGMatrix);
+            elem.setAttributeNS(null, 'x', String(corner.x));
+            elem.setAttributeNS(null, 'y', String(corner.y));
             elem.id = getIdFor('image');
             if (elem.getAttribute('pathUrl')) {
                 var cp = getIdFor('clippath');
-                gn(elem.getAttribute('pathUrl'))!.id = cp;
+                gn(elem.getAttribute('pathUrl')!)!.id = cp;
                 elem.setAttribute('pathUrl', cp);
             }
             break;
@@ -271,7 +272,7 @@ export default class SVGTools {
         }
     }
 
-    static saveBackground (elem, w, h) {
+    static saveBackground (elem: Element, w: number, h: number) {
         var serializer = new XMLSerializer();
         var str = serializer.serializeToString(elem);
         str = str.replace(/ href/g, ' xlink:href');
@@ -284,22 +285,22 @@ export default class SVGTools {
         return svgdata.replace(/></g, '>\n<');
     }
 
-    static cleanup (elem) {
+    static cleanup (elem: Element) {
         if (elem.childElementCount == 0) {
             if (elem.id != 'layer1') {
-                elem.parentNode.removeChild(elem);
+                elem.parentNode!.removeChild(elem);
             }
             return;
         }
         for (var i = 0; i < elem.childElementCount; i++) {
-            var kid = elem.childNodes[i];
+            var kid = elem.childNodes[i] as Element;
             if (kid.tagName == 'g') {
                 SVGTools.cleanup(kid);
             }
         }
     }
 
-    static saveShape (shape, w, h) {
+    static saveShape (shape: Element, w: number, h: number) {
         SVGTools.cleanup(shape);
         var elem = SVGTools.getCopy(shape);
         var serializer = new XMLSerializer();
@@ -317,7 +318,7 @@ export default class SVGTools {
         return svgdata.replace(/></g, '>\n<');
     }
 
-    static calculateViewBox (elem) {
+    static calculateViewBox (elem: Element) {
         var box = SVGTools.getBox(elem, true).rounded();
         if (SVGTools.outsideBounds(box)) {
             return {
@@ -331,7 +332,7 @@ export default class SVGTools {
         return box;
     }
 
-    static outsideBounds (box) {
+    static outsideBounds (box: Rectangle) {
         if (box.x < 0) {
             return true;
         }
@@ -347,7 +348,7 @@ export default class SVGTools {
         return false;
     }
 
-    static notValidBox (box) {
+    static notValidBox (box: Rectangle) {
         if ((box.x + box.width) < 0) {
             return true;
         }
@@ -363,7 +364,7 @@ export default class SVGTools {
         return false;
     }
 
-    static getBoxCenter (elem) {
+    static getBoxCenter (elem: Element) {
         var box = SVGTools.getBox(elem);
         var cx = box.x + box.width / 2;
         var cy = box.y + box.height / 2;
@@ -377,7 +378,7 @@ export default class SVGTools {
     // Boxes
     //////////////////////////////////////
 
-    static getTransformedBox (elem) {
+    static getTransformedBox (elem: Element) {
         var m = Transform.getCombinedMatrices(elem); // skip rotation matrix
         var box = SVGTools.getBox(elem);
         var p = Transform.point(box.x, box.y, m);
@@ -404,15 +405,15 @@ export default class SVGTools {
         return box;
     }
 
-    static getBox (elem, isSaving?) {
+    static getBox (elem: Element | null, isSaving?: boolean) {
         var box = new Rectangle(0, 0, 0, 0);
         if (elem == undefined) {
             return box;
         }
         switch (elem.tagName) {
         case 'circle':
-            box.x = elem.getAttribute('cx') - elem.getAttribute('r');
-            box.y = elem.getAttribute('cy') - elem.getAttribute('r');
+            box.x = Number(elem.getAttribute('cx')) - Number(elem.getAttribute('r'));
+            box.y = Number(elem.getAttribute('cy')) - Number(elem.getAttribute('r'));
             box.width = Number(elem.getAttribute('r')) * 2;
             box.height = Number(elem.getAttribute('r')) * 2;
             box = box.expandBy(SVGTools.getPenWidthForm(elem));
@@ -422,12 +423,12 @@ export default class SVGTools {
             if (elem.childElementCount == 0) {
                 return box;
             }
-            box = SVGTools.getTransformedBox(elem.childNodes[0]);
+            box = SVGTools.getTransformedBox(elem.childNodes[0] as Element);
             for (var i = 0; i < elem.childElementCount; i++) {
-                if (isSaving && (elem.childNodes[i].tagName == 'image')) {
+                if (isSaving && ((elem.childNodes[i] as Element).tagName == 'image')) {
                     continue;
                 }
-                var rect = SVGTools.getTransformedBox(elem.childNodes[i]);
+                var rect = SVGTools.getTransformedBox(elem.childNodes[i] as Element);
                 if (rect.isEmpty()) {
                     continue;
                 }
@@ -435,14 +436,14 @@ export default class SVGTools {
             }
             break;
         case 'ellipse':
-            box.x = elem.getAttribute('cx') - elem.getAttribute('rx');
-            box.y = elem.getAttribute('cy') - elem.getAttribute('ry');
+            box.x = Number(elem.getAttribute('cx')) - Number(elem.getAttribute('rx'));
+            box.y = Number(elem.getAttribute('cy')) - Number(elem.getAttribute('ry'));
             box.width = Number(elem.getAttribute('rx')) * 2;
             box.height = Number(elem.getAttribute('ry')) * 2;
             box = box.expandBy(SVGTools.getPenWidthForm(elem));
             break;
         case 'clipPath':
-            box = SVGTools.getTransformedBox(elem.childNodes[0]);
+            box = SVGTools.getTransformedBox(elem.childNodes[0] as Element);
             break;
         case 'image':
             box.x = Number(elem.getAttribute('x'));
@@ -451,7 +452,7 @@ export default class SVGTools {
             box.height = Number(elem.getAttribute('height'));
             break;
         case 'path':
-            box = SVGTools.getPathBox(elem).expandBy(SVGTools.getPenWidthForm(elem));
+            box = SVGTools.getPathBox(elem)!.expandBy(SVGTools.getPenWidthForm(elem));
             break;
         case 'line':
             var x1 = Number(elem.getAttribute('x1'));
@@ -465,7 +466,7 @@ export default class SVGTools {
             box = (new Rectangle(minx, miny, maxx - minx, maxy - miny)).expandBy(SVGTools.getPenWidthForm(elem));
             break;
         case 'polygon':
-            var points = elem.points;
+            var points = (elem as SVGPolygonElement).points;
             var list: Point[] = [];
             for (var j = 0; j < points.numberOfItems; j++) {
                 list.push(points.getItem(j));
@@ -476,7 +477,7 @@ export default class SVGTools {
         return box;
     }
 
-    static getArea (elem) {
+    static getArea (elem: Element) {
         var area = 0;
         var list;
         var sw = Number(elem.getAttribute('stroke-width')) / 2;
@@ -494,13 +495,13 @@ export default class SVGTools {
         case 'path':
             var d;
             if (SVG2Canvas.isCompoundPath(elem)) {
-                var paths = elem.getAttribute('d').match(/[M][^M]*/g);
-                d = paths[0];
+                var paths = elem.getAttribute('d')!.match(/[M][^M]*/g);
+                d = paths![0];
             } else {
-                d = elem.getAttribute('d');
+                d = elem.getAttribute('d')!;
             }
             d = Path.isClockWise(d) ? Path.reverse(d) : d;
-            list = Path.getAllPoints(d);
+            list = Path.getAllPoints(d!);
             if (list.length == 2) {
                 list = SVGTools.getPolygon(list[0], list[1], sw);
             }
@@ -521,7 +522,7 @@ export default class SVGTools {
             area = SVGTools.polygonArea(poly);
             break;
         case 'polygon':
-            var points = elem.points;
+            var points = (elem as SVGPolygonElement).points;
             list = [];
             for (var i = 0; i < points.numberOfItems; i++) {
                 list.push(points.getItem(i));
@@ -532,7 +533,7 @@ export default class SVGTools {
         return area;
     }
 
-    static getPolygon (before, here, size) {
+    static getPolygon (before: Point, here: Point, size: number) {
         var v1 = Vector.diff(here, before);
         var pt = Vector.scale(v1, 0.5);
         var perp = Vector.perp(pt);
@@ -544,7 +545,7 @@ export default class SVGTools {
         return [pt1, pt2, pt3, pt4];
     }
 
-    static polygonArea (list) {
+    static polygonArea (list: Point[]) {
         var xlist: number[] = [];
         var ylist: number[] = [];
         for (var n = 0; n < list.length; n++) {
@@ -560,12 +561,12 @@ export default class SVGTools {
         return area / 2;
     }
 
-    static getPenWidthForm (elem) {
+    static getPenWidthForm (elem: Element) {
         var res = elem.getAttribute('stroke-width');
         return (Number(res).toString() == 'NaN') ? 0 : Number(res);
     }
 
-    static getMinMax (list) {
+    static getMinMax (list: Point[]) {
         var box = new Rectangle(0, 0, 0, 0);
         if (list.length < 1) {
             return box;
@@ -595,12 +596,12 @@ export default class SVGTools {
         return box;
     }
 
-    static getPathBox (elem) {
+    static getPathBox (elem: Element) {
         var box;
         var data = elem.getAttribute('d');
-        var paths = data.match(/[M][^M]*/g);
+        var paths: RegExpMatchArray | string[] | null = data!.match(/[M][^M]*/g);
         if (!paths) {
-            paths = [elem.getAttribute('d')];
+            paths = [elem.getAttribute('d')!];
         }
         for (var j = 0; j < paths.length; j++) {
             var pbox = SVGTools.getOnePathBox(paths[j]);
@@ -616,7 +617,7 @@ export default class SVGTools {
         return box;
     }
 
-    static getOnePathBox (d) {
+    static getOnePathBox (d: string) {
         var path = SVG2Canvas.getCommandList(d)!;
         var allpoints: Point[] = [];
         for (var i = 0; i < path.length; i++) {
@@ -639,7 +640,7 @@ export default class SVGTools {
         return box;
     }
 
-    static onlyKeys (obj) {
+    static onlyKeys (obj: object) {
         var res: string[] = [];
         for (var key in obj) {
             res.push(key);
@@ -652,7 +653,7 @@ export default class SVGTools {
     //////////////////////////////////
 
 
-    static getDataurl (copy, w, h) {
+    static getDataurl (copy: Element, w: number, h: number) {
         var serializer = new XMLSerializer();
         var header = '<svg  xmlns="' + Paint.xmlns + '"' + ' viewBox= "0 0 ' + w + ' ' + h + '"'
             + ' width=' + '"' + w + 'px' + '"' + ' height=' + '"' + h + 'px' + '">';
@@ -660,7 +661,7 @@ export default class SVGTools {
         return 'data:image/svg+xml;base64,' + btoa(svgdata);
     }
 
-    static getLayersAbove (p, index, w, h) {
+    static getLayersAbove (p: Element, index: number, w: number, h: number) {
         var serializer = new XMLSerializer();
         var svgdata = '<svg  xmlns="' + Paint.xmlns + '"' + ' viewBox= "0 0 ' + w + ' ' + h + '"'
             + ' width=' + '"' + w + 'px' + '"' + ' height=' + '"' + h + 'px' + '">';
@@ -677,12 +678,12 @@ export default class SVGTools {
     // Cloning
     /////////////////////////////
 
-    static getCount (p) {
+    static getCount (p: Element) {
         var n = 0;
         if (p.tagName == 'g') {
             n += p.childElementCount;
             for (var i = 0; i < p.childElementCount; i++) {
-                var elem = p.childNodes[i];
+                var elem = p.childNodes[i] as Element;
                 if (elem.tagName == 'g') {
                     n += SVGTools.getCount(elem);
                 }
@@ -691,7 +692,7 @@ export default class SVGTools {
         return n;
     }
 
-    static cloneSVGelement (elem) {
+    static cloneSVGelement (elem: Element) {
         var group = Layer.findGroup(elem);
         var p = gn('layer1')!;
         if (!p) {
@@ -700,14 +701,14 @@ export default class SVGTools {
         window.xform!.setTranslate(5, 5);
         var old: string[] = [];
         var newlist: string[] = [];
-        if (SVGTools.getCount(p) > 175) {
+        if (SVGTools.getCount(p as Element) > 175) {
             return;
         }
         for (var i = 0; i < group.length; i++) {
-            if (SVGTools.getCount(p) > 175) {
+            if (SVGTools.getCount(p as Element) > 175) {
                 return;
             }
-            var shape = SVGTools.getClonedElement(gn('layer1')!, group[i]);
+            var shape = SVGTools.getClonedElement(p as Element, group[i]);
             if (!shape) {
                 continue;
             }
@@ -730,11 +731,11 @@ export default class SVGTools {
                 }
             }
         }
-        var elems = SVGTools.getFlatten(gn('layer1')!);
+        var elems = SVGTools.getFlatten(p as Element);
         SVGTools.removeDuplicates(elems);
     }
 
-    static removeDuplicates (list) {
+    static removeDuplicates (list: string[]) {
         for (var i = 0; i < list.length; i++) {
             var mt = gn(list[i])!;
             if (!mt) {
@@ -771,10 +772,10 @@ export default class SVGTools {
         }
     }
 
-    static getFlatten (p) {
+    static getFlatten (p: Element) {
         var res: string[] = [];
         for (var i = 0; i < p.childElementCount; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
 
             if (elem.id.indexOf('group_image_') > -1) {
                 continue;
@@ -788,7 +789,7 @@ export default class SVGTools {
         return res;
     }
 
-    static getClonedElement (p, elem) {
+    static getClonedElement (p: Element, elem: Element) {
         if (elem.id.indexOf('pathborder_image_') > -1) {
             return null;
         }
@@ -807,11 +808,12 @@ export default class SVGTools {
             var newlist: string[] = [];
             var g = SVGTools.createGroup(p, getIdFor('group'));
             for (var i = 0; i < elem.childElementCount; i++) {
-                var shape = SVGTools.getClonedElement(g, elem.childNodes[i]);
-                old.push(elem.childNodes[i].id);
+                var kid = elem.childNodes[i] as Element;
+                var shape = SVGTools.getClonedElement(g, kid);
+                old.push(kid.id);
                 newlist.push(shape!.id);
-                if (elem.childNodes[i].getAttribute('id').indexOf('Border') > -1) {
-                    var name = elem.childNodes[i].getAttribute('id').split('Border')[0];
+                if (kid.getAttribute('id')!.indexOf('Border') > -1) {
+                    var name = kid.getAttribute('id')!.split('Border')[0];
                     var k = old.indexOf(name);
                     if (k > -1) {
                         shape!.setAttribute('id', newlist[k] + 'Border');
@@ -824,7 +826,7 @@ export default class SVGTools {
         }
     }
 
-    static getClone (p, elem) {
+    static getClone (p: Element, elem: Element) {
         var attr = attributeTable[elem.tagName];
         var drawattr = attributePenTable[elem.tagName];
         var shape = document.createElementNS(Paint.xmlns, elem.tagName);
@@ -834,10 +836,10 @@ export default class SVGTools {
             if (elem.getAttribute(attr[i]) == null) {
                 continue;
             }
-            shape.setAttribute(attr[i], elem.getAttribute(attr[i]));
+            shape.setAttribute(attr[i], elem.getAttribute(attr[i])!);
         }
         if (elem.getAttribute('stroke-linecap')) {
-            shape.setAttribute('stroke-linecap', elem.getAttribute('stroke-linecap'));
+            shape.setAttribute('stroke-linecap', elem.getAttribute('stroke-linecap')!);
         }
         shape.setAttribute('id', getIdFor(elem.tagName));
         var ang = Transform.getRotationAngle(elem);
@@ -851,7 +853,7 @@ export default class SVGTools {
         if (mtx) {
             Transform.applyMatrix(shape, mtx);
         }
-        Transform.translateTo(shape, window.xform);
+        Transform.translateTo(shape, window.xform!);
         return shape;
     }
 
@@ -859,16 +861,16 @@ export default class SVGTools {
     // Water Mark
     ///////////////////////////////
 
-    static getWatermark (shape, color) {
+    static getWatermark (shape: Element, color: string) {
         var svg = SVGTools.getCopy(shape);
         SVGTools.removeExtras(svg);
         SVGTools.changeShape(svg, color);
         return svg;
     }
 
-    static changeShape (svg, color) {
+    static changeShape (svg: Element, color: string) {
         for (var i = 0; i < svg.childElementCount; i++) {
-            var elem = svg.childNodes[i];
+            var elem = svg.childNodes[i] as Element;
             if (elem.tagName == 'g') {
                 SVGTools.changeShape(elem, color);
             } else {
@@ -877,11 +879,11 @@ export default class SVGTools {
         }
     }
 
-    static removeExtras (svg) {
+    static removeExtras (svg: Element) {
         var n = 0;
         var valid = n < svg.childElementCount;
         while (valid) {
-            var elem = svg.childNodes[n];
+            var elem = svg.childNodes[n] as Element;
             if ((elem.nodeName == 'image') || (elem.nodeName == 'clipPath')) {
                 svg.removeChild(elem);
             } else {
@@ -894,17 +896,17 @@ export default class SVGTools {
         }
     }
 
-    static setObjectWaterMark (elem, color) {
+    static setObjectWaterMark (elem: Element, color: string) {
         var fill = elem.getAttribute('fill');
         var stroke = elem.getAttribute('stroke') ? color : (elem.id.indexOf('Draw') > -1) ? color : 'none';
         var lw = elem.getAttribute('stroke-width')
             ? Number(elem.getAttribute('stroke-width'))
             : Number(SVG2Canvas.strokevalues['stroke-width']);
-        var attr = {
+        var attr: Record<string, string | number> = {
             'fill': 'white',
             'stroke': stroke,
             'stroke-width': lw,
-            'stroke-miterlimit': elem.getAttribute('stroke-miterlimit') ? elem.getAttribute('stroke-miterlimit') : 4,
+            'stroke-miterlimit': elem.getAttribute('stroke-miterlimit') ? elem.getAttribute('stroke-miterlimit')! : 4,
             'stroke-linecap': 'round',
             'stroke-linejoin': 'round'
         };
@@ -948,11 +950,11 @@ export default class SVGTools {
             return (dist < 0.25);
         }
         for (var val in attr) {
-            elem.setAttribute(val, attr[val]);
+            elem.setAttribute(val, String(attr[val]));
         }
     }
 
-    static isCompoundPath (elem) {
+    static isCompoundPath (elem: Element) {
         if (elem.tagName != 'path') {
             return false;
         }

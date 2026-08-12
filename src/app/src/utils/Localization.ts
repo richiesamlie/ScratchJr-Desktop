@@ -3,8 +3,8 @@ import { IntlMessageFormat } from 'intl-messageformat';
 import Cookie from './Cookie';
 import IO from '../iPad/IO';
 
-let currentLocale;
-let localizationMessages = {};
+let currentLocale!: string;
+let localizationMessages: Record<string, string> = {};
 
 // Configuration
 const sampleKeyPrefix = 'key_';
@@ -50,7 +50,7 @@ export default class Localization {
 
     // Include locale support files and load the messages
     // Call this when the app is initialized
-    static includeLocales (localizationRoot, whenDone) {
+    static includeLocales (localizationRoot: string, whenDone: () => void) {
         var localizationCookie = Cookie.get('localization');
 
         if (localizationCookie === null) {
@@ -66,7 +66,7 @@ export default class Localization {
         }
 
         // Get messages
-        IO.requestFromServer(localizationRoot + 'localizations/' + topLevel + '.json', (result) => {
+        IO.requestFromServer(localizationRoot + 'localizations/' + topLevel + '.json', (result: string) => {
             localizationMessages = JSON.parse(result);
             whenDone();
         });
@@ -91,7 +91,7 @@ export default class Localization {
     // For sample projects, some fields (sprite names, text on stage, and text in say blocks)
     // may have a special prefix to indicate that it should be replaced with a localized value.
     // E.g., we might have some text on the stage that says "Touch me" in English. This gets translated.
-    static isSampleLocalizedKey (str) {
+    static isSampleLocalizedKey (str: string) {
         return str.slice(0, sampleKeyPrefix.length) == sampleKeyPrefix;
     }
 }

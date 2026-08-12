@@ -19,7 +19,7 @@ export default class Scripts {
     dragList: Block[];
     sc: HTMLElement;
 
-    constructor (spr) {
+    constructor (spr: Sprite) {
         this.flowCaret = null;
         this.spr = spr;
         this.dragList = [];
@@ -49,18 +49,18 @@ export default class Scripts {
     //  Events MouseDown
     ////////////////////////////////////////////////
 
-    scriptsMouseDown (e) {
+    scriptsMouseDown (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         if (ScratchJr.onHold) {
             return;
         }
-        let target;  
+        let target;
         if (window.event) {
-            target = window.event.srcElement;
+            target = window.event.srcElement as HTMLElement;
         } else {
-            target = e.target;
+            target = e.target as HTMLElement;
         }
         if ((target.nodeName == 'H3') && (target.owner == ScratchJr.activeFocus)) {
             return;
@@ -74,7 +74,7 @@ export default class Scripts {
 
         if (target.firstChild && target.firstChild.nodeName == 'H3') {
             ScratchJr.blur();
-            ScratchJr.editArg(e, target.firstChild);
+            ScratchJr.editArg(e, target.firstChild as HTMLElement);
             return;
         }
 
@@ -86,7 +86,7 @@ export default class Scripts {
             y: localy(sc, spt.y)
         };
         for (var i = sc.childElementCount - 1; i > -1; i--) {
-            var ths = sc.childNodes[i];
+            var ths = sc.childNodes[i] as HTMLElement;
             if (!ths.owner) {
                 continue;
             }
@@ -102,7 +102,7 @@ export default class Scripts {
             // It seems to have been checking if the drag was on the invisible shadow of the repeat block
             // It's not clear to me why we would want this, and seems functional without it. -- TM
             //if ((ths.owner.blocktype == "repeat") && !hitTest(ths.childNodes[1], pixel)) continue;
-            Events.startDrag(e, ths, ScriptsPane.prepareToDrag, ScriptsPane.dropBlock, ScriptsPane.draggingBlock, ScriptsPane.runBlock);
+            Events.startDrag(e, ths as HTMLElement, ScriptsPane.prepareToDrag, ScriptsPane.dropBlock, ScriptsPane.draggingBlock, ScriptsPane.runBlock);
             return;
         }
         ScriptsPane.dragBackground(e);
@@ -112,7 +112,7 @@ export default class Scripts {
     //  Events MouseUP
     ////////////////////////////////////////////////
 
-    addBlockToScripts (b, dx, dy) {
+    addBlockToScripts (b: HTMLElement, dx: number, dy: number) {
         if ((this.flowCaret != null) && (this.flowCaret.div.parentNode == this.sc)) {
             this.sc.removeChild(this.flowCaret.div);
         }
@@ -120,30 +120,30 @@ export default class Scripts {
         Events.dragDiv.removeChild(b);
         this.sc.appendChild(b);
         //  b.owner.drop();
-        b.owner.moveBlock(dx, dy);
+        (b.owner as Block).moveBlock(dx, dy);
         for (var i = 1; i < this.dragList.length; i++) {
             var piece = this.dragList[i].div;
             piece.parentNode!.removeChild(piece);
             this.sc.appendChild(piece);
         //   piece.owner.drop();
         }
-        this.layout(b.owner);
+        this.layout(b.owner as Block);
         this.snapToPlace(this.dragList);
-        if (b.owner.cShape) {
-            this.sendToBack(b.owner);
+        if ((b.owner as Block).cShape) {
+            this.sendToBack(b.owner as Block);
         }
         this.dragList = [];
     }
 
 
-    sendToBack (b) {
+    sendToBack (b: Block) {
         if (!b.inside) {
             return;
         }
         var you = b.inside;
         while (you != null) {
             var p = you.div.parentNode;
-            p.appendChild(you.div);
+            p!.appendChild(you.div);
             if (you.cShape) {
                 this.sendToBack(you);
             }
@@ -152,7 +152,7 @@ export default class Scripts {
         this.layout(b);
     }
 
-    snapToPlace (drag) {
+    snapToPlace (drag: Block[]) {
         if ((drag.length < 2) && drag[0].cShape) {
             this.snapCshape(drag);
         } else {
@@ -160,7 +160,7 @@ export default class Scripts {
         }
     }
 
-    snapBlock (drag) {
+    snapBlock (drag: Block[]) {
         var me = drag[0];
         var last = me.findLast();
         var res = this.findClosest(this.available(0, me, drag), me);
@@ -175,7 +175,7 @@ export default class Scripts {
         this.snapToDock(res, last, last.cShape ? 2 : 1, drag);
     }
 
-    snapCshape (drag) {
+    snapCshape (drag: Block[]) {
         var me = drag[0];
         var last = me.findLast();
         var res = this.findClosest(this.available(0, me, drag), me);
@@ -197,7 +197,7 @@ export default class Scripts {
         }
     }
 
-    isValid (me, res, myn) {
+    isValid (me: Block, res: [Block, number, number] | null, myn: number) {
         if (res == null) {
             return false;
         }
@@ -230,7 +230,7 @@ export default class Scripts {
 
 
 
-    insideCShape (you) {
+    insideCShape (you: Block) {
         while (you != null) {
             var next = you.prev;
             if (next == null) {
@@ -245,7 +245,7 @@ export default class Scripts {
         return false;
     }
 
-    snapToDock (choice, me, place, drag) {
+    snapToDock (choice: [Block, number, number] | null, me: Block, place: number, drag: Block[]) {
         if (choice == null) {
             return;
         }
@@ -266,12 +266,12 @@ export default class Scripts {
             me.div.style.visibility = 'visible';
         }
         for (var i = 0; i < drag.length; i++) {
-            drag[i].moveBlock(drag[i].div.left + bestxy[0], drag[i].div.top + bestxy[1]);
+            drag[i].moveBlock(drag[i].div.left! + bestxy[0], drag[i].div.top! + bestxy[1]);
         }
         me.connectBlock(place, choice[0], choice[1]);
     }
 
-    available (myn, me, drag) {
+    available (myn: number, me: Block, drag: Block[]) {
         var thisxy: number[] | null = null;
         var res: Array<[Block, number, number]> = [];
         var you: Block | null = null;
@@ -306,13 +306,13 @@ export default class Scripts {
         return res;
     }
 
-    magnitude (p) {
+    magnitude (p: number[]) {
         var x = p[0];
         var y = p[1];
         return Math.sqrt((x * x) + (y * y));
     }
 
-    findClosest (choices, b?) {
+    findClosest (choices: Array<[Block, number, number]>, b?: Block) {
         var min = 9999;
         var item = null;
         for (var i = 0; i < choices.length; i++) {
@@ -325,7 +325,7 @@ export default class Scripts {
         return item;
     }
 
-    getDockDxDy (b1, n1, b2, n2) {
+    getDockDxDy (b1: Block, n1: number, b2: Block, n2: number) {
         var d1 = (b1.resolveDocks())[n1];
         var d2 = (b2.resolveDocks())[n2];
         if (b1 == b2) {
@@ -340,19 +340,19 @@ export default class Scripts {
         if (d1[1] == d2[1]) {
             return null;
         } // not an "inny" with and "outie" (both true)
-        var x1 = b1.div.left + d1[2] * b1.scale;
-        var y1 = b1.div.top + d1[3] * b1.scale;
-        var x2 = b2.div.left + d2[2] * b2.scale;
-        var y2 = b2.div.top + d2[3] * b2.scale;
+        var x1 = b1.div.left! + d1[2] * b1.scale;
+        var y1 = b1.div.top! + d1[3] * b1.scale;
+        var x2 = b2.div.left! + d2[2] * b2.scale;
+        var y2 = b2.div.top! + d2[3] * b2.scale;
         return [x1 - x2, y1 - y2];
     }
 
-    layout (block) {
+    layout (block: Block) {
         var first = block.findFirst();
         this.layoutStrip(first);
     }
 
-    layoutStrip (b) {
+    layoutStrip (b: Block) {
         while (b != null) {
             if (b.cShape) {
                 this.layoutCshape(b);
@@ -362,18 +362,18 @@ export default class Scripts {
         }
     }
 
-    layoutNextBlock (b) {
+    layoutNextBlock (b: Block) {
         if (b.next != null) {
             var you = b.next;
             var bestxy = this.getDockDxDy(b, b.cShape ? 2 : 1, you, 0);
             if (bestxy == null) {
                 return;
             }
-            you.moveBlock(you.div.left + bestxy[0], you.div.top + bestxy[1]);
+            you.moveBlock(you.div.left! + bestxy[0], you.div.top! + bestxy[1]);
         }
     }
 
-    layoutCshape (b) {
+    layoutCshape (b: Block) {
         var inside = 0;
         var maxh = 0;
         var oldh = b.hrubberband;
@@ -388,15 +388,15 @@ export default class Scripts {
         b.vrubberband = (maxh < 0) ? 0 : maxh;
         b.hrubberband = inside;
         b.redrawRepeat();
-        b.moveBlock(b.div.left, b.div.top + (oldh - b.vrubberband) * b.scale);
+        b.moveBlock(b.div.left!, b.div.top! + (oldh - b.vrubberband) * b.scale);
     }
 
-    adjustPos (me, myn, you, yourn) {
+    adjustPos (me: Block, myn: number, you: Block, yourn: number) {
         var bestxy = this.getDockDxDy(you, yourn, me, myn)!;
-        me.moveBlock(me.div.left + bestxy[0], me.div.top + bestxy[1]);
+        me.moveBlock(me.div.left! + bestxy[0], me.div.top! + bestxy[1]);
     }
 
-    adjustCheight (b) {
+    adjustCheight (b: Block) {
         var old = b;
         var h = b.blockshape.height;
         b = b.next;
@@ -410,7 +410,7 @@ export default class Scripts {
         return (h > 66) ? h - 66 : 0;
     }
 
-    adjustCinside (b) {
+    adjustCinside (b: Block) {
         var first = b;
         var last = b;
         while (b != null) {
@@ -418,7 +418,7 @@ export default class Scripts {
             b = b.next;
         }
         var w = last.blockshape.width / last.scale / window.devicePixelRatio
-            + (last.div.left - first.div.left) / last.scale;
+            + (last.div.left! - first.div.left!) / last.scale;
         return w - (last.cShape ? 76 : 76);
     }
 
@@ -441,7 +441,7 @@ export default class Scripts {
         return res;
     }
 
-    findGroup (b) {
+    findGroup (b: Block) {
         if ((b as Block).type != 'block') {
             return [];
         }
@@ -449,7 +449,7 @@ export default class Scripts {
         return this.findingGroup(res, b);
     }
 
-    findingGroup (res, b) {
+    findingGroup (res: Block[], b: Block) {
         while (b != null) {
             res.push(b);
             if (b.cShape) {
@@ -501,7 +501,7 @@ export default class Scripts {
         }
     }
 
-    getBlocksType (list) {
+    getBlocksType (list: string[]) {
         var res: Block[] = [];
         var blocks = this.getBlocks();
         for (var i = 0; i < list.length; i++) {
@@ -515,7 +515,7 @@ export default class Scripts {
         return res;
     }
 
-    prepareCaret (b) { // Block data structure
+    prepareCaret (b: Block) { // Block data structure
         var last = b.findLast();
         var bt = this.getCaretType(last);
         if (this.flowCaret != null) {
@@ -529,7 +529,7 @@ export default class Scripts {
         this.flowCaret.isCaret = true;
     }
 
-    newCaret (bt) { // Block data structure
+    newCaret (bt: string) { // Block data structure
         var parent = this.sc;
         var bbx = new Block(BlockSpecs.defs[bt], false, scaleMultiplier);
         setProps(bbx.div.style, {
@@ -548,7 +548,7 @@ export default class Scripts {
     // Caret
     ///////////////////////////////////////////
 
-    getCaretType (b) {
+    getCaretType (b: Block) {
         if (this.dragList[0].aStart) {
             return 'caretstart';
         }
@@ -606,7 +606,7 @@ export default class Scripts {
         this.flowCaret.div.style.visibility = 'hidden';
     }
 
-    insertCaret (x, y) {
+    insertCaret (x: number, y: number) {
         if (this.flowCaret == null) {
             return;
         }
@@ -636,7 +636,7 @@ export default class Scripts {
         }
     }
 
-    recreateStrip (list) {
+    recreateStrip (list: any) {
         var res: Block[] = [];
         var b: Block | null = null;
         var loops = ['repeat'];
@@ -695,12 +695,12 @@ export default class Scripts {
     // Load
     ////////////////////////////////
 
-    recreateBlock (data) {
+    recreateBlock (data: Array<string | number | Array<Array<string | number>>>) {
         var op = data[0];
         var val = data[1] == 'null' ? null : data[1];
         var dx = data[2];
         var dy = data[3];
-        var spec = (BlockSpecs.defs[op] as unknown[]).concat();
+        var spec = (BlockSpecs.defs[op as string] as unknown[]).concat();
         if (val != null) {
             spec.splice(4, 1, val);
         }
@@ -710,7 +710,7 @@ export default class Scripts {
             left: '0px',
             top: '0px'
         });
-        bbx.moveBlock(dx * scaleMultiplier, dy * scaleMultiplier);
+        bbx.moveBlock((dx as number) * scaleMultiplier, (dy as number) * scaleMultiplier);
         this.sc.appendChild(bbx.div);
         bbx.update(this.spr);
         return bbx;

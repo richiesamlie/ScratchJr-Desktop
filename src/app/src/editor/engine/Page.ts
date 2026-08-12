@@ -25,9 +25,9 @@ export default class Page {
     sprites: string;
     svg!: Element | null;
     textstartat: number;
-    thumbnail: unknown;
+    thumbnail!: HTMLElement;
 
-    constructor (id, data?, fcn?) {
+    constructor (id: string, data?: Record<string, any>, fcn?: () => void) {
         var container = ScratchJr.stage.pagesdiv;
         this.div = newHTML('div', 'stagepage', container); // newDiv(container,0,0, 480, 360, {position: 'absolute'});
         this.div.owner = this;
@@ -50,7 +50,7 @@ export default class Page {
         }
     }
 
-    loadPageData (data, fcn) {
+    loadPageData (data: Record<string, any>, fcn?: () => void) {
         this.currentSpriteName = data.lastSprite;
         if (data.textstartat) {
             this.textstartat = Number(data.textstartat);
@@ -96,7 +96,7 @@ export default class Page {
         this.createCat();
     }
 
-    setCurrentSprite (spr) { // set the sprite and toggles UI if no sprite is available
+    setCurrentSprite (spr?: Sprite) { // set the sprite and toggles UI if no sprite is available
         if (ScratchJr.getSprite()) {
             (ScratchJr.getSprite() as Sprite).unselect();
         }
@@ -119,7 +119,7 @@ export default class Page {
         }
     }
 
-    setBackground (name, fcn) {
+    setBackground (name: string, fcn?: () => void) {
         if (name == 'undefined') {
             return;
         }
@@ -136,8 +136,9 @@ export default class Page {
             return;
         }
         var me = this;
-        var url = (MediaLib.keys[name]) ? MediaLib.path + name : (name.indexOf('/') < 0) ? iOS.path + name : name;
-        var md5 = (MediaLib.keys[name]) ? MediaLib.path + name : name;
+        var keys = MediaLib.keys as Record<string, unknown>;
+        var url = (keys[name]) ? MediaLib.path + name : (name.indexOf('/') < 0) ? iOS.path + name : name;
+        var md5 = (keys[name]) ? MediaLib.path + name : name;
 
         if (md5.substr(md5.length - 3) == 'png') {
             this.setBackgroundImage(url, fcn);
@@ -150,16 +151,16 @@ export default class Page {
         } else {
             iOS.getmedia(md5, nextStep);
         }
-        function nextStep (base64) {
+        function nextStep (base64: string) {
             doNext(atob(base64));
         }
-        function doNext (str) {
+        function doNext (str: string) {
             str = str.replace(/>\s*</g, '><');
             me.setSVG(str);
             if ((str.indexOf('xlink:href') < 0) && iOS.path) {
                 me.setBackgroundImage(url, fcn); // does not have embedded images
             } else {
-                var base64 = IO.getImageDataURL(me.md5, btoa(str));
+                var base64 = IO.getImageDataURL(me.md5!, btoa(str));
                 IO.getImagesInSVG(str, function () {
                     me.setBackgroundImage(base64, fcn);
                 });
@@ -167,7 +168,7 @@ export default class Page {
         }
     }
 
-    setSVG (str) {
+    setSVG (str: string) {
         var xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
         var extxml = document.importNode(xmlDoc.documentElement, true);
         if (extxml.childNodes[0].nodeName == '#comment') {
@@ -176,7 +177,7 @@ export default class Page {
         this.svg = extxml as Element;
     }
 
-    setBackgroundImage (url, fcn) {
+    setBackgroundImage (url: string, fcn?: () => void) {
         var img = document.createElement('img');
         img.src = url;
         this.bkg.originalImg = img.cloneNode(false) as HTMLImageElement;
@@ -208,14 +209,14 @@ export default class Page {
         }
     }
 
-    setPageSprites (showstate) {
+    setPageSprites (showstate: string) {
         var list = JSON.parse(this.sprites);
         for (var i = 0; i < list.length; i++) {
             gn(list[i])!.style.visibility = showstate;
         }
     }
 
-    redoChangeBkg (data) {
+    redoChangeBkg (data: Record<string, any>) {
         var me = this;
         var md5 = data[this.id].md5 ? data[this.id].md5 : 'none';
         this.setBackground(md5, me.updateThumb);
@@ -225,35 +226,35 @@ export default class Page {
     // page thumbnail
     /////////////////////////////////////
 
-    updateThumb (page?) {
+    updateThumb (page?: Page) {
         var me = page ? page : ScratchJr.stage.currentPage;
         if (!me.thumbnail) {
             return;
         }
-        var c = me.thumbnail.childNodes[0].childNodes[0];
+        var c = me.thumbnail.childNodes[0].childNodes[0] as HTMLCanvasElement;
         me.setPageThumb(c);
     }
 
-    pageThumbnail (p) {
+    pageThumbnail (p: HTMLElement) {
         var tb = newHTML('div', 'pagethumb', p);
         tb.setAttribute('id', getIdFor('pagethumb'));
         tb.owner = this.id;
         tb.type = 'pagethumb';
         var container = newHTML('div', 'pc-container', tb);
-        var c = newHTML('canvas', 'pc', container);
+        var c = newHTML('canvas', 'pc', container) as HTMLCanvasElement;
         this.setPageThumb(c);
         var num = newHTML('div', 'pagenum', tb);
         var pq = newHTML('p', undefined, num);
-        pq.textContent = this.num;
+        pq.textContent = String(this.num);
         newHTML('div', 'deletethumb', tb);
-        tb.onmousedown = function (evt) {
+        tb.onmousedown = function (evt: MouseEvent) {
                 Thumbs.pageMouseDown(evt);
             };
         this.thumbnail = tb;
         return tb;
     }
 
-    setPageThumb (c) {
+    setPageThumb (c: HTMLCanvasElement) {
         var w0, h0;
         if (window.Settings!.edition == 'PBS') {
             w0 = 136;
@@ -265,7 +266,7 @@ export default class Page {
         setCanvasSizeScaledToWindowDocumentHeight(c, w0, h0);
         var w = c.width;
         var h = c.height;
-        var ctx = c.getContext('2d');
+        var ctx = c.getContext('2d')!;
 
         if (window.Settings!.edition == 'PBS') {
 
@@ -283,7 +284,7 @@ export default class Page {
         }
         var scale = w / 480;
         for (var i = 0; i < this.div.childElementCount; i++) {
-            var spr = this.div.childNodes[i].owner;
+            var spr = this.div.childNodes[i].owner as Sprite;
             if (!spr) {
                 continue;
             }
@@ -297,7 +298,7 @@ export default class Page {
         }
     }
 
-    stampSpriteAt (ctx, spr, scale) {
+    stampSpriteAt (ctx: CanvasRenderingContext2D, spr: Sprite, scale: number) {
         if (!spr.shown) {
             return;
         }
@@ -305,15 +306,16 @@ export default class Page {
         this.drawSpriteImage(ctx, img, spr, scale);
     }
 
-    drawSpriteImage (ctx, img, spr, scale) {
+    drawSpriteImage (ctx: CanvasRenderingContext2D, img: HTMLImageElement | HTMLCanvasElement, spr: Sprite, scale: number) {
         if (!spr.shown) {
             return;
         }
         if (!img) {
             return;
         }
-        var imgw = img.naturalWidth ? img.naturalWidth : img.width;
-        var imgh = img.naturalHeight ? img.naturalHeight : img.height;
+        var htmlImg = img as HTMLImageElement;
+        var imgw = htmlImg.naturalWidth ? htmlImg.naturalWidth : img.width;
+        var imgh = htmlImg.naturalHeight ? htmlImg.naturalHeight : img.height;
         var sw = imgw * spr.scale;
         var sh = imgh * spr.scale;
         ctx.save();
@@ -337,7 +339,7 @@ export default class Page {
         ctx.restore();
     }
 
-    getMatrixFor (spr, scale?) {
+    getMatrixFor (spr: Sprite, scale?: number) {
         var sx = new Matrix();
         var angle = spr.angle ? -spr.angle : 0;
         if (spr.flip) {
@@ -434,7 +436,7 @@ export default class Page {
         return new Sprite(sprAttr, me.pageAdded);
     }
 
-    update (spr) {
+    update (spr?: Sprite) {
         if (spr) {
             Undo.record({
                 action: 'modify',
@@ -467,16 +469,16 @@ export default class Page {
         Thumbs.updatePages();
     }
 
-    spriteAdded (spr) {
-        var me = spr.div.parentNode.owner;
+    spriteAdded (spr: Sprite) {
+        var me = spr.div.parentNode!.owner as Page;
         me.setCurrentSprite(spr);
         me.update(spr);
         UI.spriteInView(spr);
         ScratchJr.onHold = false;
     }
 
-    pageAdded (spr) {
-        var me = spr.div.parentNode.owner;
+    pageAdded (spr: Sprite) {
+        var me = spr.div.parentNode!.owner as Page;
         Project.mediaCount--;
         me.setCurrentSprite(spr);
         ScratchJr.storyStart('Page.prototype.pageAdded');
@@ -491,7 +493,7 @@ export default class Page {
         Thumbs.updatePages();
     }
 
-    addSprite (scale, md5, cname) {
+    addSprite (scale: number, md5: string, cname: string) {
         ScratchJr.onHold = true;
         var sprAttr: Record<string, unknown> = {
             flip: false,
@@ -518,11 +520,11 @@ export default class Page {
         return new Sprite(sprAttr, this.spriteAdded);
     }
 
-    createSprite (data) {
+    createSprite (data: Record<string, any>) {
         return new Sprite(data, this.spriteAdded);
     }
 
-    modifySprite (md5, cid, sid) {
+    modifySprite (md5: string, cid: string, sid: string) {
         var sprite = gn(unescape(sid))!.owner as Sprite;
         if (!sprite) {
             sprite = ScratchJr.getSprite() as Sprite;
@@ -531,12 +533,12 @@ export default class Page {
         sprite.name = cid;
         var me = this;
         sprite.getAsset(gotImage);
-        function gotImage (dataurl) {
+        function gotImage (dataurl: string) {
             sprite.setCostume(dataurl, me.spriteAdded);
         }
     }
 
-    modifySpriteName (cid, sid) {
+    modifySpriteName (cid: string, sid: string) {
         var sprite = gn(unescape(sid))!.owner as Sprite;
         if (!sprite) {
             sprite = ScratchJr.getSprite() as Sprite;

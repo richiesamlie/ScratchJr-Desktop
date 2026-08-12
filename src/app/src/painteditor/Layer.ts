@@ -6,13 +6,14 @@ import SVGTools from './SVGTools';
 import SVGImage from './SVGImage';
 import SVG2Canvas from '../utils/SVG2Canvas';
 import Transform from './Transform';
+import type {Point} from '../geom/Vector';
 import {gn, setCanvasSize, newDiv, DEGTOR} from '../utils/lib';
 
 let targetOffscreen = document.createElement('canvas');
 let offscreen = document.createElement('canvas');
 
 export default class Layer {
-    static bringToFront (elem) {
+    static bringToFront (elem: Element) {
         if (!elem) {
             return;
         }
@@ -22,12 +23,12 @@ export default class Layer {
         if (!elem.parentNode) {
             return;
         }
-        while (elem.parentNode && (elem.parentNode.id != 'layer1')) {
-            elem = elem.parentNode;
+        while (elem.parentNode && ((elem.parentNode as Element).id != 'layer1')) {
+            elem = elem.parentNode as Element;
         }
-        var index = Layer.groupStartsAt(gn('layer1')!, elem);
-        var group = Layer.onTopOfBy(gn('layer1')!, elem, 1, index, Layer.getRelated(elem));
-        var p = elem.parentNode;
+        var index = Layer.groupStartsAt(gn('layer1')! as Element, elem);
+        var group = Layer.onTopOfBy(gn('layer1')! as Element, elem, 1, index, Layer.getRelated(elem));
+        var p = elem.parentNode!;
         for (var i = 0; i < group.length; i++) {
             p.appendChild(group[i]);
         }
@@ -53,25 +54,25 @@ export default class Layer {
         }
     }
 
-    static onTopOf (p, index) {
+    static onTopOf (p: Element, index: number) {
         var res: Element[] = [];
         for (var i = index; i < p.childElementCount; i++) {
-            res.push(p.childNodes[i]);
+            res.push(p.childNodes[i] as Element);
         }
         return res;
     }
 
-    static ordering (p, nl) {
+    static ordering (p: Element, nl: Element[]) {
         var res: Element[] = [];
         for (var i = 0; i < p.childElementCount; i++) {
-            if (nl.indexOf(p.childNodes[i]) > -1) {
+            if (nl.indexOf(p.childNodes[i] as Element) > -1) {
                 res.push(p.childNodes[i] as Element);
             }
         }
         return res;
     }
 
-    static groupStartsAt (p, mt) {
+    static groupStartsAt (p: Element, mt: Element) {
         let i = 0;
         for (i = 0; i < p.childElementCount; i++) {
             if (p.childNodes[i] == mt) {
@@ -85,11 +86,11 @@ export default class Layer {
     // there may be case which will miss
     // this comparision is quite slow.
 
-    static onTopOfBy (p, mt, factor, n, list) {
+    static onTopOfBy (p: Element, mt: Element, factor: number, n: number, list: Element[]) {
         n = Math.max(0, n);
         Layer.drawInOffscreen(mt, targetOffscreen);
         for (var i = n; i < p.childElementCount; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if (elem.getAttribute('stencil') == 'yes') {
                 continue;
             }
@@ -138,10 +139,10 @@ export default class Layer {
         return list;
     }
 
-    static addFromBelow (p, mt, n, list) {
+    static addFromBelow (p: Element, mt: Element, n: number, list: Element[]) {
         n = Math.min(p.childElementCount, n);
         for (var i = 0; i < n; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if (elem.getAttribute('stencil') == 'yes') {
                 continue;
             }
@@ -169,7 +170,7 @@ export default class Layer {
         return list;
     }
 
-    static getRelated (elem) {
+    static getRelated (elem: Element) {
         var res: Element[] = [];
         if (elem.id.indexOf('pathborder_image') > -1) {
             var imageid = elem.id.substring(String('pathborder_').length, elem.id.length);
@@ -191,10 +192,10 @@ export default class Layer {
         return res;
     }
 
-    static inContactWith (p, mt, factor, n) {
+    static inContactWith (p: Element, mt: Element, factor: number, n: number) {
         var res: Element[] = [];
         for (var i = n; i < p.childElementCount; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if (elem.id == mt.id) {
                 continue;
             }
@@ -208,7 +209,7 @@ export default class Layer {
         return res;
     }
 
-    static includesBox (e1, e2) {
+    static includesBox (e1: Element, e2: Element) {
         var box1 = SVGTools.getBox(e1);
         var box2 = SVGTools.getBox(e2);
         if ((box2.width * box2.height) > (box1.width * box1.height)) {
@@ -228,10 +229,10 @@ export default class Layer {
     }
 
 
-    static getContainedMost (p, elem, max, factor) {
-        p = elem.parentNode;
+    static getContainedMost (p: Element, elem: Element, max: number, factor: number) {
+        p = elem.parentNode as Element;
         for (var i = 0; i < max; i++) {
-            var node = p.childNodes[i];
+            var node = p.childNodes[i] as Element;
             if (node.id == elem.id) {
                 continue;
             }
@@ -242,7 +243,7 @@ export default class Layer {
         return null;
     }
 
-    static overlapBox (e1, e2) {
+    static overlapBox (e1: Element, e2: Element) {
         var box1 = SVGTools.getBox(e1);
         var box2 = SVGTools.getBox(e2);
         if ((e1.nodeName != 'g') && (e2.nodeName != 'g')) {
@@ -262,7 +263,7 @@ export default class Layer {
         return (boxi.width * boxi.height) / (box2.width * box2.height);
     }
 
-    static insideMe (e1, e2) {
+    static insideMe (e1: Element, e2: Element) {
         var box1 = SVGTools.getBox(e1);
         var box2 = SVGTools.getBox(e2);
         var boxi = box1.intersection(box2);
@@ -276,17 +277,17 @@ export default class Layer {
         return false;
     }
 
-    static overlapBoxBy (e1, e2, percent) {
+    static overlapBoxBy (e1: Element, e2: Element, percent: number) {
         return Layer.overlapBox(e1, e2) >= percent;
     }
 
-    static findUnderMe (mt) {
+    static findUnderMe (mt: Element) {
         var p = gn('layer1')!;
-        var n = Layer.groupStartsAt(p, mt);
+        var n = Layer.groupStartsAt(p as Element, mt);
         var group: Element[] = [];
         var box = SVGTools.getBox(mt);
         for (var i = n - 1; i > -1; i--) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if ((elem as HTMLElement).id == 'staticbkg') {
                 continue;
             }
@@ -302,18 +303,18 @@ export default class Layer {
         return group;
     }
 
-    static findGroup (mt) {
+    static findGroup (mt: Element) {
         var dt = ScratchJr.getTime();
         ScratchJr.log('findGroup start', dt, 'sec');
         setCanvasSize(ScratchJr.workingCanvas, Paint.workspaceWidth, Paint.workspaceHeight);
         var list = Layer.getRelated(mt);
-        var index = Layer.groupStartsAt(mt.parentNode, mt);
+        var index = Layer.groupStartsAt(mt.parentNode as Element, mt);
         var test = (mt.getAttribute('fill') == 'none')
             && SVG2Canvas.isCloseDPath(mt) && (mt.id.indexOf('pathborder_image') < 0);
-        list = test ? Layer.addFromBelow(mt.parentNode, mt, index, list) : list;
-        var newlist = Layer.onTopOfBy(mt.parentNode, mt, 0.5, index, list);
+        list = test ? Layer.addFromBelow(mt.parentNode as Element, mt, index, list) : list;
+        var newlist = Layer.onTopOfBy(mt.parentNode as Element, mt, 0.5, index, list);
         // to keep righ laying order
-        var g = Layer.ordering(mt.parentNode, newlist);
+        var g = Layer.ordering(mt.parentNode as Element, newlist);
         ScratchJr.log('findGroup end', ScratchJr.getTime() - dt, 'sec');
         return g;
     }
@@ -321,7 +322,7 @@ export default class Layer {
     // using canvas because SVG is not good enough
     // revise in the future
     //offscreen
-    static verifyCollision (spr, other) {
+    static verifyCollision (spr: Element, other: Element) {
         var box = SVGTools.getBox(spr);
         var box2 = SVGTools.getBox(other);
         if (!box.intersects(box2)) {
@@ -365,8 +366,8 @@ export default class Layer {
         return false;
     }
 
-    static drawInOffscreen (spr, cnv) {
-        var ctx = cnv.getContext('2d');
+    static drawInOffscreen (spr: Element, cnv: HTMLCanvasElement) {
+        var ctx = cnv.getContext('2d')!;
         setCanvasSize(cnv, Paint.workspaceWidth, Paint.workspaceHeight);
         ctx.clearRect(0, 0, Paint.workspaceWidth, Paint.workspaceHeight);
         var lw = spr.getAttribute('stroke-width');
@@ -375,22 +376,22 @@ export default class Layer {
         ctx.restore();
     }
 
-    static isTransparent (data, node, w) {
+    static isTransparent (data: Uint8ClampedArray, node: Point, w: number) {
         var dx = node.x;
         var dy = node.y;
         return data[(dx * 4) + dy * w * 4 + 3] == 0;
     }
 
-    static drawInContext (elem, ctx, zoom?, lw?, isTip?) {
+    static drawInContext (elem: Element, ctx: CanvasRenderingContext2D, zoom?: number, lw?: string | number | null, isTip?: boolean) {
         var rot = Transform.extract(elem, 4);
         if (rot.angle != 0) {
             Layer.rotateFromCenter(ctx, elem, rot.angle);
         }
-        ctx.scale(zoom, zoom);
+        ctx.scale(zoom!, zoom!);
         ctx.fillStyle = (isTip
             && !SVG2Canvas.isCloseDPath(elem))
             || (elem.tagName == 'image') ? '#ff00FF' : Path.endDotColor;
-        ctx.lineWidth = lw;
+        ctx.lineWidth = Number(lw);
         ctx.strokeStyle = '#ff00FF';
         // patch for jillians graphics
         if (!elem.getAttribute('fill') && !elem.getAttribute('stroke')) {
@@ -412,7 +413,7 @@ export default class Layer {
             for (var i = 0; i < elem.childElementCount; i++) {
                 ctx.restore();
                 ctx.save();
-                Layer.drawInContext(elem.childNodes[i], ctx, zoom, lw, isTip);
+                Layer.drawInContext(elem.childNodes[i] as Element, ctx, zoom, lw, isTip);
                 ctx.restore();
                 ctx.save();
             }
@@ -423,7 +424,7 @@ export default class Layer {
         }
     }
 
-    static rotateFromCenter (ctx, group, angle) {
+    static rotateFromCenter (ctx: CanvasRenderingContext2D, group: Element, angle: number) {
         var box = SVGTools.getBoxCenter(group);
         ctx.translate(box.x, box.y);
         ctx.rotate(angle * DEGTOR);
@@ -435,7 +436,7 @@ export default class Layer {
     /////////////////////////////
 
     static showmask () {
-        var mask = newDiv(Paint.frame, 0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height, {
+        var mask = newDiv(Paint.frame!, 0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height, {
                 position: 'absolute',
                 zIndex: 200000,
                 visibility: 'visible'

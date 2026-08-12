@@ -13,8 +13,8 @@ import AppUsage from '../utils/AppUsage';
 // But, it is also used for the AndroidInterface. All function calls here
 // are mapped to Android/iOS native calls.
 
-let path;
-let camera;
+let path: string | undefined;
+let camera: string | undefined;
 let database = 'projects';
 let mediacounter = 0;
 let tabletInterface: TabletBridge | null = null;
@@ -25,16 +25,16 @@ export default class iOS {
     static stopserver: (fcn?: unknown) => void;
 
     // Getters/setters for properties used in other classes
-    static get path () {
-        return path;
+    static get path (): string {
+        return path!;
     }
 
-    static set path (newPath) {
+    static set path (newPath: string | undefined) {
         path = newPath;
     }
 
-    static get camera () {
-        return camera;
+    static get camera (): string {
+        return camera!;
     }
 
     static get database () {
@@ -42,7 +42,7 @@ export default class iOS {
     }
 
     // Wait for the tablet interface to be injected into the webview
-    static waitForInterface (fcn) {
+    static waitForInterface (fcn: () => void) {
         // Already loaded the interface
         if (tabletInterface != null) {
             fcn();
@@ -74,21 +74,21 @@ export default class iOS {
     }
 
     // Database functions
-    static async stmt(json, fcn) {
+    static async stmt(json: unknown, fcn?: (result: unknown) => void) {
         var result = await tabletInterface!.database_stmt(JSON.stringify(json));
         if (typeof (fcn) !== 'undefined') {
             fcn(result);
         }
     }
 
-    static async query(json, fcn) {
+    static async query(json: unknown, fcn: (result: string) => void) {
         var result = await tabletInterface!.database_query(JSON.stringify(json));
         if (typeof (fcn) !== 'undefined') {
-            fcn(result);
+            fcn(result as string);
         }
     }
 
-    static setfield (db, id, fieldname, val, fcn?) {
+    static setfield (db: string, id: string, fieldname: string, val: string | number | boolean | null, fcn?: (result: unknown) => void) {
         var json: SqlPayload = {};
         var keylist = [fieldname + ' = ?', 'mtime = ?'];
         json.values = [val, (new Date()).getTime().toString()];
@@ -98,27 +98,27 @@ export default class iOS {
 
     // IO functions
 
-    static async cleanassets(ft, fcn) {
+    static async cleanassets(ft: string, fcn: () => void) {
         await tabletInterface!.io_cleanassets(ft); fcn();
     }
 
-    static async getmedia(file, fcn) {
+    static async getmedia(file: string, fcn: (data: string) => void) {
         mediacounter++;
-        var nextStep = async function (file, key, whenDone) {
-            var result = await tabletInterface!.io_getmedialen(file, key);
-            iOS.processdata(key, 0, result, '', whenDone);
+        var nextStep = async function (file: string, key: number, whenDone: (data: string) => void) {
+            var result = await tabletInterface!.io_getmedialen(file, String(key));
+            iOS.processdata(String(key), 0, result, '', whenDone);
         };
         nextStep(file, mediacounter, fcn);
     }
 
-    static async getmediadata(key, offset, len, fcn) {
+    static async getmediadata(key: string, offset: number, len: number, fcn?: (result: string) => void) {
         var result = await tabletInterface!.io_getmediadata(key, offset, len);
         if (fcn) {
-            fcn(result);
+            fcn(result as string);
         }
     }
 
-    static async processdata(key, off, len, oldstr, fcn) {
+    static async processdata(key: string, off: number, len: number, oldstr: string, fcn: (str: string) => void) {
         if (len == 0) {
             iOS.getmediadone(key);
             fcn(oldstr);
@@ -130,7 +130,7 @@ export default class iOS {
         });
     }
 
-    static async getsettings(fcn) {
+    static async getsettings(fcn: (settings: string) => void) {
         var result = await tabletInterface!.io_getsettings();
         if (fcn) {
             fcn(result);
@@ -138,7 +138,7 @@ export default class iOS {
     }
 
 	
-    static async getmediadone(file, fcn?) {
+    static async getmediadone(file: string, fcn?: (result: unknown) => void) {
         var result = await tabletInterface!.io_getmediadone(file);
         if (fcn) {
             fcn(result);
@@ -147,35 +147,35 @@ export default class iOS {
 
 	
 
-    static async setmedia(str, ext, fcn) {
+    static async setmedia(str: string, ext: string, fcn?: (result: string) => void) {
         var result = await tabletInterface!.io_setmedia(str, ext);
         if (fcn) {
-            fcn(result);
+            fcn(result as string);
         }
     }
 
-    static async setmedianame(str, name, ext, fcn) {
+    static async setmedianame(str: string, name: string, ext: string, fcn?: (result: unknown) => void) {
         var result = await tabletInterface!.io_setmedianame(str, name, ext);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static async getmd5(str, fcn) {
+    static async getmd5(str: string, fcn?: (result: string | null) => void) {
         var result = await tabletInterface!.io_getmd5(str);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static async remove(str, fcn) {
+    static async remove(str: string, fcn?: (result: unknown) => void) {
         var result = await tabletInterface!.io_remove(str);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static async getfile(str, fcn) {
+    static async getfile(str: string, fcn?: (result: string) => void) {
         var result = await tabletInterface!.io_getfile(str);
         if (fcn) {
             fcn(result);
@@ -183,15 +183,15 @@ export default class iOS {
     }
 
 		
-	static async gettextresource(filename, fcn) {
+	static async gettextresource(filename: string, fcn?: (result: string) => void) {
         var result = await tabletInterface!.io_gettextresource(filename);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static async setfile(name, str, fcn) {
-        var result = await tabletInterface!.io_setfile(name, btoa(str));
+    static async setfile(name: string, str: string | number, fcn?: (result: unknown) => void) {
+        var result = await tabletInterface!.io_setfile(name, btoa(String(str)));
         if (fcn) {
             fcn(result);
         }
@@ -199,21 +199,21 @@ export default class iOS {
 
     // Sound functions
 
-    static registerSound (dir, name, fcn) {
+    static registerSound (dir: string, name: string, fcn?: (result: unknown) => void) {
         var result = tabletInterface!.io_registersound(dir, name);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static playSound (name, fcn?) {
+    static playSound (name: string, fcn?: (result: unknown) => void) {
         var result = tabletInterface!.io_playsound(name);
         if (fcn) {
             fcn(result);
         }
     }
 
-    static stopSound (name, fcn?) {
+    static stopSound (name: string, fcn?: (result: unknown) => void) {
         var result = tabletInterface!.io_stopsound(name);
         if (fcn) {
             fcn(result);
@@ -222,47 +222,48 @@ export default class iOS {
 
     // Web Wiew delegate call backs
 
-    static soundDone (name) {
+    static soundDone (name: string) {
         ScratchAudio.soundDone(name);
     }
 
-    static sndrecord (fcn) {
+    static sndrecord (fcn?: (result: unknown) => void) {
         var result = tabletInterface!.recordsound_recordstart();
         if (fcn) {
             fcn(result);
         }
     }
 
-    static recordstop (fcn) {
+    static recordstop (fcn?: (result: unknown) => void) {
         var result = tabletInterface!.recordsound_recordstop();
         if (fcn) {
             fcn(result);
         }
     }
 
-    static volume (fcn, err?) {
+    static volume (fcn?: (result: number) => void, err?: unknown) {
         var result = tabletInterface!.recordsound_volume();
         if (fcn) {
             fcn(result);
         }
     }
 
-    static startplay (fcn) {
-        var result = tabletInterface!.recordsound_startplay();
+    static startplay (fcn?: (result: number) => void) {
+        // Native returns the playback duration; the Electron stub returns void
+        var result = tabletInterface!.recordsound_startplay() as unknown as number;
         if (fcn) {
             fcn(result);
         }
     }
 
-    static stopplay (fcn) {
+    static stopplay (fcn?: (result: unknown) => void) {
         var result = tabletInterface!.recordsound_stopplay();
         if (fcn) {
             fcn(result);
         }
     }
 
-    static recorddisappear (b, fcn) {
-        var result = tabletInterface!.recordsound_recordclose(b);
+    static recorddisappear (b: string, fcn?: (result: unknown) => void) {
+        var result = tabletInterface!.recordsound_recordclose(b as unknown as boolean);
         if (fcn) {
             fcn(result);
         }
@@ -278,10 +279,10 @@ export default class iOS {
     // camera functions
 
     static hascamera () {
-        camera = tabletInterface!.scratchjr_cameracheck();
+        camera = tabletInterface!.scratchjr_cameracheck() as string;
     }
 
-    static startfeed (data, fcn) {
+    static startfeed (data: unknown, fcn?: (result: unknown) => void) {
         var str = JSON.stringify(data);
         var result = tabletInterface!.scratchjr_startfeed(str);
         if (fcn) {
@@ -289,25 +290,26 @@ export default class iOS {
         }
     }
 
-    static stopfeed (fcn?) {
+    static stopfeed (fcn?: (result: unknown) => void) {
         var result = tabletInterface!.scratchjr_stopfeed();
         if (fcn) {
             fcn(result);
         }
     }
 
-    static choosecamera (mode, fcn) {
+    static choosecamera (mode: string, fcn: unknown) {
         var result = tabletInterface!.scratchjr_choosecamera(mode);
         if (fcn) {
-            fcn(result);
+            (fcn as (result: unknown) => void)(result);
         }
     }
 
-    static captureimage (fcn) {
-        tabletInterface!.scratchjr_captureimage(fcn);
+    static captureimage (fcn: unknown) {
+        // Legacy: callers pass a callback name string; the bridge expects a function
+        tabletInterface!.scratchjr_captureimage(fcn as () => void);
     }
 
-    static hidesplash (fcn) {
+    static hidesplash (fcn?: () => void) {
         if (isiOS) {
             tabletInterface!.hideSplash();
         }
@@ -316,15 +318,15 @@ export default class iOS {
         }
     }
 
-    static trace (str) {
+    static trace (str: unknown) {
         console.log(str); // eslint-disable-line no-console
     }
 
-    static parse (str) {
+    static parse (str: string) {
         console.log(JSON.parse(str)); // eslint-disable-line no-console
     }
 
-    static tracemedia (str) {
+    static tracemedia (str: string) {
         console.log(atob(str)); // eslint-disable-line no-console
     }
 
@@ -343,7 +345,7 @@ export default class iOS {
     // shareType: 0 for Email; 1 for Airdrop
     // b64data: base-64 encoded .SJR file to share
 
-    static sendSjrToShareDialog (fileName, emailSubject, emailBody, shareType, b64data) {
+    static sendSjrToShareDialog (fileName: string, emailSubject: string, emailBody: string, shareType: string, b64data: string) {
         const bridge = tabletInterface as unknown as {
             sendSjrUsingShareDialog: (fileName: string, emailSubject: string, emailBody: string, shareType: string, b64data: string) => void;
         };
@@ -352,7 +354,7 @@ export default class iOS {
 
     // Called on the Objective-C side.  The argument is a base64-encoded .SJR file,
     // to be unzipped, processed, and stored.
-    static loadProjectFromSjr (b64data) {
+    static loadProjectFromSjr (b64data: string) {
         try {
             IO.loadProjectFromSjr(b64data);
         } catch (err) {
@@ -366,11 +368,11 @@ export default class iOS {
 
     // Name of the device/iPad to display on the sharing dialog page
     // fcn is called with the device name as an arg
-    static deviceName (fcn) {
+    static deviceName (fcn: (name: string) => void) {
         fcn(tabletInterface!.deviceName());
     }
 
-    static analyticsEvent (category, action, label?, value?) {
+    static analyticsEvent (category: string, action: string, label?: string, value?: number) {
         if (!value) {
             value = 1;
         }
@@ -380,7 +382,7 @@ export default class iOS {
 
     // Web Wiew delegate call backs
 
-    static pageError (desc) {
+    static pageError (desc: string) {
         console.log('XCODE ERROR:', desc); // eslint-disable-line no-console
         if (window.location.href.indexOf('home.html') > -1) {
             if (Lobby.errorTimer) {

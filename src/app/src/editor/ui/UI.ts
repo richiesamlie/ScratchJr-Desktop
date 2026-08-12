@@ -174,12 +174,12 @@ export default class UI {
         UI.rightPanel(div);
     }
 
-    static leftPanel (div) {
+    static leftPanel (div: HTMLElement) {
         // sprite library
         var sl = newHTML('div', 'leftpanel', div);
         var flip = newHTML('div', 'flipme', sl);
         flip.setAttribute('id', 'flip');
-        flip.onmousedown = function (evt) {
+        flip.onmousedown = function (evt: MouseEvent) {
             ScratchJr.saveAndFlip(evt);
         }; // move to project
         UI.layoutLibrary(sl);
@@ -227,8 +227,8 @@ export default class UI {
                 shareAirdrop.id = 'infoboxShareButtonAirdrop';
                 shareAirdrop.textContent = Localization.localize('SHARING_BY_AIRDROP');
                 shareAirdrop.style.float = 'right';
-                shareAirdrop.onmousedown = function (e) {
-                    UI.parentalGate(e, function (e) {
+                shareAirdrop.onmousedown = function (e: MouseEvent) {
+                    UI.parentalGate(e, function (e: MouseEvent) {
                         UI.infoDoShare(e, nameField, shareLoadingGif, 1);
                     });
                 };
@@ -238,11 +238,11 @@ export default class UI {
                 gn('deviceName')!.textContent = name;
             });
 
-            var shareLoadingGif = newHTML('img', 'infoboxShareLoading', shareButtons);
+            var shareLoadingGif = newHTML('img', 'infoboxShareLoading', shareButtons) as HTMLImageElement;
             shareLoadingGif.src = './assets/ui/loader.png';
 
-            shareEmail.onmousedown = function (e) {
-                UI.parentalGate(e, function (e) {
+            shareEmail.onmousedown = function (e: MouseEvent) {
+                UI.parentalGate(e, function (e: MouseEvent) {
                     UI.infoDoShare(e, nameField, shareLoadingGif, 0);
                 });
             };
@@ -254,7 +254,7 @@ export default class UI {
         };
     }
 
-    static parentalGate (evt, callback) {
+    static parentalGate (evt: MouseEvent | null, callback: (e: MouseEvent) => void) {
         ScratchAudio.sndFX('tap.wav');
         var pgFrame = newHTML('div', 'parentalgate', gn('frame')!);
 
@@ -268,7 +268,7 @@ export default class UI {
         var pgChoiceB = newHTML('div', 'parentalgatechoice', pgFrame);
         var pgChoiceC = newHTML('div', 'parentalgatechoice', pgFrame);
 
-        var problems = [
+        var problems: Array<[string, string, string, string, number]> = [
             // Problem, Choice A, Choice B, Choice C, Correct choice #
             ['30 + 7', '37', '9', '28', 0],
             ['22 + 3', '18', '25', '3', 1],
@@ -304,11 +304,11 @@ export default class UI {
         var pgExplain = newHTML('div', 'parentalgateexplain', pgFrame);
         pgExplain.textContent = Localization.localize('PARENTAL_GATE_EXPLANATION');
 
-        function parentalGateClose (success) {
+        function parentalGateClose (success: boolean) {
             ScratchAudio.sndFX('exittap.wav');
             gn('frame')!.removeChild(pgFrame);
             if (success) {
-                callback(evt);
+                callback(evt as MouseEvent);
             }
         }
     }
@@ -322,7 +322,7 @@ export default class UI {
     +    shareType: which dialog to show - 0 for email; 1 for airdrop
     + */
 
-    static infoDoShare (evt, nameField, shareLoadingGif, shareType) {
+    static infoDoShare (evt: MouseEvent, nameField: HTMLInputElement, shareLoadingGif: HTMLElement, shareType: number) {
         ScratchAudio.sndFX('tap.wav');
         shareLoadingGif.style.visibility = 'visible';
         nameField.blur(); // Hide the keyboard for name changes
@@ -339,16 +339,17 @@ export default class UI {
             ScratchJr.onHold = true; // Freeze the editing UI
             ScratchJr.stopStripsFromTop(evt);
 
-            Project.prepareToSave(ScratchJr.currentProject, function () {
+            Project.prepareToSave(ScratchJr.currentProject!, function () {
                 Alert.close();
 
                 // Package the project as a .sjr file
-                IO.zipProject(ScratchJr.currentProject, function (contents) {
+                IO.zipProject(ScratchJr.currentProject!, function (contents: string) {
                     ScratchJr.onHold = false; // Unfreeze the editing UI
                     var emailSubject = Localization.localize('SHARING_EMAIL_SUBJECT', {
                         PROJECT_NAME: IO.shareName
                     });
-                    iOS.sendSjrToShareDialog(IO.zipFileName, emailSubject, Localization.localize('SHARING_EMAIL_TEXT'), shareType, contents);
+                    // iOS signature declares string; the bridge receives the numeric share type (0 email / 1 airdrop)
+                    iOS.sendSjrToShareDialog(IO.zipFileName, emailSubject, Localization.localize('SHARING_EMAIL_TEXT'), shareType as unknown as string, contents);
 
                     shareLoadingGif.style.visibility = 'hidden';
                 });
@@ -357,14 +358,14 @@ export default class UI {
     }
 
 
-    static addEditableName (p) {
-        var pname = newHTML('form', 'projectname', p);
+    static addEditableName (p: HTMLElement) {
+        var pname = newHTML('form', 'projectname', p) as HTMLFormElement;
         pname.name = 'projectname';
         pname.id = 'title';
-        pname.onsubmit = function (evt) {
+        pname.onsubmit = function (evt: SubmitEvent) {
             submitChange(evt);
         };
-        var ti = newHTML('input', 'pnamefield', pname);
+        var ti = newHTML('input', 'pnamefield', pname) as HTMLInputElement & { oldvalue: string };
         projectNameTextInput = ti;
         ti.name = 'myproject';
         ti.maxLength = 30;
@@ -372,7 +373,7 @@ export default class UI {
         ti.autocomplete = 'off';
         ti.autocorrect = false;
         ti.onblur = null;
-        ti.onfocus = function (e) {
+        ti.onfocus = function (e: FocusEvent) {
             e.preventDefault();
             ti.oldvalue = ti.value;
             if (isAndroid) {
@@ -383,27 +384,27 @@ export default class UI {
                 AndroidInterface.scratchjr_forceShowKeyboard();
             }
         };
-        ti.onkeypress = function (evt) {
+        ti.onkeypress = function (evt: KeyboardEvent) {
             handleNamePress(evt);
         };
-        function handleNamePress (e) {
+        function handleNamePress (e: KeyboardEvent) {
             var key = e.keyCode || e.which;
             if (key == 13) {
                 submitChange(e);
             }
         }
-        function submitChange (e) {
+        function submitChange (e: Event) {
             e.preventDefault();
-            var input = e.target;
+            var input = e.target as HTMLElement;
             input.blur();
         }
         return ti;
     }
 
-    static handleTextFieldSave (dontHide?) {
+    static handleTextFieldSave (dontHide?: boolean) {
         // Handle story-starter mode project
         if (ScratchJr.isEditable() && ScratchJr.editmode == 'storyStarter' && !Project.error) {
-            iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata!.name);
+            iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata!.name as string);
             // Get the new project name
             var sampleName = Localization.localize('SAMPLE_' + Project.metadata!.name);
             IO.uniqueProjectName({
@@ -416,9 +417,9 @@ export default class UI {
                     name: newName,
                     version: ScratchJr.version,
                     mtime: (new Date()).getTime().toString()
-                }, function (md5) {
+                }, function (md5: unknown) {
                     Project.metadata!.id = md5;
-                    ScratchJr.currentProject = md5;
+                    ScratchJr.currentProject = md5 as string;
                     ScratchJr.editmode = 'edit';
                     Project.metadata!.gallery = '';
                     UI.finishTextFieldSave(dontHide);
@@ -429,7 +430,7 @@ export default class UI {
         }
     }
 
-    static finishTextFieldSave (dontHide) {
+    static finishTextFieldSave (dontHide?: boolean) {
         var ti = projectNameTextInput!;
         var pname = (ti.value.length == 0) ? ti.oldvalue : ti.value.substring(0, ti.maxLength);
         if (Project.metadata!.name != pname) {
@@ -437,14 +438,14 @@ export default class UI {
         }
         Project.metadata!.name = pname;
         ScratchJr.changed = true;
-        iOS.setfield(iOS.database, Project.metadata!.id, 'name', pname);
+        iOS.setfield(iOS.database, Project.metadata!.id as string, 'name', pname);
         if (!dontHide) {
             ScratchAudio.sndFX('exittap.wav');
             gn('infobox')!.className = 'infobox fade';
         }
     }
 
-    static showInfoBox (e) {
+    static showInfoBox (e: Event) {
         infoBoxOpen = true;
         e.preventDefault();
         e.stopPropagation();
@@ -498,7 +499,7 @@ export default class UI {
         }
     }
 
-    static formatTime (unixtime) {
+    static formatTime (unixtime: number) {
         var date = new Date(unixtime);
         var year = date.getFullYear();
         var month = date.getMonth() + 1;
@@ -509,7 +510,7 @@ export default class UI {
         return year + '-' + month + '-' + day + ' ' + hour + ':' + min + ':' + sec;
     }
 
-    static hideInfoBox (e, dontHide?) {
+    static hideInfoBox (e: Event, dontHide?: unknown) { // unused flag; legacy callers pass the nameField element
         e.preventDefault();
         e.stopPropagation();
         ScratchJr.onBackButtonCallback.pop();
@@ -533,7 +534,7 @@ export default class UI {
     //   Library
     /////////////////////////////////////
 
-    static layoutLibrary (sl) {
+    static layoutLibrary (sl: HTMLElement) {
         var sprites = newHTML('div', 'thumbpanel', sl);
         sprites.setAttribute('id', 'library');
         //scrolling area
@@ -555,7 +556,7 @@ export default class UI {
         }
     }
 
-    static mascotData (page?) {
+    static mascotData (page?: Page) {
         var sprAttr: Record<string, unknown> = {
             flip: false,
             angle: 0,
@@ -578,7 +579,7 @@ export default class UI {
         };
         sprAttr.page = page;
         sprAttr.md5 = ScratchJr.defaultSprite;
-        var catkey = MediaLib.keys[sprAttr.md5 as string].name;
+        var catkey = (MediaLib.keys as Record<string, { name: string }>)[sprAttr.md5 as string].name;
         sprAttr.id = getIdFor(catkey);
         sprAttr.name = catkey;
         return sprAttr;
@@ -610,7 +611,7 @@ export default class UI {
         thumb.style.top = top + 'px';
     }
 
-    static scrollContents (dy) {
+    static scrollContents (dy: number) {
         var sc = gn('spritecc')!;
         var valy = sc.offsetTop - dy;
         if (valy > 0) {
@@ -626,7 +627,7 @@ export default class UI {
         CSSTransition(sc, transition);
     }
 
-    static spriteInView (spr) {
+    static spriteInView (spr: Sprite) {
         var sc = gn('spritecc')!;
         var achild = spr.thumbnail;
         if (!achild) {
@@ -652,26 +653,26 @@ export default class UI {
         if (!ScratchJr.getSprite()) {
             return;
         }
-        UI.spriteInView(ScratchJr.getSprite());
+        UI.spriteInView(ScratchJr.getSprite() as Sprite);
     }
 
     ///////////////////////////////////
     // Sprite Thumbs Events
     //////////////////////////////////
 
-    static spriteThumbsActions (e) {
+    static spriteThumbsActions (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
         if (ScratchJr.onHold) {
             return;
         }
-        var t;
+        var t: HTMLElement | null = null;
         var pt = Events.getTargetPoint(e);
         if (window.event) {
-            t = window.event.srcElement;
+            t = window.event.srcElement as HTMLElement;
         } else {
-            t = e.target;
+            t = e.target as HTMLElement;
         }
         //	if ((t.nodeName == "INPUT") || (t.nodeName == "FORM")) return;
         e.preventDefault();
@@ -696,7 +697,7 @@ export default class UI {
         }
     }
 
-    static startSpriteScroll (e, tb) {
+    static startSpriteScroll (e: MouseEvent, tb: HTMLElement) {
         if (ScratchJr.shaking) {
             ScratchJr.clearSelection();
         }
@@ -710,24 +711,24 @@ export default class UI {
         }
     }
 
-    static ignoreEvent (e) {
+    static ignoreEvent (e: MouseEvent | TouchEvent) {
         e.preventDefault();
         e.stopPropagation();
     }
 
-    static prepareToScroll (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        UI.spriteScolling(e, Events.dragthumbnail);
-    }
-
-    static stopScroll (e) {
+    static prepareToScroll (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         UI.spriteScolling(e, Events.dragthumbnail);
     }
 
-    static spriteScolling (e, c?) {
+    static stopScroll (e: MouseEvent | TouchEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        UI.spriteScolling(e, Events.dragthumbnail);
+    }
+
+    static spriteScolling (e: MouseEvent | TouchEvent, c?: HTMLElement) {
         var pt = Events.getTargetPoint(e);
         var deltay = Events.dragmousey - pt.y;
         Events.dragmousey = pt.y;
@@ -745,14 +746,14 @@ export default class UI {
         UI.updateSpriteScroll();
     }
 
-    static spriteClicked (e, el) {
+    static spriteClicked (e: MouseEvent | TouchEvent, el: HTMLElement) {
         e.preventDefault();
         e.stopPropagation();
-        var t;
+        var t: HTMLElement | null = null;
         if (window.event) {
-            t = window.event.srcElement;
+            t = window.event.srcElement as HTMLElement;
         } else {
-            t = e.target;
+            t = e.target as HTMLElement;
         }
         if (ScratchJr.isEditable() && ScratchJr.getSprite()
             && (((t.className == 'sname') && (el.owner == (ScratchJr.getSprite() as Sprite).id))
@@ -766,7 +767,7 @@ export default class UI {
         Thumbs.clickOnSprite(e, el);
     }
 
-    static putInPaintEditor (e) {
+    static putInPaintEditor (e: MouseEvent | TouchEvent) {
         ScratchJr.unfocus(e);
         var s = ScratchJr.getSprite() as Sprite;
         if (!s) {
@@ -780,7 +781,7 @@ export default class UI {
     // Setup Stage Variables
     //////////////////////////////
 
-    static stageArea (inner) {
+    static stageArea (inner: HTMLElement) {
         var outerDiv = newHTML('div', 'centerpanel', inner);
         var div = newHTML('div', 'stageframe', outerDiv);
         div.setAttribute('id', 'stageframe');
@@ -797,7 +798,7 @@ export default class UI {
         UI.toggleGrid(true);
     }
 
-    static resetAllSprites (e) {
+    static resetAllSprites (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         if (ScratchJr.onHold) {
@@ -810,7 +811,7 @@ export default class UI {
         ScratchJr.resetSprites();
     }
 
-    static toggleRun (e) {
+    static toggleRun (e: MouseEvent) {
         var isOff = ScratchJr.runtime.inactive();
         if (isOff) {
             ScratchJr.runStrips(e);
@@ -824,12 +825,12 @@ export default class UI {
         UI.toggleGrid(!Grid.hidden);
     }
 
-    static toggleGrid (b) {
+    static toggleGrid (b: boolean) {
         Grid.hide(b);
         gn('grid')!.className = Grid.hidden ? 'gridToggle off' : 'gridToggle on';
     }
 
-    static creatTopBarClicky (p, str, mstyle, fcn) {
+    static creatTopBarClicky (p: HTMLElement, str: string, mstyle: string, fcn: (e: MouseEvent) => void) {
         var toggle = newHTML('div', mstyle, p);
         toggle.onmousedown = fcn;
         toggle.setAttribute('id', str);
@@ -856,7 +857,7 @@ export default class UI {
         }
     }
 
-    static nextPage (e) {
+    static nextPage (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         var n = ScratchJr.stage.pages.indexOf(ScratchJr.stage.currentPage);
@@ -867,7 +868,7 @@ export default class UI {
         ScratchJr.stage.setPage(ScratchJr.stage.pages[n], false);
     }
 
-    static prevPage (e) {
+    static prevPage (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         var n = ScratchJr.stage.pages.indexOf(ScratchJr.stage.currentPage);
@@ -924,7 +925,7 @@ export default class UI {
     //   Right panel
     /////////////////////////////////////
 
-    static rightPanel (div) {
+    static rightPanel (div: HTMLElement) {
         var rp = newHTML('div', 'rightpanel', div);
         var tb = newHTML('div', 'pages', rp);
         tb.setAttribute('id', 'pages');
@@ -936,7 +937,7 @@ export default class UI {
     //   Tools
     /////////////////////////////////////
 
-    static layoutToolbar (div) {
+    static layoutToolbar (div: HTMLElement) {
         var h = 56;
         var w = 66 * 2;
         var tb = newDiv(div, 220, 0, w, h, {
@@ -949,14 +950,14 @@ export default class UI {
         changebkg.onmousedown = UI.addBackground;
     }
 
-    static addSprite (e) {
+    static addSprite (e: MouseEvent) {
         if (ScratchJr.onHold) {
             return;
         }
         e.preventDefault();
         e.stopPropagation();
         var pt = Events.getTargetPoint(e);
-        if (pt.x > (globalx(e.target) + 167)) {
+        if (pt.x > (globalx(e.target as HTMLElement) + 167)) {
             return;
         }
         ScratchAudio.sndFX('tap.wav');
@@ -968,7 +969,7 @@ export default class UI {
         Library.open('costumes');
     }
 
-    static addBackground (e) {
+    static addBackground (e: MouseEvent) {
         if (ScratchJr.onHold) {
             return;
         }
@@ -982,7 +983,7 @@ export default class UI {
         Library.open('backgrounds');
     }
 
-    static addText (e) {
+    static addText (e: MouseEvent) {
         if (ScratchJr.onHold) {
             return;
         }
@@ -1001,15 +1002,15 @@ export default class UI {
     // Key Handling in TextBox
     //////////////////////////////////
 
-    static createFormForText (p) {
+    static createFormForText (p: HTMLElement) {
         var tf = newHTML('div', 'pagetext off', p);
         tf.setAttribute('id', 'textbox');
         if (isAndroid) {
-            tf.onmousedown = function (e) {
+            tf.onmousedown = function (e: MouseEvent) {
                 e.preventDefault();
             };
         }
-        var activetb = newHTML('form', 'pageform', tf);
+        var activetb = newHTML('form', 'pageform', tf) as HTMLFormElement;
         activetb.name = 'activetextbox';
         activetb.id = 'myform';
         activetb.textsprite = null;
@@ -1034,7 +1035,7 @@ export default class UI {
         UI.createTextSizeMenu(tf);
     }
 
-    static createColorMenu (div) {
+    static createColorMenu (div: HTMLElement) {
         var swatchlist = BlockSpecs.fontcolors;
         var spal = newHTML('div', 'textuicolormenu off', div);
         spal.setAttribute('id', 'textcolormenu');
@@ -1050,24 +1051,24 @@ export default class UI {
             Paint.addImageUrl(sf, Paint.splashshade);
             colour.onmousedown = UI.setTextColor;
         }
-        UI.setMenuTextColor(gn('textcolormenu')!.childNodes[9]);
+        UI.setMenuTextColor(gn('textcolormenu')!.childNodes[9] as HTMLElement);
     }
 
-    static createTextSizeMenu (div) {
+    static createTextSizeMenu (div: HTMLElement) {
         var sizes = BlockSpecs.fontsizes;
         var spal = newHTML('div', 'textuifont off', div);
         spal.setAttribute('id', 'textfontsizes');
         for (var i = 0; i < sizes.length; i++) {
-            var textuisize = newHTML('div', 'textuisize t' + (i + 1), spal);
+            var textuisize = newHTML('div', 'textuisize t' + (i + 1), spal) as HTMLElement & { fs?: number };
             textuisize.fs = sizes[i];
             var sf = newHTML('span', undefined, textuisize);
             sf.textContent = 'A';
             textuisize.onmousedown = UI.setTextSize;
         }
-        UI.setMenuTextSize(gn('textfontsizes')!.childNodes[5]);
+        UI.setMenuTextSize(gn('textfontsizes')!.childNodes[5] as HTMLElement & { fs?: number });
     }
 
-    static setMenuTextColor (t) {
+    static setMenuTextColor (t: HTMLElement) {
         const colorNode = t.childNodes[0].childNodes[0] as HTMLElement;
         var c = colorNode.style.backgroundColor;
         for (var i = 0; i < gn('textcolormenu')!.childElementCount; i++) {
@@ -1082,10 +1083,10 @@ export default class UI {
         }
     }
 
-    static setMenuTextSize (t) {
+    static setMenuTextSize (t: HTMLElement & { fs?: number }) {
         var c = t.fs;
         for (var i = 0; i < gn('textfontsizes')!.childElementCount; i++) {
-            var kid = gn('textfontsizes')!.childNodes[i] as HTMLElement & { fs?: string };
+            var kid = gn('textfontsizes')!.childNodes[i] as HTMLElement & { fs?: number };
             var fs = kid.fs;
             var ckid = kid.className.split(' ')[1];
             if (c == fs) {
@@ -1100,7 +1101,7 @@ export default class UI {
     // Text color and size
     /////////////////////////////////////////////////////////
 
-    static topLevelColor (e) {
+    static topLevelColor (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         if (gn('fontcolorbutton')!.className == 'changecolorText on') {
@@ -1113,28 +1114,28 @@ export default class UI {
             // Legacy: indexOf over the sprite object never matches (always -1)
             var indx = BlockSpecs.fontcolors.indexOf(text as unknown as string);
             if (indx > -1) {
-                UI.setMenuTextColor(gn('textcolormenu')!.childNodes[indx]);
+                UI.setMenuTextColor(gn('textcolormenu')!.childNodes[indx] as HTMLElement);
             }
             gn('textcolormenu')!.className = 'textuicolormenu on';
             gn('fontcolorbutton')!.className = 'changecolorText on';
         }
     }
 
-    static setTextColor (e) {
+    static setTextColor (e: MouseEvent & { touches?: TouchList }) {
         if (e.touches && (e.touches.length > 1)) {
             return;
         }
         e.preventDefault();
         e.stopPropagation();
-        let t;
+        let t: HTMLElement | null = null;
         if (window.event) {
-            t = window.event.srcElement;
+            t = window.event.srcElement as HTMLElement;
         } else {
-            t = e.target;
+            t = e.target as HTMLElement;
         }
-        var b = 'textcolorbucket' != t.className;
+        var b: boolean | HTMLElement | null = 'textcolorbucket' != t.className;
         while (b) {
-            t = t.parentNode;
+            t = t!.parentNode as HTMLElement | null;
             b = t && ('textcolorbucket' != t.className);
         }
         if (!t) {
@@ -1143,7 +1144,7 @@ export default class UI {
         ScratchAudio.sndFX('splash.wav');
         UI.setMenuTextColor(t);
         var text = namedForms.activetextbox.textsprite;
-        var c = t.childNodes[0].childNodes[0].style.background;
+        var c = (t.childNodes[0].childNodes[0] as HTMLElement).style.background;
         text!.setColor!(c);
         const textOwnerPage = text!.div!.parentNode!.owner as Page;
         Undo.record({
@@ -1156,7 +1157,7 @@ export default class UI {
         ti.style.color = c;
     }
 
-    static openFontSizeMenu (e) {
+    static openFontSizeMenu (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         if (gn('fontsizebutton')!.className == 'fontsizeText on') {
@@ -1168,24 +1169,24 @@ export default class UI {
             var text = namedForms.activetextbox.textsprite;
             var indx = BlockSpecs.fontsizes.indexOf(text!.fontsize!);
             if (indx > -1) {
-                UI.setMenuTextSize(gn('textfontsizes')!.childNodes[indx]);
+                UI.setMenuTextSize(gn('textfontsizes')!.childNodes[indx] as HTMLElement & { fs?: number });
             }
             gn('textfontsizes')!.className = 'textuifont on';
             gn('fontsizebutton')!.className = 'fontsizeText on';
         }
     }
 
-    static setTextSize (e) {
+    static setTextSize (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
-        var t;
+        var t: (HTMLElement & { fs?: number }) | null = null;
         if (window.event) {
-            t = window.event.srcElement;
+            t = window.event.srcElement as HTMLElement;
         } else {
-            t = e.target;
+            t = e.target as HTMLElement;
         }
         if (t.nodeName == 'SPAN') {
-            t = t.parentNode;
+            t = t.parentNode as HTMLElement | null;
         }
         if (!t) {
             return;
@@ -1196,7 +1197,7 @@ export default class UI {
         }
         UI.setMenuTextSize(t);
         var text = namedForms.activetextbox.textsprite;
-        text!.setFontSize!(t.fs);
+        text!.setFontSize!(t.fs!);
         const textOwnerPage = text!.div!.parentNode!.owner as Page;
         Undo.record({
             action: 'edittext',
@@ -1205,9 +1206,9 @@ export default class UI {
         });
         ScratchJr.storyStart('UI.setTextSize'); // Record a change for sample projects in story-starter mode
         var ti = namedForms.activetextbox.typing;
-        ti.style.fontSize = (t.fs * scaleMultiplier) + 'px';
+        ti.style.fontSize = (t.fs! * scaleMultiplier) + 'px';
         setProps(namedForms.activetextbox.style, {
-            height: ((t.fs + 10) * scaleMultiplier) + 'px'
+            height: ((t.fs! + 10) * scaleMultiplier) + 'px'
         });
     }
 

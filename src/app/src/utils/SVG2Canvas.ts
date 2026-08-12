@@ -1,15 +1,24 @@
-import Vector from '../geom/Vector';
+import Vector, {type Point} from '../geom/Vector';
 import {setCanvasSize, rgb2hsb, colorToRGBA} from './lib';
 import SVGImage from '../painteditor/SVGImage';
+import type Sprite from '../editor/engine/Sprite';
 
-let endp;
-let startp;
+let endp!: Point;
+let startp!: Point;
 let curveoptions = ['C', 'c', 's', 'S'];
 let qcurveoptions = ['Q', 'q', 'T', 't'];
 let acurve = false;
 let aqcurve = false;
-let lastcxy;
-let svgerror;
+let lastcxy!: Point;
+let svgerror!: boolean;
+
+// Canvas 2D context as used by the legacy rasterizer, including the
+// misspelled `linejoin` expando (the canvas API property is `lineJoin`).
+type DrawContext = CanvasRenderingContext2D & {linejoin?: string};
+
+// Absolute path command rows; relativeQCurve keeps two trailing null slots
+// that arrayToString renders as empty segments.
+type AbsoluteCmd = [string, ...(string | number | null)[]];
 
 let strokevalues = {
     'stroke-width': 1,
@@ -55,65 +64,65 @@ export default class SVG2Canvas {
         return strokevalues;
     }
 
-    static drawInCanvas (spr) {
+    static drawInCanvas (spr: Sprite) {
         svgerror = false;
         setCanvasSize(spr.outline, spr.originalImg.width, spr.originalImg.height);
-        var ctx = spr.outline.getContext('2d');
+        var ctx = spr.outline.getContext('2d')!;
         SVG2Canvas.drawImage(spr.svg, ctx);
     }
 
-    static drawLayers (svg, ctx, fcn) {
+    static drawLayers (svg: Element, ctx: DrawContext, fcn: ((elem: Element, ctx: DrawContext) => void) | boolean) {
         for (var i = 0; i < svg.childElementCount; i++) {
             var elem = svg.childNodes[i];
-            fcn(elem, ctx);
+            (fcn as (elem: Element, ctx: DrawContext) => void)(elem as Element, ctx);
         }
     }
 
-    static drawImage (svg, ctx) {
+    static drawImage (svg: Element, ctx: DrawContext) {
         for (var i = 0; i < svg.childElementCount; i++) {
-            SVG2Canvas.drawLayer(svg.childNodes[i], ctx);
+            SVG2Canvas.drawLayer(svg.childNodes[i] as Element, ctx);
         }
     }
 
-    static drawLayer (elem, ctx, _fcn?) {
+    static drawLayer (elem: Element, ctx: DrawContext, _fcn?: (elem: Element, ctx: DrawContext) => void) {
         // svg no fill means black
         ctx.fillStyle = !elem.getAttribute('fill')
             ? 'black'
-            : (elem.getAttribute('fill') == 'none') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('fill');
+            : (elem.getAttribute('fill') == 'none') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('fill')!;
         if (elem.getAttribute('opacity')) {
-            ctx.fillStyle = colorToRGBA(ctx.fillStyle, elem.getAttribute('opacity'));
+            ctx.fillStyle = colorToRGBA(ctx.fillStyle, elem.getAttribute('opacity')!);
         }
-        ctx.strokeStyle = !elem.getAttribute('stroke') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('stroke');
-        ctx.lineCap = elem.getAttribute('stroke-linecap')
-            ? elem.getAttribute('stroke-linecap')
-            : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.strokeStyle = !elem.getAttribute('stroke') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('stroke')!;
+        ctx.lineCap = (elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')!
+            : SVG2Canvas.strokevalues['stroke-linecap']) as CanvasLineCap;
         ctx.lineWidth = elem.getAttribute('stroke-width')
             ? Number(elem.getAttribute('stroke-width'))
             : Number(SVG2Canvas.strokevalues['stroke-width']);
         ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
-            ? elem.getAttribute('stroke-miterlimit')
-            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+            ? Number(elem.getAttribute('stroke-miterlimit'))
+            : Number(SVG2Canvas.strokevalues['stroke-miterlimit']);
         ctx.linejoin = elem.getAttribute('stroke-linejoin')
-            ? elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')!
             : SVG2Canvas.strokevalues['stroke-linejoin'];
         SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawLayer);
     }
 
-    static drawElementHole (elem, ctx) {
+    static drawElementHole (elem: Element, ctx: DrawContext) {
         ctx.fillStyle = (!elem.getAttribute('fill')
-            || (elem.getAttribute('fill') == 'none')) ? 'black' : elem.getAttribute('fill');
-        ctx.strokeStyle = !elem.getAttribute('stroke') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('stroke');
-        ctx.lineCap = elem.getAttribute('stroke-linecap')
-            ? elem.getAttribute('stroke-linecap')
-            : SVG2Canvas.strokevalues['stroke-linecap'];
+            || (elem.getAttribute('fill') == 'none')) ? 'black' : elem.getAttribute('fill')!;
+        ctx.strokeStyle = !elem.getAttribute('stroke') ? 'rgba(0, 0, 0,0)' : elem.getAttribute('stroke')!;
+        ctx.lineCap = (elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')!
+            : SVG2Canvas.strokevalues['stroke-linecap']) as CanvasLineCap;
         ctx.lineWidth = elem.getAttribute('stroke-width')
             ? Number(elem.getAttribute('stroke-width'))
             : Number(SVG2Canvas.strokevalues['stroke-width']);
         ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
-            ? elem.getAttribute('stroke-miterlimit')
-            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+            ? Number(elem.getAttribute('stroke-miterlimit'))
+            : Number(SVG2Canvas.strokevalues['stroke-miterlimit']);
         ctx.linejoin = elem.getAttribute('stroke-linejoin')
-            ? elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')!
             : SVG2Canvas.strokevalues['stroke-linejoin'];
         if (elem.tagName) {
             SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawElementHole);
@@ -122,7 +131,7 @@ export default class SVG2Canvas {
         }
     }
 
-    static drawElementMask (elem, ctx) {
+    static drawElementMask (elem: Element, ctx: DrawContext) {
         if (elem.nodeName == 'image') {
             return;
         }
@@ -135,22 +144,22 @@ export default class SVG2Canvas {
             ctx.fillStyle = (elem.getAttribute('fill') == 'none') ? 'rgba(0, 0, 0,0)' : 'white';
         }
         ctx.strokeStyle = elem.getAttribute('stroke') ? 'white' : 'rgba(0, 0, 0,0)';
-        ctx.lineCap = elem.getAttribute('stroke-linecap')
-            ? elem.getAttribute('stroke-linecap')
-            : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.lineCap = (elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')!
+            : SVG2Canvas.strokevalues['stroke-linecap']) as CanvasLineCap;
         ctx.lineWidth = elem.getAttribute('stroke-width')
             ? Number(elem.getAttribute('stroke-width'))
             : Number(SVG2Canvas.strokevalues['stroke-width']);
         ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
-            ? elem.getAttribute('stroke-miterlimit')
-            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+            ? Number(elem.getAttribute('stroke-miterlimit'))
+            : Number(SVG2Canvas.strokevalues['stroke-miterlimit']);
         ctx.linejoin = elem.getAttribute('stroke-linejoin')
-            ? elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')!
             : SVG2Canvas.strokevalues['stroke-linejoin'];
         SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawElementMask);
     }
 
-    static drawElementOutline (elem, ctx) {
+    static drawElementOutline (elem: Element, ctx: DrawContext) {
         if (elem.nodeName == 'image') {
             return;
         }
@@ -171,15 +180,15 @@ export default class SVG2Canvas {
         SVG2Canvas.processXMLnode(elem, ctx, SVG2Canvas.drawElementOutline);
     }
 
-    static drawBorder (svg, ctx) {
+    static drawBorder (svg: Element, ctx: DrawContext) {
         for (var i = 0; i < svg.childElementCount; i++) {
-            SVG2Canvas.drawElementOutline(svg.childNodes[i], ctx);
+            SVG2Canvas.drawElementOutline(svg.childNodes[i] as Element, ctx);
         }
     }
 
-    static drawWaterMark (svg, ctx) {
+    static drawWaterMark (svg: Element, ctx: DrawContext) {
         for (var i = 0; i < svg.childElementCount; i++) {
-            var elem = svg.childNodes[i];
+            var elem = svg.childNodes[i] as Element;
             if (elem.tagName == 'g') {
                 SVG2Canvas.drawWaterMark(elem, ctx);
             } else {
@@ -188,7 +197,7 @@ export default class SVG2Canvas {
         }
     }
 
-    static drawObjectWaterMark (elem, ctx) {
+    static drawObjectWaterMark (elem: Element, ctx: DrawContext) {
         if (elem.nodeName == 'image') {
             return;
         }
@@ -206,8 +215,8 @@ export default class SVG2Canvas {
             ? Number(elem.getAttribute('stroke-width'))
             : Number(SVG2Canvas.strokevalues['stroke-width']);
         ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
-            ? elem.getAttribute('stroke-miterlimit')
-            : SVG2Canvas.strokevalues['stroke-miterlimit'];
+            ? Number(elem.getAttribute('stroke-miterlimit'))
+            : Number(SVG2Canvas.strokevalues['stroke-miterlimit']);
         ctx.linejoin = 'round';
         if (ctx.lineWidth < 2) {
             ctx.lineWidth = 2;
@@ -250,37 +259,38 @@ export default class SVG2Canvas {
     ////////////////////////////////////////////////////////
 
 
-    static processXMLnode (elem, ctx, fcn?) {
+    static processXMLnode (elem: Element, ctx: DrawContext, fcn?: ((elem: Element, ctx: DrawContext) => void) | boolean) {
         if (!elem) {
             return;
         }
         switch (elem.tagName) {
         case 'g':
-            SVG2Canvas.drawLayers(elem, ctx, fcn);
+            SVG2Canvas.drawLayers(elem, ctx, fcn!);
             break;
         case 'text':
             SVG2Canvas.drawText(elem, ctx);
             break;
         case 'image':
-            var p = elem.parentNode;
-            while (p.tagName != 'svg') {
-                p = p.parentNode;
+            var p = elem.parentNode as Element | null;
+            while (p!.tagName != 'svg') {
+                p = p!.parentNode as Element | null;
             }
             // Note: previously, we used only p.getElementById(targetPath)
             // In iOS 9, this broke and started returning null.
             // getElementsByTagName('path') includes the right element, so we
             // iterate through those and find the one with the matching ID.
             var targetPathId = 'pathborder_' + elem.id;
-            var targetPathElement = p.getElementById(targetPathId);
+            // getElementById is a Document API; the walked-to node is the SVG root.
+            var targetPathElement = (p as unknown as Document).getElementById(targetPathId) as Element | null;
             if (!targetPathElement) {
-                var paths = p.getElementsByTagName('path');
+                var paths = p!.getElementsByTagName('path');
                 for (var i = 0; i < paths.length; i++) {
                     if (paths[i].id == targetPathId) {
                         targetPathElement = paths[i];
                     }
                 }
             }
-            SVGImage.draw(elem, targetPathElement, ctx);
+            SVGImage.draw(elem, targetPathElement!, ctx);
             break;
         case 'clipPath':
             break;
@@ -297,13 +307,13 @@ export default class SVG2Canvas {
             SVG2Canvas.drawCircle(elem, ctx);
             break;
         case 'polygon':
-            SVG2Canvas.drawStraightLines(elem, ctx);
+            SVG2Canvas.drawStraightLines(elem as SVGPolygonElement | SVGPolylineElement, ctx);
             break;
         case 'path':
             SVG2Canvas.renderPath(elem, ctx);
             break;
         case 'polyline':
-            SVG2Canvas.drawPolyline(elem, ctx);
+            SVG2Canvas.drawPolyline(elem as SVGPolygonElement | SVGPolylineElement, ctx);
             break;
         default:
             svgerror = true;
@@ -311,7 +321,7 @@ export default class SVG2Canvas {
         }
     }
 
-    static drawRect (shape, ctx) {
+    static drawRect (shape: Element, ctx: DrawContext) {
         ctx.save();
         var x = Number(shape.getAttribute('x'));
         var y = Number(shape.getAttribute('y'));
@@ -326,7 +336,7 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static drawLine (shape, ctx) {
+    static drawLine (shape: Element, ctx: DrawContext) {
         var x1 = Number(shape.getAttribute('x1'));
         var y1 = Number(shape.getAttribute('y1'));
         var x2 = Number(shape.getAttribute('x2'));
@@ -338,7 +348,7 @@ export default class SVG2Canvas {
         ctx.closePath();
     }
 
-    static drawEllipse (shape, ctx) {
+    static drawEllipse (shape: Element, ctx: DrawContext) {
         var rx = Number(shape.getAttribute('rx'));
         var ry = Number(shape.getAttribute('ry'));
         var cx = Number(shape.getAttribute('cx'));
@@ -349,7 +359,7 @@ export default class SVG2Canvas {
             ['C', cx + rx * kappa, cy - ry, cx + rx, cy - ry * kappa, cx + rx, cy],
             ['C', cx + rx, cy + ry * kappa, cx + rx * kappa, cy + ry, cx, cy + ry],
             ['C', cx - rx * kappa, cy + ry, cx - rx, cy + ry * kappa, cx - rx, cy]];
-        d = SVG2Canvas.arrayToString(d);
+        d = SVG2Canvas.arrayToString(d as (string | number)[][]);
         var commands = SVG2Canvas.getCommandList(d);
         if (!commands) {
             return;
@@ -369,7 +379,7 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static drawCircle (shape, ctx) {
+    static drawCircle (shape: Element, ctx: DrawContext) {
         var r = Number(shape.getAttribute('r'));
         var cx = Number(shape.getAttribute('cx'));
         var cy = Number(shape.getAttribute('cy'));
@@ -382,15 +392,15 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static drawText (kid, ctx) {
+    static drawText (kid: Element, ctx: DrawContext) {
         ctx.font = kid.getAttribute('font-weight') + ' '
             + kid.getAttribute('font-size') + 'px ' + kid.getAttribute('font-family');
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText(kid.textContent, 0, 0);
+        ctx.fillText(kid.textContent!, 0, 0);
     }
 
-    static renderPath (spr, ctx) {
+    static renderPath (spr: Element, ctx: DrawContext) {
         var d = spr.getAttribute('d');
         var commands = SVG2Canvas.getCommandList(d);
         if (!commands) {
@@ -415,7 +425,7 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static renderPathTips (spr, ctx) {
+    static renderPathTips (spr: Element, ctx: DrawContext) {
         var d = spr.getAttribute('d');
         var commands = SVG2Canvas.getCommandList(d);
         if (!commands) {
@@ -432,7 +442,7 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static drawTip (ctx, cx, cy, r) {
+    static drawTip (ctx: DrawContext, cx: number, cy: number, r: number) {
         ctx.save();
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2, false);
@@ -442,21 +452,21 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static getLastPathCommand (spr) {
-        var d = spr.getAttribute('d');
-        var commands = d.match(/[A-DF-Za-df-z][^A-Za-df-z]*/g);
+    static getLastPathCommand (spr: Element) {
+        var d = spr.getAttribute('d')!;
+        var commands = d.match(/[A-DF-Za-df-z][^A-Za-df-z]*/g)!;
         return (commands.length > 0) ? commands[commands.length - 1].charAt(0) : null;
     }
 
-    static isCloseDPath (elem) {
+    static isCloseDPath (elem: Element) {
         if (elem.tagName != 'path') {
             return true;
         }
         if (SVG2Canvas.isCompoundPath(elem)) {
             return true;
         }
-        var d = elem.getAttribute('d');
-        var commands = d.match(/[A-DF-Za-df-z][^A-Za-df-z]*/g);
+        var d = elem.getAttribute('d')!;
+        var commands = d.match(/[A-DF-Za-df-z][^A-Za-df-z]*/g)!;
         if (commands.length < 2) {
             return false;
         }
@@ -493,27 +503,27 @@ export default class SVG2Canvas {
         return Vector.len(Vector.diff(pt1, pt2)) < 10;
     }
 
-    static isCompoundPath (shape) {
-        var paths = shape.getAttribute('d').match(/[M][^M]*/g);
+    static isCompoundPath (shape: Element) {
+        var paths = shape.getAttribute('d')!.match(/[M][^M]*/g);
         if (!paths) {
             return false;
         }
         return paths.length > 1;
     }
 
-    static drawCommand (ctx, cmd) {
-        var key = cmd[0];
-        dispatchDrawCmd[key](ctx, cmd);
-        acurve = curveoptions.indexOf(cmd[0]) > -1;
-        aqcurve = qcurveoptions.indexOf(cmd[0]) > -1;
+    static drawCommand (ctx: DrawContext, cmd: (string | number)[]) {
+        var key = cmd[0] as string;
+        dispatchDrawCmd[key](ctx, cmd as [string, ...number[]]);
+        acurve = curveoptions.indexOf(key) > -1;
+        aqcurve = qcurveoptions.indexOf(key) > -1;
     }
 
-    static splitNumericArgs (str) {
+    static splitNumericArgs (str: string) {
         var res: number[] = [];
         if (!str) {
             return res;
         }
-        var list = str.match(/(?:\+|-)?\d+(?:\.\d+)?(?:e(?:\+|-)?\d+)?/g);
+        var list = str.match(/(?:\+|-)?\d+(?:\.\d+)?(?:e(?:\+|-)?\d+)?/g)!;
         for (var i = 0; i < list.length; i++) {
             res.push(Number(list[i]));
         }
@@ -521,7 +531,7 @@ export default class SVG2Canvas {
     }
 
     // moves
-    static absoulteMove (ctx, cmd) {
+    static absoulteMove (ctx: DrawContext, cmd: [string, ...number[]]) {
         endp = {
             x: cmd[1],
             y: cmd[2]
@@ -530,7 +540,7 @@ export default class SVG2Canvas {
         startp = endp;
     }
 
-    static relativeMove (ctx, cmd) {
+    static relativeMove (ctx: DrawContext, cmd: [string, ...number[]]) {
         endp = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -540,12 +550,12 @@ export default class SVG2Canvas {
     }
 
     // lines
-    static closePath (ctx) {
+    static closePath (ctx: DrawContext) {
         endp = startp;
         ctx.lineTo(endp.x, endp.y);
     }
 
-    static absoluteLine (ctx, cmd) {
+    static absoluteLine (ctx: DrawContext, cmd: [string, ...number[]]) {
         endp = {
             x: cmd[1],
             y: cmd[2]
@@ -553,7 +563,7 @@ export default class SVG2Canvas {
         ctx.lineTo(endp.x, endp.y);
     }
 
-    static relativeLine (ctx, cmd) {
+    static relativeLine (ctx: DrawContext, cmd: [string, ...number[]]) {
         endp = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -561,7 +571,7 @@ export default class SVG2Canvas {
         ctx.lineTo(endp.x, endp.y);
     }
 
-    static absoluteHLine (ctx, cmd) {
+    static absoluteHLine (ctx: DrawContext, cmd: [string, ...number[]]) {
         var dx = cmd[1];
         endp = {
             x: dx,
@@ -570,7 +580,7 @@ export default class SVG2Canvas {
         ctx.lineTo(endp.x, endp.y);
     }
 
-    static relativeHLine (ctx, cmd) {
+    static relativeHLine (ctx: DrawContext, cmd: [string, ...number[]]) {
         var dx = endp.x + cmd[1];
         endp = {
             x: dx,
@@ -579,7 +589,7 @@ export default class SVG2Canvas {
         ctx.lineTo(endp.x, endp.y);
     }
 
-    static absoluteVLine (ctx, cmd) {
+    static absoluteVLine (ctx: DrawContext, cmd: [string, ...number[]]) {
         var dy = cmd[1];
         endp = {
             x: endp.x,
@@ -588,7 +598,7 @@ export default class SVG2Canvas {
         ctx.lineTo(endp.x, endp.y);
     }
 
-    static relativeVLine (ctx, cmd) {
+    static relativeVLine (ctx: DrawContext, cmd: [string, ...number[]]) {
         var dy = endp.y + cmd[1];
         endp = {
             x: endp.x,
@@ -598,7 +608,7 @@ export default class SVG2Canvas {
     }
 
     // curves
-    static absoluteCurve (ctx, cmd) {
+    static absoluteCurve (ctx: DrawContext, cmd: [string, ...number[]]) {
         ctx.bezierCurveTo(cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6]);
         lastcxy = {
             x: cmd[3],
@@ -610,7 +620,7 @@ export default class SVG2Canvas {
         };
     }
 
-    static relativeCurve (ctx, cmd) {
+    static relativeCurve (ctx: DrawContext, cmd: [string, ...number[]]) {
         var pt1 = {
             x: cmd[1],
             y: cmd[2]
@@ -631,7 +641,7 @@ export default class SVG2Canvas {
         endp = endat;
     }
 
-    static absoluteSmooth (ctx, cmd) {
+    static absoluteSmooth (ctx: DrawContext, cmd: [string, ...number[]]) {
         var c1 = acurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -648,7 +658,7 @@ export default class SVG2Canvas {
         lastcxy = c2;
     }
 
-    static relativeSmooth (ctx, cmd) {
+    static relativeSmooth (ctx: DrawContext, cmd: [string, ...number[]]) {
         var c1 = acurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -666,7 +676,7 @@ export default class SVG2Canvas {
     }
 
     // 	Quadratic
-    static absoluteQCurve (ctx, cmd) {
+    static absoluteQCurve (ctx: DrawContext, cmd: [string, ...number[]]) {
         var c1 = {
             x: cmd[1],
             y: cmd[2]
@@ -679,7 +689,7 @@ export default class SVG2Canvas {
         lastcxy = c1;
     }
 
-    static relativeQCurve (ctx, cmd) {
+    static relativeQCurve (ctx: DrawContext, cmd: [string, ...number[]]) {
         var c1 = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -692,7 +702,7 @@ export default class SVG2Canvas {
         ctx.quadraticCurveTo(c1.x, c1.y, endp.x, endp.y);
     }
 
-    static absoluteQSmooth (ctx, cmd) {
+    static absoluteQSmooth (ctx: DrawContext, cmd: [string, ...number[]]) {
         var c1 = aqcurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -704,7 +714,7 @@ export default class SVG2Canvas {
         ctx.quadraticCurveTo(c1.x, c1.y, endp.x, endp.y);
     }
 
-    static relativeQSmooth (ctx, cmd) {
+    static relativeQSmooth (ctx: DrawContext, cmd: [string, ...number[]]) {
         var c1 = aqcurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -720,7 +730,7 @@ export default class SVG2Canvas {
     // Drawing Polygon
     ////////////////////////////////////////
 
-    static drawStraightLines (elem, ctx) {
+    static drawStraightLines (elem: SVGPolygonElement | SVGPolylineElement, ctx: DrawContext) {
         var points = elem.points;
         ctx.save();
         ctx.beginPath();
@@ -735,7 +745,7 @@ export default class SVG2Canvas {
         ctx.restore();
     }
 
-    static drawPolyline (elem, ctx) {
+    static drawPolyline (elem: SVGPolygonElement | SVGPolylineElement, ctx: DrawContext) {
         var points = elem.points;
         ctx.save();
         ctx.beginPath();
@@ -754,7 +764,7 @@ export default class SVG2Canvas {
     // Relative to Absolute Path conversion
     ///////////////////////////////////////////////////
 
-    static setAbsolutePath (spr) {
+    static setAbsolutePath (spr: Element) {
         var d = spr.getAttribute('d');
         var commands = SVG2Canvas.getCommandList(d);
         if (!commands) {
@@ -765,11 +775,11 @@ export default class SVG2Canvas {
         spr.setAttribute('d', path);
     }
 
-    static getSVGcommands (shape) {
+    static getSVGcommands (shape: Element) {
         return SVG2Canvas.getCommandList(shape.getAttribute('d'));
     }
 
-    static getCommandList (d) {
+    static getCommandList (d: string | null): Array<[string, ...number[]]> | null {
         if (!d) {
             return null;
         }
@@ -777,18 +787,18 @@ export default class SVG2Canvas {
         if (!commands) {
             return null;
         }
-        var res: (string | number)[][] = [];
+        var res: Array<[string, ...number[]]> = [];
         for (var i = 0; i < commands.length; i++) {
             var cmd = commands[i];
             var ct = cmd.charAt(0);
             var cmddata: (string | number)[] = (ct.toLowerCase() == 'z') ? [] : SVG2Canvas.splitNumericArgs(cmd.substr(1, cmd.length));
             cmddata.unshift(ct);
-            res.push(cmddata);
+            res.push(cmddata as [string, ...number[]]);
         }
         return res;
     }
 
-    static arrayToString (res) {
+    static arrayToString (res: (string | number | null)[][]) {
         var str = '';
         for (var i = 0; i < res.length; i++) {
             var cmd = res[i];
@@ -801,23 +811,23 @@ export default class SVG2Canvas {
         return str;
     }
 
-    static getAbsoluteCommands (list) {
-        var res: (string | number)[][] = [];
+    static getAbsoluteCommands (list: (string | number)[][]) {
+        var res: (string | number | null)[][] = [];
         for (var i = 0; i < list.length; i++) {
             res.push(SVG2Canvas.getAbsoluteCommand(list[i]));
         }
         return res;
     }
 
-    static getAbsoluteCommand (cmd) {
-        var key = cmd[0];
+    static getAbsoluteCommand (cmd: (string | number)[]) {
+        var key = cmd[0] as string;
         acurve = curveoptions.indexOf(key) > -1;
         aqcurve = qcurveoptions.indexOf(key) > -1;
-        return dispatchAbsouluteCmd[key](cmd);
+        return dispatchAbsouluteCmd[key](cmd as [string, ...number[]]);
     }
 
     // moves
-    static setAbsoluteMove (cmd) {
+    static setAbsoluteMove (cmd: [string, ...number[]]) {
         acurve = false;
         aqcurve = false;
         endp = {
@@ -829,7 +839,7 @@ export default class SVG2Canvas {
         return cmd;
     }
 
-    static setRelativeMove (cmd) {
+    static setRelativeMove (cmd: [string, ...number[]]): AbsoluteCmd {
         endp = {
             x: cmd[1],
             y: cmd[2]
@@ -839,12 +849,12 @@ export default class SVG2Canvas {
     }
 
     // lines
-    static setClosePath (cmd) {
+    static setClosePath (cmd: [string, ...number[]]) {
         endp = startp;
         return cmd;
     }
 
-    static setAbsoluteLine (cmd) {
+    static setAbsoluteLine (cmd: [string, ...number[]]) {
         endp = {
             x: cmd[1],
             y: cmd[2]
@@ -852,7 +862,7 @@ export default class SVG2Canvas {
         return cmd;
     }
 
-    static setRelativeLine (cmd) {
+    static setRelativeLine (cmd: [string, ...number[]]): AbsoluteCmd {
         endp = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -860,7 +870,7 @@ export default class SVG2Canvas {
         return ['L', endp.x, endp.y];
     }
 
-    static setAbsoluteHLine (cmd) {
+    static setAbsoluteHLine (cmd: [string, ...number[]]): AbsoluteCmd {
 
         endp = {
             x: cmd[1],
@@ -869,7 +879,7 @@ export default class SVG2Canvas {
         return ['L', endp.x, endp.y];
     }
 
-    static setRelativeHLine (cmd) {
+    static setRelativeHLine (cmd: [string, ...number[]]): AbsoluteCmd {
         endp = {
             x: endp.x + cmd[1],
             y: endp.y
@@ -877,7 +887,7 @@ export default class SVG2Canvas {
         return ['L', endp.x, endp.y];
     }
 
-    static setAbsoluteVLine (cmd) {
+    static setAbsoluteVLine (cmd: [string, ...number[]]): AbsoluteCmd {
         endp = {
             x: endp.x,
             y: cmd[1]
@@ -885,7 +895,7 @@ export default class SVG2Canvas {
         return ['L', endp.x, endp.y];
     }
 
-    static setRelativeVLine (cmd) {
+    static setRelativeVLine (cmd: [string, ...number[]]): AbsoluteCmd {
         endp = {
             x: endp.x,
             y: endp.y + cmd[1]
@@ -895,7 +905,7 @@ export default class SVG2Canvas {
 
     // curves
     // Cubic
-    static setAbsoluteCurve (cmd) {
+    static setAbsoluteCurve (cmd: [string, ...number[]]) {
         lastcxy = {
             x: cmd[3],
             y: cmd[4]
@@ -907,7 +917,7 @@ export default class SVG2Canvas {
         return cmd;
     }
 
-    static setRelativeCurve (cmd) {
+    static setRelativeCurve (cmd: [string, ...number[]]): AbsoluteCmd {
         var pt1 = {
             x: cmd[1],
             y: cmd[2]
@@ -927,7 +937,7 @@ export default class SVG2Canvas {
         return ['C', c1.x, c1.y, c2.x, c2.y, endp.x, endp.y];
     }
 
-    static setAbsoluteSmooth (cmd) {
+    static setAbsoluteSmooth (cmd: [string, ...number[]]) {
         lastcxy = {
             x: cmd[1],
             y: cmd[2]
@@ -939,7 +949,7 @@ export default class SVG2Canvas {
         return cmd;
     }
 
-    static setRelativeSmooth (cmd) {
+    static setRelativeSmooth (cmd: [string, ...number[]]): AbsoluteCmd {
         var c1 = acurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -958,7 +968,7 @@ export default class SVG2Canvas {
     }
 
     // 	Quadratic
-    static setAbsoluteQCurve (cmd) {
+    static setAbsoluteQCurve (cmd: [string, ...number[]]) {
         lastcxy = {
             x: cmd[1],
             y: cmd[2]
@@ -970,7 +980,7 @@ export default class SVG2Canvas {
         return cmd;
     }
 
-    static setRelativeQCurve (cmd) {
+    static setRelativeQCurve (cmd: [string, ...number[]]): AbsoluteCmd {
         lastcxy = Vector.sum(endp, {
             x: cmd[1],
             y: cmd[2]
@@ -982,7 +992,7 @@ export default class SVG2Canvas {
         return ['Q', lastcxy.x, lastcxy.y, null, null];
     }
 
-    static setAbsoluteQSmooth (cmd) {
+    static setAbsoluteQSmooth (cmd: [string, ...number[]]) {
         var c1 = aqcurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -994,7 +1004,7 @@ export default class SVG2Canvas {
         return cmd;
     }
 
-    static setRelativeQSmooth (cmd) {
+    static setRelativeQSmooth (cmd: [string, ...number[]]): AbsoluteCmd {
         lastcxy = aqcurve
             ? Vector.sum(endp, Vector.diff(endp, lastcxy))
             : endp;
@@ -1010,7 +1020,7 @@ export default class SVG2Canvas {
 // Dispatch tables
 //////////////////////////////////////
 
-let dispatchDrawCmd = {
+let dispatchDrawCmd: Record<string, (ctx: DrawContext, cmd: [string, ...number[]]) => void> = {
     'M': SVG2Canvas.absoulteMove,
     'm': SVG2Canvas.relativeMove,
     'L': SVG2Canvas.absoluteLine,
@@ -1031,7 +1041,9 @@ let dispatchDrawCmd = {
     'z': SVG2Canvas.closePath
 };
 
-let dispatchAbsouluteCmd = {
+// The set* converters return absolute commands; relativeQCurve keeps its two
+// trailing null slots (arrayToString renders them as empty segments).
+let dispatchAbsouluteCmd: Record<string, (cmd: [string, ...number[]]) => AbsoluteCmd> = {
     'M': SVG2Canvas.setAbsoluteMove,
     'm': SVG2Canvas.setRelativeMove,
     'L': SVG2Canvas.setAbsoluteLine,

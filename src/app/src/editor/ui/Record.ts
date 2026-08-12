@@ -53,7 +53,7 @@ export default class Record {
         }
         var ctrol = newHTML('div', 'soundcontrols', sc);
         ctrol.setAttribute('id', 'soundcontrols');
-        var lib = [['record', Record.record], ['stop', Record.stopSnd], ['play', Record.playSnd]];
+        var lib: Array<[string, (e: MouseEvent) => void]> = [['record', Record.record], ['stop', Record.stopSnd], ['play', Record.playSnd]];
         for (var j = 0; j < lib.length; j++) {
             Record.newToggleClicky(ctrol, 'id_', lib[j][0], lib[j][1]);
         }
@@ -85,13 +85,13 @@ export default class Record {
     }
 
     // Register toggle buttons and handlers
-    static newToggleClicky (p, prefix, key, fcn) {
+    static newToggleClicky (p: HTMLElement, prefix: string, key: string, fcn: (e: MouseEvent) => void) {
         var button = newHTML('div', 'controlwrap', p);
         newHTML('div', key + 'snd off', button);
         button.setAttribute('type', 'toggleclicky');
         button.setAttribute('id', prefix + key);
         if (fcn) {
-            button.onmousedown = function (evt) {
+            button.onmousedown = function (evt: MouseEvent) {
                     fcn(evt);
                 };
         }
@@ -99,7 +99,7 @@ export default class Record {
     }
 
     // Toggle button appearance on/off
-    static toggleButtonUI (button, newState) {
+    static toggleButtonUI (button: string, newState: boolean) {
         var element = 'id_' + button;
         var newStateStr = (newState) ? 'on' : 'off';
         var attrclass = button + 'snd';
@@ -108,7 +108,7 @@ export default class Record {
     }
 
     // Volume UI updater
-    static updateVolume (f) {
+    static updateVolume (f: number) {
         var num = Math.round(f * 13);
         var div = gn('soundvolume')!;
         if (!isRecording) {
@@ -131,7 +131,7 @@ export default class Record {
     }
 
     // On press record button
-    static record (e) {
+    static record (e: MouseEvent) {
         if (error) {
             Record.killRecorder(e);
             return;
@@ -145,12 +145,12 @@ export default class Record {
             if (isRecording) {
                 Record.stopRecording(); // Stop if we're already recording
             } else {
-                iOS.sndrecord(Record.startRecording); // Start a recording
+                iOS.sndrecord(Record.startRecording as (result: unknown) => void); // Start a recording
             }
         }
     }
 
-    static startRecording (filename) {
+    static startRecording (filename: string) {
         if (parseInt(filename) < 0) {
             // Error in getting record filename - go back to editor
             recordedSound = null;
@@ -177,7 +177,7 @@ export default class Record {
     }
 
     // Press the play button
-    static playSnd (e) {
+    static playSnd (e: MouseEvent) {
         if (error) {
             Record.killRecorder(e);
             return;
@@ -204,7 +204,7 @@ export default class Record {
     }
 
     // Gets the sound duration from iOS and changes play UI state after time
-    static timeOutPlay (timeout) {
+    static timeOutPlay (timeout: any) { // duration from the native audio bridge (may be numeric string)
         if (parseInt(timeout) < 0) {
             timeout = 0.1; // Error - stop playing immediately
         }
@@ -215,7 +215,7 @@ export default class Record {
     }
 
     // Press on stop
-    static stopSnd (e) {
+    static stopSnd (e: MouseEvent) {
         if (error) {
             Record.killRecorder(e);
             return;
@@ -239,7 +239,7 @@ export default class Record {
     }
 
     // Stop playing the sound and switch UI appropriately
-    static stopPlayingSound (fcn?) {
+    static stopPlayingSound (fcn?: () => void) {
         iOS.stopplay(fcn!);
         Record.toggleButtonUI('play', false);
         isPlaying = false;
@@ -248,7 +248,7 @@ export default class Record {
     }
 
     // Stop the volume monitor and recording
-    static stopRecording (fcn?) {
+    static stopRecording (fcn?: () => void) {
         if (timeLimit != null) {
             clearTimeout(timeLimit);
             timeLimit = null;
@@ -264,7 +264,7 @@ export default class Record {
         }
     }
 
-    static volumeCheckStopped (fcn) {
+    static volumeCheckStopped (fcn?: () => void) {
         isRecording = false;
         Record.recordUIoff();
         iOS.recordstop(fcn);
@@ -297,7 +297,7 @@ export default class Record {
     }
 
     static registerProjectSound () {
-        function whenDone (snd) {
+        function whenDone (snd: string) {
             if (snd != 'error') {
                 var spr = ScratchJr.getSprite() as Sprite;
                 var page = spr.div.parentNode!.owner as Page;
@@ -322,7 +322,7 @@ export default class Record {
     }
 
     // Called on error - remove everything and hide the recorder
-    static killRecorder (e?) {
+    static killRecorder (e?: MouseEvent) {
         // Inform iOS and then tear-down
         if (isPlaying) {
             Record.stopPlayingSound(Record.closeContinueRemove); // stop playing and tear-down

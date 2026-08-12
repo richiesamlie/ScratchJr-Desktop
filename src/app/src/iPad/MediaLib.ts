@@ -1,12 +1,22 @@
 import IO from './IO.js';
 import Localization from '../utils/Localization';
 
-let path;
-let samples;
-let backgrounds;
-let sprites;
-let sounds;
-let keys = {};
+interface MediaItem {
+    md5: string;
+    width: number;
+    height: number;
+    ext?: string;
+    name: string;
+    order?: string;
+    tags?: string[];
+}
+
+let path: string;
+let samples: string[];
+let backgrounds: MediaItem[];
+let sprites: MediaItem[];
+let sounds: string[];
+let keys: Record<string, {width: number; height: number; name: string}> = {};
 
 export default class MediaLib {
     static get path () {
@@ -33,8 +43,8 @@ export default class MediaLib {
         return keys;
     }
 
-    static loadMediaLib (root, whenDone) {
-        IO.requestFromServer(root + 'media.json', (result) => {
+    static loadMediaLib (root: string, whenDone: () => void) {
+        IO.requestFromServer(root + 'media.json', (result: string) => {
             let parsedResult = JSON.parse(result);
             path = parsedResult.path;
             samples = parsedResult.samples;

@@ -2,7 +2,7 @@ import DrawPath from '../../utils/DrawPath';
 import {globalx, globaly, scaleMultiplier, newCanvas,
     setCanvasSize, setProps, writeText, getStringSize} from '../../utils/lib';
 
-let balloon;
+let balloon: (HTMLCanvasElement & { icon?: unknown }) | null = null;
 
 export default class Alert {
     static get balloon () {
@@ -13,11 +13,11 @@ export default class Alert {
         if (!balloon) {
             return;
         }
-        balloon.parentNode.removeChild(balloon);
-        balloon = undefined;
+        balloon.parentNode!.removeChild(balloon);
+        balloon = null;
     }
 
-    static open (p, obj, label, color) {
+    static open (p: HTMLElement, obj: HTMLElement, label: string, color: string) {
         if (balloon) {
             Alert.close();
         }
@@ -35,7 +35,7 @@ export default class Alert {
             zIndex: 2
         });
         balloon.icon = obj;
-        var ctx = balloon.getContext('2d');
+        var ctx = balloon.getContext('2d')!;
         w = 16 + getStringSize(ctx, 'bold 14px Verdana', label).width;
         if (w < 36) {
             w = 36;
@@ -54,11 +54,11 @@ export default class Alert {
                 + 'scale(' + scale + ', ' + scale + ') '
                 + 'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px) '
         });
-        Alert.draw(balloon.getContext('2d'), 6, w, h, color);
+        Alert.draw(balloon.getContext('2d')!, 6, w, h, color);
         writeText(ctx, 'bold 14px Verdana', 'white', label, 20, 8);
     }
 
-    static draw (ctx, curve, w, h, color) {
+    static draw (ctx: CanvasRenderingContext2D, curve: number, w: number, h: number, color: string) {
         curve = 10;
         var path = [
             ['M', 0, curve], ['q', 0, -curve, curve, -curve], ['h', w - curve * 2],

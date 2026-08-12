@@ -2,6 +2,7 @@ import Prims from './Prims';
 import Grid from '../ui/Grid';
 import Vector from '../../geom/Vector';
 import Sprite from './Sprite';
+import type Sound from '../../utils/Sound';
 
 // Blocks are created by the (still .js) blocks/ classes; this is the surface
 // the runtime walks while executing.
@@ -14,6 +15,7 @@ export interface BlockLike {
     unhighlight(): void;
     highlight(): void;
     getArgValue(): unknown;
+    getSoundName(list: string[]): number | string;
     findFirst(): BlockLike;
 }
 
@@ -23,17 +25,19 @@ export default class Thread {
     thisblock: BlockLike;
     oldblock: BlockLike | null;
     spr: Sprite;
-    audio: { stop(): void } | undefined;
+    audio: Sound | undefined;
     stack: BlockLike[];
     firstTime: boolean;
     count: number;
     waitTimer: number;
     distance: number;
-    called: unknown[];
+    called: Thread[] | null;
     vector: { x: number; y: number };
     isRunning: boolean;
     time: number;
-    constructor (s, block) {
+    angleStep!: number;
+    finalAngle!: number;
+    constructor (s: Sprite, block: BlockLike) {
         this.firstBlock = block.findFirst();
         this.thisblock = block;
         this.oldblock = null;
@@ -88,30 +92,30 @@ export default class Thread {
         return thread;
     }
 
-    deselect (b) {
+    deselect (b: BlockLike) {
         while (b != null) {
             b.unhighlight();
             if (b.inside) {
                 b.repeatCounter = -1;
                 this.deselect(b.inside);
             }
-            b = b.next;
+            b = b.next!;
         }
     }
 
-    stop (b?) {
+    stop (b?: boolean) {
         this.stopping(b);
         this.isRunning = false;
     }
 
-    stopping (b?) {
+    stopping (b?: boolean) {
         this.endPrim(b);
         this.deselect(this.firstBlock);
         this.clear();
         this.spr.closeBalloon();
     }
 
-    endPrim (stopMine?) {
+    endPrim (stopMine?: boolean) {
         if (!this.thisblock) {
             return;
         }

@@ -1,7 +1,8 @@
 import ScratchJr from '../ScratchJr';
 import Project from '../ui/Project';
 import Prims from './Prims';
-import Thread from './Thread';
+import Thread, { BlockLike } from './Thread';
+import Sprite from './Sprite';
 
 export default class Runtime {
     threadsRunning: Thread[];
@@ -69,7 +70,7 @@ export default class Runtime {
         return inactive;
     }
 
-    step (n) {
+    step (n: number) {
         this.yield = false;
         this.thread = this.threadsRunning[n];
         while (true) { // eslint-disable-line no-constant-condition
@@ -93,7 +94,7 @@ export default class Runtime {
         }
     }
 
-    addRunScript (spr, b) {
+    addRunScript (spr: Sprite, b: BlockLike) {
         this.restartThread(spr, b);
     }
 
@@ -104,7 +105,7 @@ export default class Runtime {
         this.threadsRunning = [];
     }
 
-    stopThreadBlock (b) {
+    stopThreadBlock (b: BlockLike) {
         for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].firstBlock == b) {
                 this.threadsRunning[i].stop();
@@ -112,7 +113,7 @@ export default class Runtime {
         }
     }
 
-    stopThreadSprite (spr) {
+    stopThreadSprite (spr: Sprite) {
         for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].spr == spr) {
                 this.threadsRunning[i].stop();
@@ -120,7 +121,7 @@ export default class Runtime {
         }
     }
 
-    removeRunScript (spr) {
+    removeRunScript (spr: Sprite) {
         var res: Thread[] = [];
         for (var i = 0; i < this.threadsRunning.length; i++) {
             if (this.threadsRunning[i].spr == spr) {
@@ -171,7 +172,7 @@ export default class Runtime {
         }
     }
 
-    restartThread (spr, b, active?) {
+    restartThread (spr: Sprite, b: BlockLike, active?: boolean) {
         var newThread = new Thread(spr, b);
         var wasRunning = false;
         for (var i = 0; i < this.threadsRunning.length; i++) {

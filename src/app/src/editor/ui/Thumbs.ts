@@ -56,10 +56,10 @@ export default class Thumbs {
         }
         var ep = Thumbs.emptyPage(pthumbs);
         ep.prev = prev;
-        th.next = ep;
+        th!.next = ep;
     }
 
-    static getObjectFor (div, id) {
+    static getObjectFor (div: HTMLElement, id: unknown) {
         for (var i = 0; i < div.childElementCount; i++) {
             if (div.childNodes[i].owner == id) {
                 return div.childNodes[i];
@@ -68,17 +68,17 @@ export default class Thumbs {
         return div.childNodes[0];
     }
 
-    static getType (div, str) {
+    static getType (div: HTMLElement, str: string) {
         while (div != null) {
             if (div.type == str) {
                 return div;
             }
-            div = div.parentNode;
+            div = div.parentNode as HTMLElement;
         }
         return null;
     }
 
-    static pageMouseDown (e) {
+    static pageMouseDown (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -92,10 +92,10 @@ export default class Thumbs {
         } else {
             Thumbs.t = e.target;
         }
-        var tb = Thumbs.getType(Thumbs.t, 'pagethumb');
-        if (ScratchJr.shaking && (e.target.className == 'deletethumb')) {
+        var tb = Thumbs.getType(Thumbs.t as HTMLElement, 'pagethumb');
+        if (ScratchJr.shaking && ((e.target as HTMLElement).className == 'deletethumb')) {
             ScratchJr.clearSelection();
-            ScratchJr.stage.deletePage(tb.owner);
+            ScratchJr.stage.deletePage(tb!.owner as string);
             return;
         }
         if (ScratchJr.shaking) {
@@ -106,13 +106,13 @@ export default class Thumbs {
             return;
         }
         if (!ScratchJr.isEditable() || (gn('pagecc')!.childElementCount < 3)) {
-            Thumbs.clickOnPage(e, tb.owner);
+            Thumbs.clickOnPage(e, tb.owner as string);
         } else {
             Events.startDrag(e, tb, Thumbs.prepareToDragPage, Thumbs.dropPage, Thumbs.draggingPage, Thumbs.clickPage, Thumbs.startPageShaking);
         }
     }
 
-    static prepareToDragPage (e) {
+    static prepareToDragPage (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         ScratchAudio.sndFX('grab.wav');
@@ -173,7 +173,7 @@ export default class Thumbs {
         var page = Thumbs.findFirst();
         var res: Page[] = [];
         while (page) {
-            var pagename = page.owner;
+            var pagename = page.owner as string;
             if (pagename) {
                 res.push(gn(pagename)!.owner as Page);
             }
@@ -182,7 +182,7 @@ export default class Thumbs {
         return res;
     }
 
-    static draggingPage (e, el) {
+    static draggingPage (e: MouseEvent, el: HTMLElement) {
         e.preventDefault();
         var pt = Events.getTargetPoint(e);
         var dx = pt.x - Events.dragmousex;
@@ -213,13 +213,13 @@ export default class Thumbs {
         }
     }
 
-    static insertCaret (el) {
-        var pos = Thumbs.getPagePos(el.top);
-        Thumbs.positionMe(pos, caret);
+    static insertCaret (el: HTMLElement) {
+        var pos = Thumbs.getPagePos(el.top!);
+        Thumbs.positionMe(pos, caret!);
         gn('pagecc')!.appendChild(caret!);
     }
 
-    static getPagePos (dy) {
+    static getPagePos (dy: number) {
         const pageSecond = gn('pagecc')!.childNodes[1] as HTMLElement;
         const pageFirst = gn('pagecc')!.childNodes[0] as HTMLElement;
         var delta = pageSecond.offsetTop - pageFirst.offsetTop;
@@ -232,31 +232,31 @@ export default class Thumbs {
         return Math.min(max, pos);
     }
 
-    static positionMe (pos, elem) {
+    static positionMe (pos: number, elem: HTMLElement) {
         var beforewho = pos >= gn('pagecc')!.childElementCount ? undefined : gn('pagecc')!.childNodes[pos];
         if (!beforewho) {
             var last = Thumbs.findLast();
-            last.next = elem;
+            last.next = elem as ChildNode;
             elem.prev = last;
             elem.next = undefined;
         } else {
             var prev = beforewho.prev;
-            beforewho.prev = elem;
+            beforewho.prev = elem as ChildNode;
             elem.next = beforewho;
             if (prev) {
-                prev.next = elem;
+                prev.next = elem as ChildNode;
                 elem.prev = prev;
             }
         }
     }
 
-    static repositionThumb (thumb, dy) {
+    static repositionThumb (thumb: HTMLElement, dy: number) {
         var pos = Thumbs.getPagePos(dy);
         if (pos != thumb.pos) {
             ScratchAudio.sndFX('snap.wav');
         }
-        var myprev = thumb.prev;
-        var mynext = thumb.next;
+        var myprev = thumb.prev as HTMLElement;
+        var mynext = thumb.next as HTMLElement;
         if (myprev) {
             myprev.next = mynext;
         }
@@ -266,7 +266,7 @@ export default class Thumbs {
         Thumbs.positionMe(pos, thumb);
     }
 
-    static dropPage (e) {
+    static dropPage (e: MouseEvent | TouchEvent) {
         ScratchJr.storyStart('Thumbs.dropPage');
         e.preventDefault();
         if (!caret) {
@@ -308,14 +308,14 @@ export default class Thumbs {
         }
     }
 
-    static clickPage (e) {
+    static clickPage (e: MouseEvent | TouchEvent) {
         ScratchJr.clearSelection();
         Thumbs.clickOnPage(e, Events.dragthumbnail.owner);
         Events.clearEvents();
         Events.dragthumbnail = undefined;
     }
 
-    static clickOnPage (e, pagename) {
+    static clickOnPage (e: MouseEvent | TouchEvent, pagename: string) {
         ScratchJr.unfocus(e);
         var pthumbs = gn('pagecc')!;
         for (var i = 0; i < pthumbs.childElementCount; i++) {
@@ -327,7 +327,7 @@ export default class Thumbs {
         if (ScratchJr.stage.currentPage.id == pagename) {
             return;
         }
-        var page = gn(pagename)!.owner;
+        var page = gn(pagename)!.owner as Page;
         ScratchJr.stage.setPage(page, false);
         Undo.record({
             action: 'changepage',
@@ -337,25 +337,25 @@ export default class Thumbs {
     }
 
 
-    static startPageShaking (tb) {
+    static startPageShaking (tb: HTMLElement) {
         ScratchJr.shaking = tb;
         ScratchJr.stopShaking = Thumbs.stopPageShaking;
-        var cc = tb.getAttribute('class');
+        var cc = tb.getAttribute('class')!;
         tb.setAttribute('class', cc + ' shakeme');
-        tb.childNodes[tb.childElementCount - 1].style.visibility = 'visible';
+        (tb.childNodes[tb.childElementCount - 1] as HTMLElement).style.visibility = 'visible';
     }
 
 
-    static stopPageShaking (b) {
+    static stopPageShaking (b: HTMLElement) {
         ScratchJr.shaking = undefined;
         ScratchJr.stopShaking = undefined;
-        var cc = b.getAttribute('class');
+        var cc = b.getAttribute('class')!;
         cc = cc.substr(0, cc.length - 8);
         b.setAttribute('class', cc);
-        b.childNodes[b.childElementCount - 1].style.visibility = 'hidden';
+        (b.childNodes[b.childElementCount - 1] as HTMLElement).style.visibility = 'hidden';
     }
 
-    static emptyPage (p) {
+    static emptyPage (p: HTMLElement) {
         var tb = newHTML('div', 'pagethumb', p);
         var c = newHTML('div', 'empty', tb);
         var img;
@@ -368,13 +368,13 @@ export default class Thumbs {
         }
         img.setAttribute('class', 'unselectable');
         tb.setAttribute('id', 'emptypage');
-        tb.onmousedown = function (evt) {
+        tb.onmousedown = function (evt: MouseEvent) {
                 Thumbs.clickOnEmptyPage(evt);
             };
         return tb;
     }
 
-    static clickOnEmptyPage (e) {
+    static clickOnEmptyPage (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -390,15 +390,15 @@ export default class Thumbs {
         let page =  new Page(getIdFor('page'));  // eslint-disable-line no-unused-vars
     }
 
-    static highlighPage (page) {
+    static highlighPage (page: HTMLElement) {
         page.setAttribute('class', 'pagethumb on');
     }
 
-    static unhighlighPage (page) {
+    static unhighlighPage (page: HTMLElement) {
         page.setAttribute('class', 'pagethumb off');
     }
 
-    static overpage (page) {
+    static overpage (page: HTMLElement) {
         page.setAttribute('class', 'pagethumb drop');
     }
 
@@ -435,7 +435,7 @@ export default class Thumbs {
         UI.resetSpriteLibrary();
     }
 
-    static updateSprite (spr) {
+    static updateSprite (spr: Sprite) {
         if (!spr) {
             return;
         }
@@ -456,10 +456,10 @@ export default class Thumbs {
     //  Sprite Thumbnails
     ////////////////////////////////////////////
 
-    static startDragThumb (e, tb) {
-        if (ScratchJr.shaking && (e.target.id == 'deletespritethumb')) {
+    static startDragThumb (e: MouseEvent, tb: HTMLElement) {
+        if (ScratchJr.shaking && ((e.target as HTMLElement).id == 'deletespritethumb')) {
             ScratchJr.clearSelection();
-            ScratchJr.stage.removeSprite(gn(tb.owner)!.owner);
+            ScratchJr.stage.removeSprite(gn(tb.owner as string)!.owner as Sprite);
         }
         if (ScratchJr.shaking) {
             ScratchJr.clearSelection();
@@ -471,31 +471,31 @@ export default class Thumbs {
         }
     }
 
-    static startCharShaking (tb) {
+    static startCharShaking (tb: HTMLElement) {
         if (!tb) {
             return;
         }
         ScratchJr.shaking = tb;
         ScratchJr.stopShaking = Thumbs.stopCharShaking;
-        var cc = tb.getAttribute('class');
+        var cc = tb.getAttribute('class')!;
         tb.setAttribute('class', cc + ' shakethumb');
         var close = newHTML('div', 'deletespritethumb', tb);
         close.id = 'deletespritethumb';
     }
 
-    static stopCharShaking (b) {
+    static stopCharShaking (b: HTMLElement) {
         ScratchJr.shaking = undefined;
         ScratchJr.stopShaking = undefined;
-        var cc = b.getAttribute('class');
+        var cc = b.getAttribute('class')!;
         cc = cc.substr(0, cc.length - 8);
         b.setAttribute('class', cc);
         var ic = b.childNodes[b.childElementCount - 1];
-        if (ic.getAttribute('class') == 'deletespritethumb') {
+        if ((ic as HTMLElement).getAttribute('class') == 'deletespritethumb') {
             b.removeChild(ic);
         }
     }
 
-    static selectThisSprite (spr) {
+    static selectThisSprite (spr: Sprite) {
         var costumes = gn('spritecc')!;
         var el = spr.thumbnail;
         for (var i = 0; i < costumes.childElementCount; i++) {
@@ -503,18 +503,18 @@ export default class Thumbs {
             if (th == el) {
                 Thumbs.highlighSprite(el);
             } else {
-                Thumbs.unhighlighSprite(th);
+                Thumbs.unhighlighSprite(th as HTMLElement);
             }
         }
     }
 
-    static clickOnSprite (e, el) {
+    static clickOnSprite (e: MouseEvent | TouchEvent, el: HTMLElement) {
         if (ScratchJr.shaking && (ScratchJr.shaking == el)) {
             ScratchJr.clearSelection();
-            ScratchJr.stage.removeSprite(gn(el.owner)!.owner);
+            ScratchJr.stage.removeSprite(gn(el.owner as string)!.owner as Sprite);
             return;
         }
-        var spritename = el.owner;
+        var spritename = el.owner as string;
         if (!gn(spritename)!) {
             return;
         }
@@ -525,7 +525,7 @@ export default class Thumbs {
         Thumbs.selectThisSprite(spr);
     }
 
-    static prepareToDrag (e) {
+    static prepareToDrag (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         ScratchAudio.sndFX('grab.wav');
@@ -560,7 +560,7 @@ export default class Thumbs {
         frame.appendChild(Events.dragcanvas);
     }
 
-    static dragging (e, el) {
+    static dragging (e: MouseEvent, el: HTMLElement) {
         e.preventDefault();
         var pt = Events.getTargetPoint(e);
         var dx = pt.x - Events.dragmousex;
@@ -582,7 +582,7 @@ export default class Thumbs {
             if (!spr.owner) {
                 continue;
             }
-            var page = gn(spr.owner)!;
+            var page = gn(spr.owner as string)!;
             if (thumb && (thumb.id != spr.id)) {
                 const dragPage = page.owner as Page;
                 if (dragPage.id == ScratchJr.stage.currentPage.id) {
@@ -596,11 +596,11 @@ export default class Thumbs {
 
     static removePagesCaret () {
         for (var i = 0; i < gn('pagecc')!.childElementCount; i++) {
-            var spr = gn('pagecc')!.childNodes[i];
+            var spr = gn('pagecc')!.childNodes[i] as HTMLElement;
             if (!spr.owner) {
                 continue;
             }
-            var page = gn(spr.owner)!;
+            var page = gn(spr.owner as string)!;
             const pageOwner = page.owner as Page;
             if (pageOwner.id == ScratchJr.stage.currentPage.id) {
                 Thumbs.highlighPage(spr);
@@ -610,7 +610,7 @@ export default class Thumbs {
         }
     }
 
-    static drop (e, el) {
+    static drop (e: MouseEvent | TouchEvent, el: HTMLElement) {
         e.preventDefault();
         switch (Palette.getLandingPlace(el, e, window.devicePixelRatio)) {
         case 'pages':
@@ -628,7 +628,7 @@ export default class Thumbs {
         Events.dragcanvas = undefined;
     }
 
-    static click (e, el) {
+    static click (e: MouseEvent | TouchEvent, el: HTMLElement) {
         e.preventDefault();
         e.stopPropagation();
         if (window.event) {
@@ -640,15 +640,15 @@ export default class Thumbs {
         Thumbs.clickOnSprite(e, el);
     }
 
-    static highlighSprite (spr) {
+    static highlighSprite (spr: HTMLElement) {
         spr.setAttribute('class', ScratchJr.isEditable() ? 'spritethumb on' : 'spritethumb noneditable');
-        ScriptsPane.setActiveScript(spr.owner);
+        ScriptsPane.setActiveScript(spr.owner as string);
         Palette.reset();
     }
 
-    static unhighlighSprite (spr) {
+    static unhighlighSprite (spr: HTMLElement) {
         spr.setAttribute('class', 'spritethumb off');
-        var currentsc = gn(spr.owner + '_scripts')!;
+        var currentsc = gn(String(spr.owner) + '_scripts')!;
         (currentsc.owner as Scripts).deactivate();
         for (var i = 0; i < currentsc.childElementCount; i++) {
             if (currentsc.childNodes[i].owner) {
@@ -657,7 +657,7 @@ export default class Thumbs {
         }
     }
 
-    static quickHighlight (spr) {
+    static quickHighlight (spr: HTMLElement) {
         if (spr.owner == ScratchJr.stage.currentPage.currentSpriteName) {
             spr.className = 'spritethumb on target';
         } else {
@@ -665,7 +665,7 @@ export default class Thumbs {
         }
     }
 
-    static quickRestore (spr) {
+    static quickRestore (spr: HTMLElement) {
         if (spr.owner == ScratchJr.stage.currentPage.currentSpriteName) {
             spr.className = ScratchJr.isEditable() ? 'spritethumb on' : 'spritethumb noneditable';
         } else {

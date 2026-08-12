@@ -6,12 +6,26 @@ import Paint from './Paint';
 import PaintAction from './PaintAction';
 import Layer from './Layer';
 import Vector from '../geom/Vector';
+import type {Point} from '../geom/Vector';
 import Transform from './Transform';
 import SVG2Canvas from '../utils/SVG2Canvas';
 import {gn, setCanvasSize, newDiv} from '../utils/lib';
 
+// Event handler shape used across the paint editor: both mouse and touch events
+// reach these handlers, so only the members actually read are declared.
+type PaintEvt = {
+    touches?: TouchList;
+    changedTouches?: TouchList;
+    target?: EventTarget | null;
+    shiftKey?: boolean;
+    clientX?: number;
+    clientY?: number;
+    preventDefault(): void;
+    stopPropagation(): void;
+};
+
 let maskCanvas = document.createElement('canvas');
-let maskData = {};
+let maskData: Record<string, string> = {};
 let linemask = 16;
 let maskColor = 16;
 
@@ -32,19 +46,19 @@ export default class Ghost {
         return linemask;
     }
 
-    static highlight (group) {
+    static highlight (group: Element[]) {
         Ghost.clearLayer();
-        var g = SVGTools.createGroup(gn('draglayer')!, 'ghostgroup');
+        var g = SVGTools.createGroup(gn('draglayer')! as Element, 'ghostgroup');
         g.setAttribute('class', 'active3d');
         for (var i = 0; i < group.length; i++) {
             Ghost.hightlightElem(g, group[i], 0.5, '5,5', 'black', 3);
         }
     }
 
-    static hightlightElem (p, elem, opacity, space, c, sw) {
+    static hightlightElem (p: Element, elem: Element, opacity: number, space: string, c: string, sw: number) {
         if (elem.tagName == 'g') {
             for (var i = 0; i < elem.childElementCount; i++) {
-                Ghost.hightlightElem(p, elem.childNodes[i], opacity, space, c, sw);
+                Ghost.hightlightElem(p, elem.childNodes[i] as Element, opacity, space, c, sw);
             }
         } else {
             if (Ghost.hasGhost(elem)) {
@@ -53,7 +67,7 @@ export default class Ghost {
         }
     }
 
-    static hasGhost (elem) { // too slow if there are too many--> doing this to minimize overlapping ghosts
+    static hasGhost (elem: Element) { // too slow if there are too many--> doing this to minimize overlapping ghosts
         if (!elem.id) {
             return true;
         }
@@ -81,7 +95,7 @@ export default class Ghost {
     // Ghost Management
     ///////////////////////////////////
 
-    static findTarget (evt) {
+    static findTarget (evt: PaintEvt | null) {
         Ghost.clearLayer();
         if (evt == null) {
             return null;
@@ -94,21 +108,21 @@ export default class Ghost {
         }
     }
 
-    static findWho (evt) { // just gets the object clicked
+    static findWho (evt: PaintEvt | null) { // just gets the object clicked
         Ghost.clearLayer();
         if (evt == null) {
             return null;
         }
         var pt = PaintAction.getScreenPt(evt);
         var color = Ghost.getPtColor(pt);
-        var id = maskData[color];
-        var mt = (id && gn(id)!) ? gn(id)! : null;
+        var id = maskData[color as string];
+        var mt = (id && gn(id)!) ? gn(id)! as Element : null;
         return (mt && mt.getAttribute('fixed') != 'yes') ? mt : Ghost.getHitObject(pt);
     }
 
-    static allTools (pt) {
+    static allTools (pt: Point) {
         var color = Ghost.getPtColor(pt);
-        var id = maskData[color];
+        var id = maskData[color as string];
         if (id) {
             return Ghost.hitSomething(pt, id, color);
         } else {
@@ -116,11 +130,11 @@ export default class Ghost {
         }
     }
 
-    static hitSomething (pt, id, color?) {
-        var mt = gn(id)!;
+    static hitSomething (pt: Point, id: string, color?: string | number) {
+        var mt: Element | null = gn(id)! as Element;
         var dogohst = true;
         if (mt && mt.getAttribute('relatedto')) {
-            mt = gn(mt.getAttribute('relatedto'))!;
+            mt = gn(mt.getAttribute('relatedto')!)! as Element;
         }
         switch (Paint.mode) {
         case 'select':
@@ -144,7 +158,7 @@ export default class Ghost {
         return null;
     }
 
-    static svgHit (pt) {
+    static svgHit (pt: Point) {
         var rpos = Paint.root.createSVGRect();
         rpos.x = pt.x;
         rpos.y = pt.y;
@@ -158,7 +172,7 @@ export default class Ghost {
             // getIntersectionList() isn't implemented below API Level 19
             // and will return null.  Call the helper method to manually detect
             // the intersection lists.
-            return Ghost.svgHitHelper(gn('layer1')!, pt);
+            return Ghost.svgHitHelper(gn('layer1')! as Element, pt);
         }
     }
 
@@ -167,7 +181,7 @@ export default class Ghost {
      * is inside the path.
      * This method uses the SnapSVG library (Apache 2 license) to perform the hit test.
      */
-    static svgHitHelper (root, pt) {
+    static svgHitHelper (root: Element, pt: Point) {
         var matches: Element[] = [];
         if (!root) {
             return matches;
@@ -185,13 +199,13 @@ export default class Ghost {
     }
 
 
-    static setGhostTo (mt) {
-        var g = SVGTools.createGroup(gn('draglayer')!, 'ghostlayer');
+    static setGhostTo (mt: Element) {
+        var g = SVGTools.createGroup(gn('draglayer')! as Element, 'ghostlayer');
         Ghost.setDashBorder(g, mt, 0.7, '5,5', 'black', 3);
         return mt;
     }
 
-    static notHitted (pt) {
+    static notHitted (pt: Point) {
         var mt;
         switch (Paint.mode) {
         case 'select':
@@ -201,7 +215,7 @@ export default class Ghost {
             mt = Ghost.getActualHit(Ghost.getHitObject(pt, (Paint.mode as string) != 'path'), pt);
             if (mt && mt.id) {
                 if (mt.getAttribute('relatedto')) {
-                    mt = gn(mt.getAttribute('relatedto'))!;
+                    mt = gn(mt.getAttribute('relatedto')!)! as Element;
                 }
                 var isStencil = (
                     (mt.id.indexOf('staticbkg') > -1)
@@ -228,7 +242,7 @@ export default class Ghost {
         return null;
     }
 
-    static getActualHit (mt, pt, id?) {
+    static getActualHit (mt: Element | null, pt: Point, id?: string) {
         if (!mt) {
             return null;
         }
@@ -247,7 +261,7 @@ export default class Ghost {
         return mt;
     }
 
-    static contains (e1, e2) {
+    static contains (e1: Element, e2: Element) {
         var box1 = SVGTools.getBox(e1);
         var box2 = SVGTools.getBox(e2);
         var boxi = box1.intersection(box2);
@@ -257,7 +271,7 @@ export default class Ghost {
         return boxi.isEqual(box2);
     }
 
-    static hittedSingleObject (obj, pt) {
+    static hittedSingleObject (obj: Element, pt: Point) {
         var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         ctx.clearRect(0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height);
         ctx.save();
@@ -267,7 +281,7 @@ export default class Ghost {
         return pixel[3] != 0;
     }
 
-    static getPtColor (pt) {
+    static getPtColor (pt: Point) {
         pt = Vector.floor(Vector.scale(pt, Paint.currentZoom));
         if (Ghost.outsideArea(pt, maskCanvas)) {
             return 0;
@@ -280,7 +294,7 @@ export default class Ghost {
         return Ghost.getHex([r, g, b]);
     }
 
-    static outsideArea (node, canvas) {
+    static outsideArea (node: Point, canvas: HTMLCanvasElement) {
         if ((node.x < 0) || (node.x > (canvas.width - 1))) {
             return true;
         }
@@ -290,17 +304,17 @@ export default class Ghost {
         return false;
     }
 
-    static setDashBorder (p, elem, opacity, space, c, sw) {
+    static setDashBorder (p: Element, elem: Element, opacity: number, space: string, c: string, sw: number) {
         if (elem.tagName == 'g') {
             for (var i = 0; i < elem.childElementCount; i++) {
-                Ghost.setDashBorder(p, elem.childNodes[i], opacity, space, c, sw);
+                Ghost.setDashBorder(p, elem.childNodes[i] as Element, opacity, space, c, sw);
             }
         } else {
             Ghost.getKid(p, elem, opacity, space, c, sw);
         }
     }
 
-    static getKid (p, elem, opacity?, space?, c?, sw?) {
+    static getKid (p: Element, elem: Element, opacity?: number, space?: string, c?: string, sw?: number | string | null) {
         if (!sw) {
             sw = elem.getAttribute('stroke-width');
         }
@@ -321,18 +335,18 @@ export default class Ghost {
             if (elem.getAttribute(attr[i]) == null) {
                 continue;
             }
-            shape.setAttribute(attr[i], elem.getAttribute(attr[i]));
+            shape.setAttribute(attr[i], elem.getAttribute(attr[i])!);
         }
         shape.setAttribute('fill', 'none');
-        shape.setAttribute('stroke', c);
-        shape.setAttribute('stroke-width', String(sw / Paint.currentZoom));
+        shape.setAttribute('stroke', c!);
+        shape.setAttribute('stroke-width', String(Number(sw) / Paint.currentZoom));
         shape.setAttribute('class', 'active3d');
         var ang = Transform.getRotationAngle(elem);
         if (ang != 0) {
             Transform.applyRotation(shape, ang);
         }
         if (opacity) {
-            shape.setAttribute('opacity', opacity);
+            shape.setAttribute('opacity', String(opacity));
         }
         // white dashed
 
@@ -343,15 +357,15 @@ export default class Ghost {
             if (elem.getAttribute(attr[j]) == null) {
                 continue;
             }
-            dash.setAttribute(attr[j], elem.getAttribute(attr[j]));
+            dash.setAttribute(attr[j], elem.getAttribute(attr[j])!);
         }
         dash.setAttribute('fill', 'none');
         dash.setAttribute('stroke', 'white');
         dash.setAttribute('stroke-width', String(3 / Paint.currentZoom));
-        dash.setAttribute('stroke-dasharray', space);
+        dash.setAttribute('stroke-dasharray', space!);
         dash.setAttribute('class', 'active3d');
         if (opacity) {
-            dash.setAttribute('opacity', opacity);
+            dash.setAttribute('opacity', String(opacity));
         }
         if (ang != 0) {
             Transform.applyRotation(dash, ang);
@@ -377,12 +391,12 @@ export default class Ghost {
         }
         maskData = {};
         maskColor = 16;
-        Ghost.drawElements(p, ctx);
+        Ghost.drawElements(p as Element, ctx);
     }
 
-    static drawElements (p, ctx) {
+    static drawElements (p: Element, ctx: CanvasRenderingContext2D) {
         for (var i = 0; i < p.childElementCount; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if (elem.id == 'pathdots') {
                 continue;
             }
@@ -400,7 +414,7 @@ export default class Ghost {
         }
     }
 
-    static drawElement (elem, ctx) {
+    static drawElement (elem: Element, ctx: CanvasRenderingContext2D) {
         var c = Ghost.getRGB(maskColor);
         var bc = Ghost.getRGB(maskColor + 8);
         maskColor += 16;
@@ -446,11 +460,11 @@ export default class Ghost {
         ctx.restore();
     }
 
-    static getRGB (color) {
+    static getRGB (color: number) {
         return [Number((color >> 16) & 255), Number((color >> 8) & 255), Number(color & 255)];
     }
 
-    static getHex (rgb) {
+    static getHex (rgb: number[]) {
         var r = rgb[0].toString(16);
         if (r.length < 2) {
             r = '0' + r;
@@ -466,25 +480,25 @@ export default class Ghost {
         return r + g + b;
     }
 
-    static getHitObject (pt, isTip?, exclude?) {
+    static getHitObject (pt: Point, isTip?: boolean, exclude?: Element) {
         var list = Ghost.svgHit(pt);
         pt = Vector.floor(Vector.scale(pt, Paint.currentZoom));
         if (!Paint.root) {
-            return false;
+            return null;
         }
         setCanvasSize(ScratchJr.workingCanvas,
-            Math.round(Paint.root.getAttribute('width') * Paint.currentZoom),
-            Math.round(Paint.root.getAttribute('height') * Paint.currentZoom)
+            Math.round(Number(Paint.root.getAttribute('width')) * Paint.currentZoom),
+            Math.round(Number(Paint.root.getAttribute('height')) * Paint.currentZoom)
         );
         var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         if (Ghost.outsideArea(pt, ScratchJr.workingCanvas)) {
             return null;
         }
         ctx.clearRect(0, 0, ScratchJr.workingCanvas.width, ScratchJr.workingCanvas.height);
-        return Ghost.findHit(list, pt, ScratchJr.workingCanvas.getContext('2d'), isTip, exclude);
+        return Ghost.findHit(list as Element[], pt, ScratchJr.workingCanvas.getContext('2d')!, isTip, exclude);
     }
 
-    static findHit (list, pt, ctx, isTip, exclude) {
+    static findHit (list: Element[], pt: Point, ctx: CanvasRenderingContext2D, isTip?: boolean, exclude?: Element) {
         for (var i = list.length - 1; i >= 0; i--) {
             var elem = list[i];
             if (exclude && (elem == exclude)) {
@@ -507,7 +521,7 @@ export default class Ghost {
     ////////////////////////
 
     static showmask () {
-        var mask = newDiv(Paint.frame, 0, 0, maskCanvas.width, maskCanvas.height, {
+        var mask = newDiv(Paint.frame!, 0, 0, maskCanvas.width, maskCanvas.height, {
                 position: 'absolute',
                 zIndex: ScratchJr.layerTop + 20
             });

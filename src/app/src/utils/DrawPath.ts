@@ -4,15 +4,15 @@ let pathx = 0;
 let pathy = 0;
 
 export default class DrawPath {
-    static render (ctx, path) {
+    static render (ctx: CanvasRenderingContext2D, path: (string | number)[][]) {
         pathx = 0;
         pathy = 0; // start top left
         for (var i = 0; i < path.length; i++) {
-            DrawPath.drawSection(path[i], ctx);
+            DrawPath.drawSection(path[i] as [string, ...number[]], ctx);
         }
     }
 
-    static drawSection (item, ctx) {
+    static drawSection (item: [string, ...number[]], ctx: CanvasRenderingContext2D) {
         var cx, cy, px, py;
         switch ((String(item[0])).toLowerCase()) {
         case 'm': DrawPath.absoluteMove(item[1], item[2]);
@@ -51,12 +51,12 @@ export default class DrawPath {
         }
     }
 
-    static absoluteMove (dx, dy) {
+    static absoluteMove (dx: number, dy: number) {
         pathx = dx;
         pathy = dy;
     }
 
-    static relativeMove (dx, dy) {
+    static relativeMove (dx: number, dy: number) {
         pathx += dx;
         pathy += dy;
     }

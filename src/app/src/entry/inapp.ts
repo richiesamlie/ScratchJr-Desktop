@@ -63,14 +63,14 @@ export function inappInterfaceGuide () {
 
     var currentButton = document.getElementById('interface-button-save');
 
-    var switchHelp = function (e) {
-        var target = e.target;
+    var switchHelp = function (e: MouseEvent) {
+        var target = e.target as HTMLElement;
         if (target.className == 'interface-button-text') {
             var descriptionId = parseInt(target.innerText, 10) - 1;
             interfaceKeyHeaderNode.textContent = interfaceDescriptions[descriptionId][0];
             interfaceKeyDescriptionNode.textContent = interfaceDescriptions[descriptionId][1];
             currentButton!.className = 'interface-button';
-            currentButton = target.parentNode;
+            currentButton = target.parentNode as HTMLElement;
             currentButton!.className = currentButton!.className + ' interface-button-selected';
             window.parent.ScratchAudio!.sndFXWithVolume('keydown.wav', 0.3);
         }
@@ -113,14 +113,14 @@ export function inappPaintEditorGuide () {
 
     var currentButton = document.getElementById('paint-button-undo');
 
-    var switchHelp = function (e) {
-        var target = e.target;
+    var switchHelp = function (e: MouseEvent) {
+        var target = e.target as HTMLElement;
         if (target.className == 'paint-button-text') {
             var descriptionId = parseInt(target.innerText, 10) - 1;
             paintKeyHeaderNode.textContent = paintDescriptions[descriptionId][0];
             paintKeyDescriptionNode.textContent = paintDescriptions[descriptionId][1];
             currentButton!.className = 'paint-button';
-            currentButton = target.parentNode;
+            currentButton = target.parentNode as HTMLElement;
             currentButton!.className = currentButton!.className + ' paint-button-selected';
             window.parent.ScratchAudio!.sndFXWithVolume('keydown.wav', 0.3);
         }

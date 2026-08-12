@@ -1,6 +1,10 @@
 import Project from './ui/Project';
 import type Sprite from './engine/Sprite';
 import type Scripts from './ui/Scripts';
+import type Stage from './engine/Stage';
+import type Page from './engine/Page';
+import type BlockArg from './blocks/BlockArg';
+import type Block from './blocks/Block';
 import ScratchAudio from '../utils/ScratchAudio';
 import Paint from '../painteditor/Paint';
 import Prims from './engine/Prims';
@@ -33,20 +37,22 @@ const namedForms = document.forms as unknown as {
 
 let workingCanvas = document.createElement('canvas');
 let workingCanvas2 = document.createElement('canvas');
-let activeFocus;
+// BlockArg carries two keypad/field expandos (oldvalue, delta) the class does not declare
+type ActiveFocusArg = BlockArg & { oldvalue?: string; delta: number };
+let activeFocus: ActiveFocusArg | undefined;
 let changed = false;
 // Our behavior for story-starters are slightly different from changed
 // e.g. moving a script around doesn't "start a story" while we would want it
 // to save a normal user project.
 let storyStarted = false;
-let runtime;
-let stage;
+let runtime: Runtime;
+let stage: Stage;
 let inFullscreen = false;
-let keypad;
-let textForm;
+let keypad: HTMLElement;
+let textForm: HTMLFormElement;
 let editfirst = false;
-let stagecolor;
-let defaultSprite;
+let stagecolor: string;
+let defaultSprite: string;
 
 ///////////////////////////////////////////
 //Layers definitions for the whole site
@@ -57,16 +63,16 @@ let layerTop = 10;
 let layerAboveBottom = 4;
 let dragginLayer = 7000;
 
-let currentProject;
-let editmode;
+let currentProject: string | undefined;
+let editmode: string;
 
 let isDebugging = false;
-let time;
+let time: number;
 let userStart = false;
 let onHold = false;
-let shaking;
-let stopShaking;
-let version;
+let shaking: HTMLElement | undefined;
+let stopShaking: ((b: HTMLElement) => void) | undefined;
+let version: string;
 
 let autoSaveEnabled = true;
 let autoSaveSetInterval: number | null = null;
@@ -86,15 +92,15 @@ export default class ScratchJr {
         return activeFocus;
     }
 
-    static set activeFocus (newActiveFocus) {
+    static set activeFocus (newActiveFocus: ActiveFocusArg | undefined) {
         activeFocus = newActiveFocus;
     }
 
-    static set changed (newChanged) {
+    static set changed (newChanged: boolean) {
         changed = newChanged;
     }
 
-    static set storyStarted (newStoryStarted) {
+    static set storyStarted (newStoryStarted: boolean) {
         storyStarted = newStoryStarted;
     }
 
@@ -106,7 +112,7 @@ export default class ScratchJr {
         return stage;
     }
 
-    static set stage (newStage) {
+    static set stage (newStage: Stage) {
         stage = newStage;
     }
 
@@ -139,7 +145,7 @@ export default class ScratchJr {
         return currentProject;
     }
 
-    static set currentProject (newValue) {
+    static set currentProject (newValue: string | undefined) {
         currentProject = newValue;
     }
 
@@ -147,15 +153,15 @@ export default class ScratchJr {
         return editmode;
     }
 
-    static set editmode (newEditmode) {
+    static set editmode (newEditmode: string) {
         editmode = newEditmode;
     }
 
-    static set time (newTime) {
+    static set time (newTime: number) {
         time = newTime;
     }
 
-    static set userStart (newUserStart) {
+    static set userStart (newUserStart: boolean) {
         userStart = newUserStart;
     }
 
@@ -163,7 +169,7 @@ export default class ScratchJr {
         return onHold;
     }
 
-    static set onHold (newOnHold) {
+    static set onHold (newOnHold: boolean) {
         onHold = newOnHold;
     }
 
@@ -171,7 +177,7 @@ export default class ScratchJr {
         return shaking;
     }
 
-    static set shaking (newShaking) {
+    static set shaking (newShaking: HTMLElement | undefined) {
         shaking = newShaking;
     }
 
@@ -179,7 +185,7 @@ export default class ScratchJr {
         return stopShaking;
     }
 
-    static set stopShaking (newStopShaking) {
+    static set stopShaking (newStopShaking: ((b: HTMLElement) => void) | undefined) {
         stopShaking = newStopShaking;
     }
 
@@ -191,7 +197,7 @@ export default class ScratchJr {
         return onBackButtonCallback;
     }
 
-    static appinit (v) {
+    static appinit (v: string) {
         stagecolor = window.Settings!.stageColor;
         defaultSprite = window.Settings!.defaultSprite;
         version = v;
@@ -235,21 +241,21 @@ export default class ScratchJr {
     // Event handler for when a story is started
     // When called and enabled, this will trigger sample projects to save copies
     // Here for debugging, run-time filtering, etc.
-    static storyStart (_eventName) {
+    static storyStart (_eventName: string) {
         // console.log("Story started: " + eventName);
         storyStarted = true;
     }
 
     static editorEvents () {
         document.ongesturestart = undefined;
-        document.onmousemove = function (e) {
+        document.onmousemove = function (e: MouseEvent) {
             e.preventDefault();
         };
         window.onmousedown = ScratchJr.unfocus;
         window.onmouseup = null;
     }
 
-    static unfocus (evt?) {
+    static unfocus (evt?: Event) {
         if (Palette.helpballoon) {
             Palette.helpballoon.parentNode!.removeChild(Palette.helpballoon);
             Palette.helpballoon = null;
@@ -278,7 +284,7 @@ export default class ScratchJr {
 
     static clearSelection () {
         if (shaking) {
-            stopShaking(shaking);
+            stopShaking!(shaking);
         }
     }
 
@@ -300,14 +306,14 @@ export default class ScratchJr {
         return gn(stage.currentPage.currentSpriteName)!.owner;
     }
 
-    static gestureStart (e) {
+    static gestureStart (e: Event) {
         e.preventDefault();
         if (ScratchAudio.firstTime) {
             ScratchAudio.firstClick();
         }
     }
 
-    static log (...args) {
+    static log (...args: unknown[]) {
         if (!isDebugging) {
             return;
         }
@@ -353,15 +359,15 @@ export default class ScratchJr {
         window.clearInterval(autoSaveSetInterval!);
     }
 
-    static saveProject (e, onDone) {
+    static saveProject (e: Event | null, onDone: () => void) {
         if (ScratchJr.isEditable() && editmode == 'storyStarter' && storyStarted && !Project.error) {
-            iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata!.name);
+            iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata!.name as string);
             // Localize sample project names
             var sampleName = Localization.localize('SAMPLE_' + Project.metadata!.name);
             // Get the new project name
             IO.uniqueProjectName({
                 name: sampleName
-            }, function (jsonData) {
+            }, function (jsonData: any) {
                 var newName = jsonData.name;
                 Project.metadata!.name = newName;
                 // Create the new project
@@ -369,9 +375,9 @@ export default class ScratchJr {
                     name: newName,
                     version: version,
                     mtime: (new Date()).getTime().toString()
-                }, function (md5) {
+                }, function (md5: unknown) {
                     // Save project data
-                    currentProject = md5;
+                    currentProject = md5 as string;
                     // Switch out of story-starter mode to avoid creating new projects
                     editmode = 'edit';
                     Project.prepareToSave(currentProject, onDone);
@@ -386,7 +392,7 @@ export default class ScratchJr {
         }
     }
 
-    static saveAndFlip (e){
+    static saveAndFlip (e: Event){
         onHold = true;
         ScratchJr.stopStripsFromTop(e);
         ScratchJr.unfocus(e);
@@ -448,7 +454,7 @@ export default class ScratchJr {
         }
     }
 
-    static runStrips (e) {
+    static runStrips (e: Event) {
         ScratchJr.stopStripsFromTop(e);
         ScratchJr.unfocus(e);
         ScratchJr.startGreenFlagThreads();
@@ -461,10 +467,10 @@ export default class ScratchJr {
         ScratchJr.startCurrentPageStrips(['onflag', 'ontouch']);
     }
 
-    static startCurrentPageStrips (list) {
+    static startCurrentPageStrips (list: string[]) {
         var page = stage.currentPage.div;
         for (var i = 0; i < page.childElementCount; i++) {
-            var spr = page.childNodes[i].owner;
+            var spr = page.childNodes[i].owner as Sprite;
             if (!spr) {
                 continue;
             }
@@ -475,7 +481,7 @@ export default class ScratchJr {
         }
     }
 
-    static startScriptsFor (spr, list) {
+    static startScriptsFor (spr: Sprite, list: string[]) {
         var sc = gn(spr.id + '_scripts')!;
         const scriptsOwner = sc.owner as Scripts;
         var topblocks = scriptsOwner.getBlocksType(list);
@@ -485,7 +491,7 @@ export default class ScratchJr {
         }
     }
 
-    static stopStripsFromTop (e) {
+    static stopStripsFromTop (e: Event) {
         e.preventDefault();
         e.stopPropagation();
         ScratchJr.unfocus(e);
@@ -502,7 +508,7 @@ export default class ScratchJr {
         stage.resetPage(stage.currentPage);
     }
 
-    static fullScreen (e) {
+    static fullScreen (e: Event) {
         if (gn('full')!.className == 'fullscreen') {
             onBackButtonCallback.push(function () {
                 var fakeEvent = document.createEvent('TouchEvent');
@@ -516,7 +522,7 @@ export default class ScratchJr {
         }
     }
 
-    static displayStatus (type) {
+    static displayStatus (type: string) {
         var ids = ['topsection', 'blockspalette', 'scripts', 'flip', 'projectinfo'];
         for (var i = 0; i < ids.length; i++) {
             if (gn(ids[i])!) {
@@ -525,7 +531,7 @@ export default class ScratchJr {
         }
     }
 
-    static enterFullScreen (e) {
+    static enterFullScreen (e: Event) {
         if (onHold) {
             return;
         }
@@ -539,7 +545,7 @@ export default class ScratchJr {
         document.body.style.background = 'black';
     }
 
-    static quitFullScreen (e) {
+    static quitFullScreen (e: Event) {
         //  time = (new Date()) - 0;
         e.preventDefault();
         e.stopPropagation();
@@ -568,26 +574,26 @@ export default class ScratchJr {
 
 
     static setupEditableField () {
-        textForm = newHTML('form', 'textform', frame);
+        textForm = newHTML('form', 'textform', frame) as HTMLFormElement;
         textForm.name = 'editable';
-        var ti = newHTML('input', 'textinput', textForm);
+        var ti = newHTML('input', 'textinput', textForm) as HTMLInputElement;
         ti.name = 'field';
-        ti.onkeypress = function (evt) {
+        ti.onkeypress = function (evt: KeyboardEvent) {
             handleKeyPress(evt);
         };
-        textForm.onsubmit = function (evt) {
+        textForm.onsubmit = function (evt: Event) {
             submitOverride(evt);
         };
-        function handleKeyPress (e) {
+        function handleKeyPress (e: KeyboardEvent) {
             var key = e.keyCode || e.which;
             if (key == 13) {
                 submitOverride(e);
             }
         }
-        function submitOverride (e) {
+        function submitOverride (e: Event) {
             e.preventDefault();
             e.stopPropagation();
-            var input = e.target;
+            var input = e.target as HTMLInputElement; // the editable field input
             input.blur();
 
             // Hitting enter does not trigger editDone()
@@ -603,10 +609,12 @@ export default class ScratchJr {
     //Argument Clicked
 
 
-    static editArg (e, ti) {
+    static editArg (e: Event, ti: HTMLElement) {
         e.preventDefault();
         e.stopPropagation();
-        if (ti && ti.owner.isText()) {
+        // arg divs carry their BlockArg in the owner expando (BlockArg.createButton)
+        const argOwner = ti ? (ti.owner as BlockArg) : undefined;
+        if (argOwner && argOwner.isText()) {
             ScratchJr.textClicked(e, ti);
         } else {
             ScratchJr.numberClicked(e, ti);
@@ -617,12 +625,12 @@ export default class ScratchJr {
         });
     }
 
-    static textClicked (e, div) {
-        var b = div.owner; // b is a BlockArg
+    static textClicked (e: Event, div: HTMLElement) {
+        var b = div.owner as ActiveFocusArg; // b is a BlockArg
         activeFocus = b;
         var pt = b.getScreenPt();
         var sc = ScratchJr.getActiveScript();
-        div = sc.parentNode;
+        div = sc.parentNode as HTMLElement;
         var w = div.offsetWidth;
         var h = div.offsetHeight;
         var dx = ((pt.x + 480 * scaleMultiplier) > w) ? (w - 486 * scaleMultiplier) : pt.x - 6 * scaleMultiplier;
@@ -637,36 +645,37 @@ export default class ScratchJr {
             );
         }
         namedForms.editable.className = 'textform on';
-        ti.value = b.argValue;
+        ti.value = String(b.argValue);
         if (isAndroid) {
             AndroidInterface.scratchjr_forceShowKeyboard();
         }
         ti.focus();
     }
 
-    static handleTextFieldFocus (e) {
+    static handleTextFieldFocus (e: Event) {
         e.preventDefault();
         e.stopPropagation();
-        activeFocus.oldvalue = activeFocus.input.textContent;
+        activeFocus!.oldvalue = activeFocus!.input.textContent;
     }
 
-    static handleTextFieldBlur (e) {
+    static handleTextFieldBlur (e: Event) {
         onBackButtonCallback.pop();
         e.preventDefault();
         e.stopPropagation();
+        var focus = activeFocus!; // set by textClicked before the field gains focus
         var ti = namedForms.editable.field;
         var str = ti.value.substring(0, ti.maxLength);
-        activeFocus.argValue = str;
-        activeFocus.setValue(str);
+        focus.argValue = str;
+        focus.setValue(str);
         namedForms.editable.className = 'textform off';
-        if (activeFocus.daddy.div.parentNode) {
-            var spr = activeFocus.daddy.div.parentNode.owner.spr;
+        if (focus.daddy.div.parentNode) {
+            var spr = (focus.daddy.div.parentNode.owner as Scripts).spr;
             var action = {
                 action: 'scripts',
-                where: spr.div.parentNode.owner.id,
+                where: (spr.div.parentNode!.owner as Page).id,
                 who: spr.id
             };
-            if (activeFocus.input.textContent != activeFocus.oldvalue) {
+            if (focus.input.textContent != focus.oldvalue) {
                 Undo.record(action);
                 ScratchJr.storyStart('ScratchJr.handleTextFieldBlur');
             }
@@ -702,10 +711,10 @@ export default class ScratchJr {
     	 	
     }
     
-    static isNumberPadKeyCode(e) {
-    	return (isFinite(e.key) || e.keyCode == 8 /*delete*/ || e.keyCode === 46 /*backspace*/);
+    static isNumberPadKeyCode(e: KeyboardEvent) {
+    	return (isFinite(Number(e.key)) || e.keyCode == 8 /*delete*/ || e.keyCode === 46 /*backspace*/);
     }
-    static onNumberKeyDown(e) {
+    static onNumberKeyDown(e: KeyboardEvent) {
     	
     	
     	if (ScratchJr.isNumberPadKeyCode(e) && document.getElementsByClassName('picokeyboard on').length > 0) {
@@ -716,7 +725,7 @@ export default class ScratchJr {
 				ScratchJr.numEditDelete();
 			} else {
 				const newChar = e.key;
-				var input = activeFocus.input;
+				var input = activeFocus!.input;
 			
 				var val = input.textContent;
 				if (editfirst) {
@@ -732,7 +741,7 @@ export default class ScratchJr {
 				if ((Number(val).toString() != 'NaN') && ((Number(val) > 99) || (Number(val) < -99))) {
 					ScratchAudio.sndFX('boing.wav');
 				} else {
-					activeFocus.setValue(val);
+					activeFocus!.setValue(val);
 
 				}
 			
@@ -742,15 +751,15 @@ export default class ScratchJr {
     	
     }
 
-    static eatEvent (e) {
+    static eatEvent (e: Event) {
         e.preventDefault();
         e.stopPropagation();
     }
 
-    static keyboardAddKey (p, str, c) {
+    static keyboardAddKey (p: HTMLElement, str: number | string | undefined, c: string) {
         var keym = newHTML('div', c, p);
         var mk = newHTML('span', undefined, keym);
-        mk.textContent = str ? str : '';
+        mk.textContent = str ? String(str) : '';
         keym.onmousedown = ScratchJr.numEditKey;
     }
 
@@ -759,20 +768,20 @@ export default class ScratchJr {
     //Number Clicked
 
 
-    static numberClicked (e, ti) {
+    static numberClicked (e: Event, ti: HTMLElement) {
         var delta = (activeFocus) ? activeFocus.delta : 0;
         if (activeFocus && (activeFocus.type == 'blockarg')) {
             activeFocus.div.className = 'numfield off';
             ScratchJr.numEditDone();
         }
-        var b = ti.owner; // b is a BlockArg
+        var b = ti.owner as ActiveFocusArg; // b is a BlockArg
         activeFocus = b;
         activeFocus.delta = delta;
         b.oldvalue = ti.textContent;
         activeFocus.div.className = 'numfield on';
         keypad.className = 'picokeyboard on';
         editfirst = true;
-        var p = ti.parentNode.parentNode.owner;
+        var p = ti.parentNode!.parentNode!.owner as Block; // the block div owner expando
         if (Number(p.min) < 0) {
             ScratchJr.setMinusKey();
         } else {
@@ -783,10 +792,10 @@ export default class ScratchJr {
         }
     }
 
-    static needsToScroll (b) {
+    static needsToScroll (b: BlockArg) {
         // needs scroll
         var look = ScratchJr.getActiveScript(); // look canvas
-        var dx = b.daddy.div.left + b.daddy.div.offsetWidth + look.left;
+        var dx = b.daddy.div.left! + b.daddy.div.offsetWidth + look.left!;
         var w = window.innerWidth - keypad.offsetWidth - 10;
         var delta = (dx > w) ? (w - dx) : 0;
         if (delta < 0) {
@@ -802,26 +811,27 @@ export default class ScratchJr {
             };
             CSSTransition3D(look, transition);
         }
-        activeFocus.delta = delta;
+        activeFocus!.delta = delta;
     }
 
-    static numEditKey (e) {
+    static numEditKey (e: Event) {
         e.preventDefault();
         e.stopPropagation();
-        var t = e.target;
+        var t = e.target as HTMLElement; // keypad keys are div/span elements
         if (!t) {
             return;
         }
         if (t.className == '') {
-            t = t.parentNode;
+            t = t.parentNode as HTMLElement;
         }
         if (t.className != 'onekey space') {
             ScratchAudio.sndFX('keydown.wav');
         }
         var c = t.textContent;
-        var input = activeFocus.input;
+        var input = activeFocus!.input;
         if (!c) {
-            if ((t.parentNode.className == 'onekey delete') || (t.className == 'onekey delete')) {
+            const parent = t.parentNode as HTMLElement; // keypad key container
+            if ((parent.className == 'onekey delete') || (t.className == 'onekey delete')) {
                 ScratchJr.numEditDelete();
             }
             return;
@@ -843,37 +853,41 @@ export default class ScratchJr {
         if ((Number(val).toString() != 'NaN') && ((Number(val) > 99) || (Number(val) < -99))) {
             ScratchAudio.sndFX('boing.wav');
         } else {
-            activeFocus.setValue(val);
+            activeFocus!.setValue(val);
         }
     }
 
     static setSpaceKey () {
-        keypad.childNodes[0].childNodes[9].className = 'onekey space';
-        keypad.childNodes[0].childNodes[9].childNodes[0].textContent = '';
+        const row = keypad.childNodes[0] as HTMLElement; // keypad number row
+        const key = row.childNodes[9] as HTMLElement; // tenth key is the space/minus key
+        key.className = 'onekey space';
+        key.childNodes[0].textContent = '';
     }
 
     static setMinusKey () {
-        keypad.childNodes[0].childNodes[9].className = 'onekey minus';
-        keypad.childNodes[0].childNodes[9].childNodes[0].textContent = '-';
+        const row = keypad.childNodes[0] as HTMLElement; // keypad number row
+        const key = row.childNodes[9] as HTMLElement; // tenth key is the space/minus key
+        key.className = 'onekey minus';
+        key.childNodes[0].textContent = '-';
     }
 
-    static validateNumber (val) {
+    static validateNumber (val: string | number): number {
         return Number(val);
     }
 
-    static revokeInput (val) {
+    static revokeInput (val: string) {
         return val;
     }
 
     static numEditDelete () {
-        var val = activeFocus.input.textContent;
+        var val = activeFocus!.input.textContent;
         if (val.length != 0) {
             val = val.substring(0, val.length - 1);
         }
         if (val.length == 0) {
             val = '0';
         }
-        activeFocus.setValue(val);
+        activeFocus!.setValue(val);
     }
 
     static editDone () {
@@ -898,12 +912,12 @@ export default class ScratchJr {
         ScratchJr.numEditDone();
         ScratchJr.resetScroll();
         keypad.className = 'picokeyboard off';
-        activeFocus.div.className = 'numfield off';
+        activeFocus!.div.className = 'numfield off';
         activeFocus = undefined;
     }
 
     static numEditDone () {
-        var val = activeFocus.input.textContent;
+        var val: string | number = activeFocus!.input.textContent ?? '';
         if (val == '-') {
             val = 0;
         }
@@ -911,15 +925,15 @@ export default class ScratchJr {
             val = 0;
         }
         val = ScratchJr.validateNumber(val);
-        var ba = activeFocus;
-        activeFocus.setValue(parseFloat(val));
+        var ba = activeFocus!;
+        activeFocus!.setValue(parseFloat(String(val)));
         ba.argValue = val;
-        if (ba.daddy && ba.daddy.div.parentNode.owner) {
-            var spr = ba.daddy.div.parentNode.owner.spr;
+        if (ba.daddy && ba.daddy.div.parentNode!.owner) {
+            var spr = (ba.daddy.div.parentNode!.owner as Scripts).spr;
             if (spr && spr.div.parentNode) {
                 var action = {
                     action: 'scripts',
-                    where: spr.div.parentNode.owner.id,
+                    where: (spr.div.parentNode!.owner as Page).id,
                     who: spr.id
                 };
                 if (ba.argValue != ba.oldvalue) {
@@ -931,7 +945,7 @@ export default class ScratchJr {
     }
 
     static resetScroll () {
-        var delta = activeFocus.delta;
+        var delta = activeFocus!.delta;
         if (delta < 0) {
             var look = ScratchJr.getActiveScript(); // look canvas
             var transition = {
@@ -948,7 +962,7 @@ export default class ScratchJr {
         }
     }
 
-    static validate (str, name) {
+    static validate (str: string, name: string) {
         var str2 = str.replace(/\s*/g, '');
         if (str2.length == 0) {
             return name;

@@ -13,12 +13,13 @@ import Rectangle from '../geom/Rectangle';
 import SVGTools from './SVGTools';
 import SVG2Canvas from '../utils/SVG2Canvas';
 import PaintAction from './PaintAction';
+import type {Point} from '../geom/Vector';
 import {getIdFor, gn, getIdForCamera, setCanvasSize, DEGTOR} from '../utils/lib';
 
 export default class SVGImage {
     static currentshape: HTMLElement;
 
-    static addCameraFill (mt, str) {
+    static addCameraFill (mt: Element, str: string) {
         //  prepare to insert image by getting the objects above
         if (mt.getAttribute('relatedto')) {
             Path.breakRelationship(mt, mt.getAttribute('relatedto'));
@@ -31,12 +32,12 @@ export default class SVGImage {
         SVGImage.createImageFromFeed(mt, str);
     }
 
-    static replaceImage (img, str) {
+    static replaceImage (img: Element, str: string) {
         img.setAttributeNS(Paint.xmlnslink, 'xlink:href', 'data:image/png;base64,' + str);
     }
 
-    static createImageFromFeed (mt, str) {
-        var p = mt.parentNode;
+    static createImageFromFeed (mt: Element, str: string) {
+        var p = mt.parentNode as Element;
         var isbkg = (mt.id == 'staticbkg');
         var index = Layer.groupStartsAt(p, mt);
         var group = Layer.onTopOf(p, index);
@@ -51,7 +52,7 @@ export default class SVGImage {
         var g = SVGTools.createGroup(p, 'group_' + imageid);
         // Make the clip Path
         var pathmask = SVGTools.getCopy(mt);
-        var maskattr = {
+        var maskattr: Record<string, string> = {
             'id': 'pathmask_' + imageid
         };
         for (var val in maskattr) {
@@ -65,7 +66,7 @@ export default class SVGImage {
 
         // Make the image
         var img = document.createElementNS(Paint.xmlns, 'image');
-        var attr = {
+        var attr: Record<string, string | number> = {
             'x': viewbox.x,
             'y': viewbox.y,
             'width': viewbox.width,
@@ -73,13 +74,13 @@ export default class SVGImage {
             'id': imageid
         };
         for (var vl1 in attr) {
-            img.setAttribute(vl1, attr[vl1]);
+            img.setAttribute(vl1, String(attr[vl1]));
         }
         img.setAttributeNS(Paint.xmlnslink, 'xlink:href', 'data:image/png;base64,' + str);
         img.setAttribute('clip-path', 'url(#clip_' + imageid + ')');
         g.appendChild(img);
         // redefine the orginal shape
-        var borderattr = {
+        var borderattr: Record<string, string> = {
             'id': 'pathborder_' + imageid,
             fill: 'none'
         };
@@ -97,8 +98,8 @@ export default class SVGImage {
     // Actions on Images
     ///////////////////////
 
-    static removeClip (img, keepmt?) {
-        var imageid = img.getAttribute('id');
+    static removeClip (img: Element, keepmt?: boolean) {
+        var imageid = img.getAttribute('id')!;
         var isbkg = imageid.indexOf('staticbkg') > -1;
         var clip = gn('clip_' + imageid)!;
         var group = gn('group_' + imageid)!;
@@ -114,7 +115,7 @@ export default class SVGImage {
                 if (clip) {
                     clip.parentNode!.removeChild(clip);
                 }
-                img.parentNode.removeChild(img);
+                img.parentNode!.removeChild(img);
             }
         }
         if (pathborder && !keepmt) {
@@ -122,8 +123,8 @@ export default class SVGImage {
         }
     }
 
-    static paint (img) {
-        var imageid = img.getAttribute('id');
+    static paint (img: Element) {
+        var imageid = img.getAttribute('id')!;
         var isbkg = img.id.indexOf('staticbkg') > -1;
         var pathborder = gn('pathborder_' + imageid)!;
         pathborder.setAttribute('id', isbkg ? 'staticbkg' : getIdFor('path'));
@@ -135,7 +136,7 @@ export default class SVGImage {
             if (clip) {
                 clip.parentNode!.removeChild(clip);
             }
-            img.parentNode.removeChild(img);
+            img.parentNode!.removeChild(img);
         }
         PaintAction.currentshape = pathborder;
     }
@@ -144,15 +145,15 @@ export default class SVGImage {
     //	Mask for camera
     ///////////////////////
 
-    static draw (image, clip, ctx, fcn?) {
+    static draw (image: Element, clip: Element, ctx: CanvasRenderingContext2D, fcn?: () => void) {
         var angle = Transform.getRotationAngle(image);
         var center = SVGTools.getBoxCenter(image);
         var newcnv = document.createElement('canvas');
         setCanvasSize(newcnv, ctx.canvas.width, ctx.canvas.height);
-        var newctx = newcnv.getContext('2d');
+        var newctx = newcnv.getContext('2d')!;
         var dataurl = image.getAttribute('xlink:href');
         var img = document.createElement('img');
-        img.src = dataurl;
+        img.src = dataurl!;
         if (!img.complete) {
             img.onload = function () {
                 drame(img, newctx, angle, center);
@@ -161,7 +162,7 @@ export default class SVGImage {
             drame(img, newctx, angle, center);
         }
 
-        function drame (img, c, angle, center) {
+        function drame (img: HTMLImageElement, c: CanvasRenderingContext2D, angle: number, center: Point) {
             var x = Number(image.getAttribute('x'));
             var y = Number(image.getAttribute('y'));
             var width = Number(image.getAttribute('width'));
@@ -188,7 +189,7 @@ export default class SVGImage {
 
     }
 
-    static getImage (mt) {
+    static getImage (mt: Element | null) {
         if (!mt) {
             return null;
         }
@@ -198,7 +199,7 @@ export default class SVGImage {
         if (mt.nodeName == 'g') {
             var str = mt.id;
             var elem = str.indexOf('group_image_') > -1 ? gn(str.substr(6, str.length))! : null;
-            return !elem ? null : (elem.tagName == 'image') ? elem : null;
+            return !elem ? null : (elem.tagName == 'image') ? elem as Element : null;
         }
         if ((mt.id.indexOf('pathborder_image') < 0) && (mt.id.indexOf('pathmask_image') < 0)) {
             return null;
@@ -206,18 +207,18 @@ export default class SVGImage {
         var imageid = (mt.id.indexOf('pathborder_image') < 0)
             ? mt.id.substring(String('pathmask_').length, mt.id.length)
             : mt.id.substring(String('pathborder_').length, mt.id.length);
-        return gn(imageid)!;
+        return gn(imageid)! as Element;
     }
 
-    static getPathMask (mt) {
+    static getPathMask (mt: Element) {
         if (mt.id.indexOf('pathborder_image') < 0) {
             return null;
         }
         var imageid = mt.id.substring(String('pathborder_').length, mt.id.length);
-        return gn('pathmask_' + imageid)!;
+        return gn('pathmask_' + imageid)! as Element;
     }
 
-    static getPathBorder (mt) {
+    static getPathBorder (mt: Element) {
         if (mt.id.indexOf('image_') == 0) {
             return gn('pathborder_' + mt.id)!;
         }
@@ -232,12 +233,12 @@ export default class SVGImage {
     // Cloning
     ///////////////////////
 
-    static cloneImage (p, elem) {
+    static cloneImage (p: Element, elem: Element) {
         var img = SVGImage.getClonedImage(elem);
         var imageid = img.id;
         var dataurl = elem.getAttribute('xlink:href');
         var html5img = document.createElement('img');
-        html5img.src = dataurl;
+        html5img.src = dataurl!;
         if (!html5img.complete) {
             html5img.onload = function () {
                 renderImage(img);
@@ -245,7 +246,7 @@ export default class SVGImage {
         } else {
             renderImage(img);
         }
-        function renderImage (img) {
+        function renderImage (img: Element) {
             var cnv = document.createElement('canvas');
             setCanvasSize(cnv, Number(img.getAttribute('width')), Number(img.getAttribute('height')));
             var ctx = cnv.getContext('2d')!;
@@ -255,8 +256,8 @@ export default class SVGImage {
         }
 
         // Make the clip Path
-        var pathmask = SVGTools.getCopy(gn('pathmask_' + elem.id)!);
-        var maskattr = {
+        var pathmask = SVGTools.getCopy(gn('pathmask_' + elem.id)! as Element);
+        var maskattr: Record<string, string> = {
             'id': 'pathmask_' + imageid
         };
         for (var val in maskattr) {
@@ -270,26 +271,26 @@ export default class SVGImage {
         clippath.appendChild(pathmask);
         img.setAttribute('clip-path', 'url(#clip_' + imageid + ')');
         g.appendChild(img);
-        var pathborder = SVGTools.getCopy(gn('pathborder_' + elem.id)!);
-        var borderattr = {
+        var pathborder = SVGTools.getCopy(gn('pathborder_' + elem.id)! as Element);
+        var borderattr: Record<string, string> = {
             'id': 'pathborder_' + imageid
         };
         for (var vl in borderattr) {
             (pathborder as HTMLElement).setAttribute(vl, borderattr[vl]);
         }
         p.appendChild(pathborder);
-        Transform.translateTo(img, window.xform);
-        Transform.translateTo(pathmask, window.xform);
-        Transform.translateTo(pathborder, window.xform);
+        Transform.translateTo(img, window.xform!);
+        Transform.translateTo(pathmask, window.xform!);
+        Transform.translateTo(pathborder, window.xform!);
         return img;
     }
 
-    static getClonedImage (elem) {
+    static getClonedImage (elem: Element) {
         var attr = SVGTools.attributeTable[elem.tagName];
         var shape = document.createElementNS(Paint.xmlns, elem.tagName);
 
         for (var i = 0; i < attr.length; i++) {
-            shape.setAttribute(attr[i], elem.getAttribute(attr[i]));
+            shape.setAttribute(attr[i], elem.getAttribute(attr[i])!);
         }
 
         var imageid = getIdForCamera('image');
@@ -306,18 +307,18 @@ export default class SVGImage {
     // Path edditing
     /////////////////////////////
 
-    static rotatePointsOf (shape) {
+    static rotatePointsOf (shape: Element) {
         var elem = SVGImage.getImage(shape);
         var mask = SVGImage.getPathMask(shape);
         if (!mask) {
             return;
         }
-        var angle = Transform.getRotationAngle(elem);
-        mask.setAttributeNS(null, 'd', shape.getAttribute('d'));
+        var angle = Transform.getRotationAngle(elem!);
+        mask.setAttributeNS(null, 'd', shape.getAttribute('d')!);
         if (angle == 0) {
             return;
         }
-        var center = SVGTools.getBoxCenter(elem);
+        var center = SVGTools.getBoxCenter(elem!);
         var rot = Paint.root.createSVGTransform();
         rot.setRotate(-angle, center.x, center.y);
         Transform.rotateFromPoint(rot, mask);

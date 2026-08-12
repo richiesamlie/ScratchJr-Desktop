@@ -13,11 +13,11 @@ import Samples from './Samples.js';
 
 import {loadPage} from '../../appEntry.js';
 
-let version;
+let version: string;
 let busy = false;
-let errorTimer;
+let errorTimer: number | null = null;
 const host = 'inapp/';
-let currentPage = null;
+let currentPage: string | null = null;
 
 export default class Lobby {
     // Getters/setters for properties used in other classes
@@ -25,7 +25,7 @@ export default class Lobby {
         return version;
     }
 
-    static set busy (newBusy) {
+    static set busy (newBusy: boolean) {
         busy = newBusy;
     }
 
@@ -33,7 +33,7 @@ export default class Lobby {
         return errorTimer;
     }
 
-    static appinit (v) {
+    static appinit (v: string) {
         libInit();
         version = v;
         var urlvars = getUrlVars();
@@ -92,12 +92,12 @@ export default class Lobby {
         }
     }
 
-    static setPage (page) {
+    static setPage (page: string) {
         if (busy) {
             return;
         }
         if (gn('hometab')!.className == 'home on') {
-            var doNext = function (page) {
+            var doNext = function (page: string) {
                 Lobby.changePage(page);
             };
             iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
@@ -108,7 +108,7 @@ export default class Lobby {
         }
     }
 
-    static changePage (page) {
+    static changePage (page: string) {
         Lobby.selectButton(page);
         document.documentElement.scrollTop = 0;
         var div = gn('wrapc')!;
@@ -139,7 +139,7 @@ export default class Lobby {
         currentPage = page;
     }
 
-    static loadProjects (p) {
+    static loadProjects (p: HTMLElement) {
         document.onmousemove = null;
         gn('topsection')!.className = 'topsection home';
         gn('tabheader')!.textContent = Localization.localize('MY_PROJECTS');
@@ -152,7 +152,7 @@ export default class Lobby {
         Home.init();
     }
 
-    static loadSamples (p) {
+    static loadSamples (p: HTMLElement) {
         gn('topsection')!.className = 'topsection help';
         gn('tabheader')!.textContent = Localization.localize('QUICK_INTRO');
         gn('subtitle')!.textContent = Localization.localize('SAMPLE_PROJECTS');
@@ -167,7 +167,7 @@ export default class Lobby {
         Samples.init();
     }
 
-    static loadGuide (p) {
+    static loadGuide (p: HTMLElement) {
         gn('topsection')!.className = 'topsection book';
         gn('footer')!.className = 'footer on';
         var div = newHTML('div', 'htmlcontents home', p);
@@ -177,7 +177,7 @@ export default class Lobby {
         }, 250);
     }
 
-    static loadSettings (p) {
+    static loadSettings (p: HTMLElement) {
         // loadProjects without the header
         gn('topsection')!.className = 'topsection book';
         gn('footer')!.className = 'footer off';
@@ -192,7 +192,7 @@ export default class Lobby {
 
         var languageButtons = newHTML('div', 'languagebuttons', div);
 
-        var languageButton;
+        var languageButton: HTMLElement;
         for (var l in window.Settings!.supportedLocales) {
             var selected = '';
             if (window.Settings!.supportedLocales[l] == Localization.currentLocale) {
@@ -201,9 +201,9 @@ export default class Lobby {
             languageButton = newHTML('div', 'localizationselect' + selected, languageButtons);
             languageButton.textContent = l;
 
-            languageButton.onmousedown = function (e) {
+            languageButton.onmousedown = function (e: MouseEvent) {
                 ScratchAudio.sndFX('tap.wav');
-                let newLocale = window.Settings!.supportedLocales[e.target.textContent];
+                let newLocale = window.Settings!.supportedLocales[(e.target as HTMLElement).textContent!];
                 Cookie.set('localization', newLocale);
                 iOS.analyticsEvent('lobby', 'language_changed', newLocale);
                 window.location.href = '?place=gear';
@@ -211,7 +211,7 @@ export default class Lobby {
         }
     }
 
-    static async setSubMenu (page) {
+    static async setSubMenu (page: string) {
         if (busy) {
             return;
         }
@@ -256,7 +256,7 @@ export default class Lobby {
         }
     }
 
-    static selectSubButton (str) {
+    static selectSubButton (str: string) {
         var list = ['about', 'interface', 'paint', 'blocks'];
         for (var i = 0; i < list.length; i++) {
             var kid = gn(list[i] + 'tab')!;
@@ -265,7 +265,7 @@ export default class Lobby {
         }
     }
 
-    static selectButton (str) {
+    static selectButton (str: string) {
         var list = ['home', 'help', 'book', 'gear'];
         for (var i = 0; i < list.length; i++) {
             if (str == list[i]) {
@@ -281,7 +281,7 @@ export default class Lobby {
 	// when we use iframes in electron it doesn't 
 	// preprocess the ES6 syntax correctly.  Manually
 	// loading the help pages into a div instead.
-	static async loadLink (p, url, css, css2) {
+	static async loadLink (p: HTMLElement, url: string, css: string, css2: string) {
         document.documentElement.scrollTop = 0;
         gn('wrapc')!.scrollTop = 0;
         gn('wrapc')!.className = css;
@@ -306,11 +306,11 @@ export default class Lobby {
         
    }
 
-    static errorLoading (str) {
+    static errorLoading (str: string) {
         if (errorTimer) {
             clearTimeout(errorTimer);
         }
-        errorTimer = undefined;
+        errorTimer = null;
         var wc = gn('wrapc')!;
         while (wc.childElementCount > 0) {
             wc.removeChild(wc.childNodes[0]);
@@ -323,7 +323,7 @@ export default class Lobby {
         busy = false;
     }
 
-    static missing (page, p) {
+    static missing (page: string, p: HTMLElement) {
         gn('wrapc')!.className = 'contentwrap scroll';
         var div = newHTML('div', 'htmlcontents', p);
         div.setAttribute('id', 'htmlcontents');

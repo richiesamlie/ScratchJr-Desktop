@@ -2,7 +2,7 @@
 
 export default class Cookie {
     // Thanks to http://www.quirksmode.org/js/cookies.html
-    static set (key, value) {
+    static set (key: string, value: string) {
 /*        var year = new Date();
         year.setTime(year.getTime() + (365 * 24 * 60 * 60 * 1000));
         var expires = '; expires=' + year.toGMTString();
@@ -11,7 +11,7 @@ export default class Cookie {
         
     }
 
-    static get (key) {
+    static get (key: string) {
     /*
         key += '=';
         var cookies = document.cookie.split(';');

@@ -12,7 +12,7 @@ import Ghost from './Ghost';
 import {gn, globalx, globaly, DEGTOR, setCanvasSize, isAndroid} from '../utils/lib';
 
 let view = 'front';
-let target;
+let target: Element | null = null;
 let available = false;
 
 export default class Camera {
@@ -27,7 +27,7 @@ export default class Camera {
         available = newAvailable;
     }
 
-    static startFeed (feedTarget) {
+    static startFeed (feedTarget: Element) {
         ScratchAudio.sndFX('entertap.wav');
         if (!Paint.canvasFits()) {
             Paint.scaleToFit();
@@ -60,7 +60,7 @@ export default class Camera {
         Paint.cameraToolsOn();
     }
 
-    static prepareForLandscapeMode (cnv) {
+    static prepareForLandscapeMode (cnv: HTMLCanvasElement) {
         var result = document.createElement('canvas');
         setCanvasSize(result, cnv.height, cnv.width);
         var finalctx = result.getContext('2d')!;
@@ -78,7 +78,7 @@ export default class Camera {
         return result;
     }
 
-    static doAction (str) {
+    static doAction (str: string) {
         switch (str) {
         case 'cameraflip':
             ScratchAudio.sndFX('tap.wav');
@@ -101,7 +101,7 @@ export default class Camera {
     }
 
     static close () {
-        target = undefined;
+        target = null;
         view = 'front';
         Camera.active = false;
         iOS.stopfeed();
@@ -115,7 +115,7 @@ export default class Camera {
         iOS.captureimage('Camera.processimage'); // javascript call back;
     }
 
-    static getLayerMask (elem) {
+    static getLayerMask (elem: Element) {
         // draw background
         var w, h;
         if (isAndroid) {
@@ -136,56 +136,59 @@ export default class Camera {
             ctx.save();
             ctx.scale(Paint.currentZoom, Paint.currentZoom);
         }
-        SVG2Canvas.drawImage(gn('paintgrid')!, ctx);
+        SVG2Canvas.drawImage(gn('paintgrid')! as Element, ctx);
 
-        var isgroup = (elem.parentNode && (elem.parentNode.id != 'layer1'));
-        var index = (isgroup ? Layer.groupStartsAt(gn('layer1')!, elem.parentNode)
-            : Layer.groupStartsAt(gn('layer1')!, elem));
-        Camera.drawLayers(gn('layer1')!, ctx, 0, index);
-        let localindex;
-        
+        var isgroup = (elem.parentNode && ((elem.parentNode as Element).id != 'layer1'));
+        var index = (isgroup ? Layer.groupStartsAt(gn('layer1')! as Element, elem.parentNode as Element)
+            : Layer.groupStartsAt(gn('layer1')! as Element, elem));
+        Camera.drawLayers(gn('layer1')! as Element, ctx, 0, index);
+        let localindex: number = 0;
+
         if (isgroup) {
-            localindex = Layer.groupStartsAt(elem.parentNode, elem);
-            Camera.drawLayers(elem.parentNode, ctx, 0, localindex);
+            localindex = Layer.groupStartsAt(elem.parentNode as Element, elem);
+            Camera.drawLayers(elem.parentNode as Element, ctx, 0, localindex);
         }
         Camera.drawHole(elem, ctx);
         if (isgroup) {
-            Camera.drawLayers(elem.parentNode, ctx, localindex + 1, elem.parentNode.childElementCount);
+            Camera.drawLayers(elem.parentNode as Element, ctx, localindex + 1,
+                (elem.parentNode as Element).childElementCount);
         }
-        Camera.drawLayers(gn('layer1')!, ctx, index + 1, gn('layer1')!.childElementCount);
+        Camera.drawLayers(gn('layer1')! as Element, ctx, index + 1,
+            (gn('layer1')! as Element).childElementCount);
         if (isAndroid) {
             ctx.restore();
         }
         return cnv;
     }
 
-    static drawLayers (p, ctx, startat, endat) {
+    static drawLayers (p: Element, ctx: CanvasRenderingContext2D, startat: number, endat: number) {
         var min = Math.min(startat, p.childElementCount);
         var max = Math.min(endat, p.childElementCount);
         for (var i = min; i < max; i++) {
-            SVG2Canvas.drawLayer(p.childNodes[i], ctx, SVG2Canvas.drawLayer);
+            SVG2Canvas.drawLayer(p.childNodes[i] as Element, ctx, SVG2Canvas.drawLayer);
         }
     }
 
-    static drawHole (elem, ctx) {
+    static drawHole (elem: Element, ctx: CanvasRenderingContext2D) {
         ctx.save();
         ctx.globalCompositeOperation = 'destination-out';
         SVG2Canvas.drawElementHole(elem, ctx);
         ctx.restore();
         ctx.fillStyle = 'rgba(0, 0, 0,0)';
-        ctx.strokeStyle = !elem.getAttribute('stroke') ? 'none' : elem.getAttribute('stroke');
-        ctx.lineCap = elem.getAttribute('stroke-linecap')
-            ? elem.getAttribute('stroke-linecap') : SVG2Canvas.strokevalues['stroke-linecap'];
+        ctx.strokeStyle = !elem.getAttribute('stroke') ? 'none' : elem.getAttribute('stroke')!;
+        ctx.lineCap = (elem.getAttribute('stroke-linecap')
+            ? elem.getAttribute('stroke-linecap')! : SVG2Canvas.strokevalues['stroke-linecap']) as CanvasLineCap;
         ctx.lineWidth = elem.getAttribute('stroke-width')
             ? Number(elem.getAttribute('stroke-width')) : Number(SVG2Canvas.strokevalues['stroke-width']);
-        ctx.miterLimit = elem.getAttribute('stroke-miterlimit')
-            ? elem.getAttribute('stroke-miterlimit') : SVG2Canvas.strokevalues['stroke-miterlimit'];
-        ctx.linejoin = elem.getAttribute('stroke-linejoin')
-            ? elem.getAttribute('stroke-linejoin') : SVG2Canvas.strokevalues['stroke-linejoin'];
+        ctx.miterLimit = Number(elem.getAttribute('stroke-miterlimit')
+            ? elem.getAttribute('stroke-miterlimit') : SVG2Canvas.strokevalues['stroke-miterlimit']);
+        // legacy typo preserved: 'linejoin' is a no-op expando, rendering uses lineJoin
+        (ctx as CanvasRenderingContext2D & { linejoin: string }).linejoin = elem.getAttribute('stroke-linejoin')
+            ? elem.getAttribute('stroke-linejoin')! : SVG2Canvas.strokevalues['stroke-linejoin'];
         SVG2Canvas.processXMLnode(elem, ctx, true);
     }
 
-    static processimage (str) {
+    static processimage (str: string) {
         if (!target) {
             return;
         }

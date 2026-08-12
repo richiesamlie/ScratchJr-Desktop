@@ -7,6 +7,9 @@ import {setCanvasSize, setProps, writeText, scaleMultiplier,
     newP, globalx, globaly} from '../../utils/lib';
 import Localization from '../../utils/Localization';
 import type Block from './Block';
+import type Sprite from '../engine/Sprite';
+import type Scripts from '../ui/Scripts';
+import type Page from '../engine/Page';
 
 /*
 Argument types
@@ -20,8 +23,8 @@ p: page icons
 
 */
 export default class BlockArg {
-    div: HTMLElement;
-    arg: HTMLElement & { updateIcon?: () => void };
+    div!: HTMLElement;
+    arg!: HTMLElement & { updateIcon?: () => void };
     argType: string;
     argValue: unknown;
     button!: HTMLCanvasElement;
@@ -32,10 +35,10 @@ export default class BlockArg {
     numperrow!: number;
     type: string;
 
-    constructor (block) {
+    constructor (block: Block) {
         this.daddy = block;
         this.type = 'blockarg';
-        this.argType = block.spec[3];
+        this.argType = block.spec[3] as string;
         switch (this.argType) {
         case 'n':
             this.argValue = block.spec[4];
@@ -43,7 +46,7 @@ export default class BlockArg {
             break;
         case 't':
             this.argValue = block.spec[4];
-            if (Localization.isSampleLocalizedKey(this.argValue) && ScratchJr.isSampleOrStarter()) {
+            if (Localization.isSampleLocalizedKey(String(this.argValue)) && ScratchJr.isSampleOrStarter()) {
                 this.argValue = Localization.localize('SAMPLE_TEXT_' + this.argValue);
             }
             this.div = this.addTextArg();
@@ -52,7 +55,7 @@ export default class BlockArg {
             this.argValue = block.spec[4];
             this.list = JSON.stringify(block.spec[1]);
             this.numperrow = 3;
-            this.icon = this.getIconFrom(block.spec[4], block.spec[1]);
+            this.icon = this.getIconFrom(block.spec[4] as string, block.spec[1] as string[]);
             this.div = this.addImageMenu(this.closePictureMenu);
             break;
         case 'd':
@@ -64,7 +67,7 @@ export default class BlockArg {
             break;
         case 'p':
             this.argValue = block.spec[4];
-            this.div = this.pageIcon(this.argValue);
+            this.div = this.pageIcon(this.argValue as number);
             var ctx = block.blockshape.getContext('2d')!;
             const pageCanvas = this.div as HTMLCanvasElement;
             ctx.drawImage(pageCanvas, 0, 0, pageCanvas.width, pageCanvas.height, 0, 0, pageCanvas.width * block.scale, pageCanvas.height * block.scale);
@@ -94,7 +97,7 @@ export default class BlockArg {
         }
     }
 
-    update (spr?) {
+    update (spr?: Sprite) {
         if (this.argType == 'r') {
             this.div.childNodes[0].textContent = String(this.argValue);
         }
@@ -128,7 +131,7 @@ export default class BlockArg {
         
     }
 
-    addLabel (str, isText) {
+    addLabel (str: string, isText: boolean) {
         var scale = this.daddy.scale;
         var dx = isText ? 8 : 16;
         var dy = 57;
@@ -177,7 +180,7 @@ export default class BlockArg {
         return div;
     }
 
-    addNumArgument (str) {
+    addNumArgument (str: string) {
         var div = newHTML('div', 'numfield', this.daddy.div);
         if (this.daddy.blocktype == 'repeat') {
             setProps(div.style, {
@@ -186,7 +189,7 @@ export default class BlockArg {
             });
         }
         var ti = newHTML('h3', undefined, div);
-        this.input = ti;
+        this.input = ti as HTMLInputElement;
         ti.owner = this;
         ti.textContent = str;
         this.arg = div;
@@ -199,10 +202,10 @@ export default class BlockArg {
         return div;
     }
 
-    addTextArgument (str, isText?) {
+    addTextArgument (str: string, isText?: boolean) {
         var div = newHTML('div', 'textfield', this.daddy.div);
         var ti = newHTML('h3', undefined, div);
-        this.input = ti;
+        this.input = ti as HTMLInputElement;
         ti.owner = this;
         ti.textContent = str;
         this.arg = div;
@@ -215,12 +218,12 @@ export default class BlockArg {
         return div;
     }
 
-    setValue (val) {
+    setValue (val: string | number) {
         if (!this.input) {
             return;
         }
         this.argValue = val;
-        this.input.textContent = val;
+        this.input.textContent = val as string;
     }
 
     isText () {
@@ -231,7 +234,7 @@ export default class BlockArg {
     // Menu drop downs
     //////////////////////////////
 
-    getIconFrom (key, list) {
+    getIconFrom (key: string, list: string[]) {
         for (var i = 0; i < list.length; i++) {
             if (list[i].indexOf(key) > -1) {
                 return list[i];
@@ -240,7 +243,7 @@ export default class BlockArg {
         return list[0];
     }
 
-    addImageMenu (fcn) {
+    addImageMenu (fcn: (e: MouseEvent, mu: HTMLElement, b: HTMLElement, c: string) => void) {
         this.drawChoice(this.daddy.blockicon);
         this.button = this.addPressButton();
         if (!this.daddy.inpalette) {
@@ -258,7 +261,7 @@ export default class BlockArg {
         return this.daddy.blockicon;
     }
 
-    drawChoice (cnv) {
+    drawChoice (cnv: HTMLCanvasElement) {
         var ctx = cnv.getContext('2d')!;
         ctx.clearRect(0, 0, cnv.width, cnv.height);
         var icon = BlockSpecs.getImageFrom('assets/blockicons/' + this.icon, 'svg');
@@ -302,7 +305,7 @@ export default class BlockArg {
         return field;
     }
 
-    pressDropDown (e, fcn) {
+    pressDropDown (e: MouseEvent & { touches?: TouchList }, fcn: (e: MouseEvent, mu: HTMLElement, b: HTMLElement, c: string) => void) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -318,83 +321,89 @@ export default class BlockArg {
         Menu.openDropDown(this.daddy.div, fcn);
     }
 
-    closePictureMenu (e, mu, b, c) {
+    closePictureMenu (e: MouseEvent, mu: HTMLElement, b: HTMLElement, c: string) {
         e.preventDefault();
-        var value = b.owner.arg.argValue;
-        b.owner.arg.argValue = c.substring(c.indexOf('_') + 1, c.length);
-        var ctx = b.owner.blockicon.getContext('2d')!;
-        b.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
+        const block = b.owner as Block;
+        var value = block.arg.argValue;
+        block.arg.argValue = c.substring(c.indexOf('_') + 1, c.length);
+        var ctx = block.blockicon.getContext('2d')!;
+        const bel = b as HTMLElement & { icon?: HTMLImageElement };
+        bel.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
+        const icon = bel.icon as HTMLImageElement;
         ctx.clearRect(0, 0, 85 * scaleMultiplier * window.devicePixelRatio, 66 * scaleMultiplier * window.devicePixelRatio);
-        if (!b.icon.complete) {
-            b.icon.onload = function () {
-                var w = b.icon.width;
-                var h = b.icon.height;
-                ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
+        if (!icon.complete) {
+            icon.onload = function () {
+                var w = icon.width;
+                var h = icon.height;
+                ctx.drawImage(icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
             };
         } else {
-            var w = b.icon.width;
-            var h = b.icon.height;
-            ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
+            var w = icon.width;
+            var h = icon.height;
+            ctx.drawImage(icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
         }
         if (Menu.openMenu) {
-            Menu.openMenu.parentNode.removeChild(Menu.openMenu);
+            Menu.openMenu!.parentNode!.removeChild(Menu.openMenu!);
         }
-        if (b.owner.arg.argValue != value) {
-            var spr = b.parentNode.owner.spr;
+        if (block.arg.argValue != value) {
+            var spr = (b.parentNode!.owner as Scripts).spr;
             var action = {
                 action: 'scripts',
-                where: spr.div.parentNode.owner.id,
+                where: (spr.div.parentNode!.owner as Page).id,
                 who: spr.id
             };
             Undo.record(action);
             ScratchJr.storyStart('BlockArg.prototype.closePictureMenu');
         }
-        Menu.openMenu = undefined;
+        Menu.openMenu = null;
     }
 
-    menuCloseSpeeds (e, mu, b, c) {
+    menuCloseSpeeds (e: MouseEvent, mu: HTMLElement, b: HTMLElement, c: string) {
         e.preventDefault();
-        var value = b.owner.arg.argValue;
-        b.owner.arg.argValue = BlockSpecs.speeds.indexOf(c);
-        var ctx = b.owner.blockicon.getContext('2d')!;
-        b.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
+        const block = b.owner as Block;
+        var value = block.arg.argValue;
+        block.arg.argValue = BlockSpecs.speeds.indexOf(c);
+        var ctx = block.blockicon.getContext('2d')!;
+        const bel = b as HTMLElement & { icon?: HTMLImageElement };
+        bel.icon = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
+        const icon = bel.icon as HTMLImageElement;
         ctx.clearRect(0, 0, 64 * scaleMultiplier * window.devicePixelRatio, 64 * scaleMultiplier * window.devicePixelRatio);
         // On Android 4.2, clearRect does not work right away. Need to tickle the DOM
-        b.owner.blockicon.style.display = 'none';
-        //b.owner.blockicon.offsetHeight;
-        b.owner.blockicon.style.display = 'inherit';
-        if (!b.icon.complete) {
-            b.icon.onload = function () {
-                var w = b.icon.width;
-                var h = b.icon.height;
-                ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
+        block.blockicon.style.display = 'none';
+        //block.blockicon.offsetHeight;
+        block.blockicon.style.display = 'inherit';
+        if (!icon.complete) {
+            icon.onload = function () {
+                var w = icon.width;
+                var h = icon.height;
+                ctx.drawImage(icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
             };
         } else {
-            var w = b.icon.width;
-            var h = b.icon.height;
-            ctx.drawImage(b.icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
+            var w = icon.width;
+            var h = icon.height;
+            ctx.drawImage(icon, 0, 0, w, h, 0, 0, w * scaleMultiplier * window.devicePixelRatio, h * scaleMultiplier * window.devicePixelRatio);
         }
         if (Menu.openMenu) {
-            Menu.openMenu.parentNode.removeChild(Menu.openMenu);
+            Menu.openMenu!.parentNode!.removeChild(Menu.openMenu!);
         }
-        if (b.owner.arg.argValue != value) {
-            var spr = b.parentNode.owner.spr;
+        if (block.arg.argValue != value) {
+            var spr = (b.parentNode!.owner as Scripts).spr;
             var action = {
                 action: 'scripts',
-                where: spr.div.parentNode.owner.id,
+                where: (spr.div.parentNode!.owner as Page).id,
                 who: spr.id
             };
             Undo.record(action);
             ScratchJr.storyStart('BlockArg.prototype.menuCloseSpeeds');
         }
-        Menu.openMenu = undefined;
+        Menu.openMenu = null;
     }
 
     //////////////////////////
     // Page Icon
     //////////////////////////
 
-    pageIcon (num) {
+    pageIcon (num: number) {
         var dpr = window.devicePixelRatio;
         var page = ScratchJr.stage.pages[num - 1];
         var icon = document.createElement('canvas');
@@ -417,7 +426,7 @@ export default class BlockArg {
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, c.width, c.height);
         if (page.bkg.childElementCount > 0) {
-            var img = page.bkg.childNodes[0];
+            var img = page.bkg.childNodes[0] as HTMLImageElement;
             var imgw = img.naturalWidth ? img.naturalWidth : img.width;
             var imgh = img.naturalHeight ? img.naturalHeight : img.height;
             ctx.drawImage(img, 0, 0, imgw, imgh, 0, 0, w, h);
@@ -428,7 +437,7 @@ export default class BlockArg {
             if (!spr) {
                 continue;
             }
-            page.stampSpriteAt(ctx, spr, scale);
+            page.stampSpriteAt(ctx, spr as Sprite, scale);
         }
         mainctx.drawImage(c, 3 * dpr, 3 * dpr);
         var ictx = icon.getContext('2d')!;
@@ -446,12 +455,12 @@ export default class BlockArg {
         ictx.stroke();
         ictx.fill();
         writeText(ictx, 'bold ' + (12 * dpr) + 'px '
-            + window.Settings!.blockArgFont, 'white', page.num, 26 * dpr, 58 * dpr);
+            + window.Settings!.blockArgFont, 'white', String(page.num), 26 * dpr, 58 * dpr);
         return icon;
     }
 
     updateIcon () {
-        var num = this.argValue;
+        var num = this.argValue as number;
         var page = ScratchJr.stage.pages[Number(num) - 1];
         page.num = num;
         this.div = this.pageIcon(num);

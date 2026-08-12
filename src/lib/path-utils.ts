@@ -7,12 +7,12 @@
 
 const path = require('path');
 
-function isParentFolder(parent, dir) {
+function isParentFolder(parent: string, dir: string) {
     const relative = path.relative(parent, dir);
     return !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
-function validateFilePath(appRoot, requestedFile) {
+function validateFilePath(appRoot: string, requestedFile: string) {
     if (!requestedFile || requestedFile === '') {
         throw new Error('File cannot be null or empty');
     }

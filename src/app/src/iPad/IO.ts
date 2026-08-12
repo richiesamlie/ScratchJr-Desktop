@@ -23,6 +23,20 @@ interface LegacyZipEntry {
     asBinary(): string;
 }
 
+// Project row bag as passed between the lobby/editor and the projects table.
+// All fields optional: callers construct partial bags and JSON bags are
+// structurally compatible (Record<string, unknown>).
+interface ProjectRecord {
+    name?: string;
+    version?: string;
+    deleted?: string;
+    isgift?: string;
+    json?: unknown;
+    thumbnail?: unknown;
+    id?: string;
+    mtime?: string;
+}
+
 // Sharing state
 let zipFile: JSZip | null = null;
 let zipAssetsExpected = 0;
@@ -43,7 +57,7 @@ export default class IO {
      * Synchronous requests are normally not recommended, but in this case we're
      * going to file URLs so this should be okay.
      */
-    static requestSynchronous (url) {
+    static requestSynchronous (url: string) {
         var request = new XMLHttpRequest();
         request.open('GET', url, false);
         request.send(null);
@@ -55,7 +69,7 @@ export default class IO {
         }
     }
 
-    static requestFromServer (url, whenDone) {
+    static requestFromServer (url: string, whenDone: (result: string) => void) {
       
         iOS.waitForInterface(function() {
         	iOS.gettextresource(url, whenDone);
@@ -63,7 +77,7 @@ export default class IO {
         
     }
 
-    static getThumbnail (str, w, h, destw, desth) {
+    static getThumbnail (str: string, w: number | string, h: number | string, destw?: number, desth?: number) {
         str = str.replace(/>\s*</g, '><');
         var xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
         var extxml = document.importNode(xmlDoc.documentElement, true);
@@ -71,10 +85,10 @@ export default class IO {
             extxml.removeChild(extxml.childNodes[0]);
         }
         var srccnv = document.createElement('canvas');
-        setCanvasSize(srccnv, w, h);
-        var ctx = srccnv.getContext('2d');
+        setCanvasSize(srccnv, Number(w), Number(h));
+        var ctx = srccnv.getContext('2d')!;
         for (var i = 0; i < extxml.childElementCount; i++) {
-            SVG2Canvas.drawLayer(extxml.childNodes[i], ctx);
+            SVG2Canvas.drawLayer(extxml.childNodes[i] as Element, ctx);
         }
         if (!destw || !desth) {
             return srccnv.toDataURL('image/png');
@@ -88,7 +102,7 @@ export default class IO {
     // in iOS casting an svg url in a img.src works except when the SVG has images.
     // This code avoids that bug
     // also when in debug mode you need to get the base64 to avoid sandboxing issues
-    static getAsset (md5, fcn) { // returns either a link or a base64 dataurl
+    static getAsset (md5: string, fcn: (data: string) => void) { // returns either a link or a base64 dataurl
         if (MediaLib.keys[md5]) {
             fcn(MediaLib.path + md5); return;
         } // just url link assets do not have photos
@@ -102,7 +116,7 @@ export default class IO {
             iOS.getmedia(md5, nextStep);
         } // get url contents
 
-        function gotit (str) {
+        function gotit (str: string) {
             var base64 = IO.getImageDataURL(md5, btoa(str));
             if (str.indexOf('xlink:href') < 0) {
                 fcn(md5); // does not have embedded images
@@ -113,7 +127,7 @@ export default class IO {
             } // base64 dataurl
         }
 
-        function nextStep (dataurl) { // iOS 7 requires to read the internal base64 images before returning contents
+        function nextStep (dataurl: string) { // iOS 7 requires to read the internal base64 images before returning contents
             var str = atob(dataurl);
             if ((str.indexOf('xlink:href') < 0) && iOS.path) {
                 fcn(iOS.path + md5); // does not have embedded images
@@ -126,7 +140,7 @@ export default class IO {
         }
     }
 
-    static getImagesInSVG (str, whenDone) {
+    static getImagesInSVG (str: string, whenDone: () => void) {
         str = str.replace(/>\s*</g, '><');
         if (str.indexOf('xlink:href') < 0) {
             whenDone(); // needs this in case of reading a PNG in debug mode
@@ -134,18 +148,18 @@ export default class IO {
             loadInnerImages(str, whenDone);
         }
 
-        function loadInnerImages (str, whenDone) {
+        function loadInnerImages (str: string, whenDone: () => void) {
             var xmlDoc: Document | null = new DOMParser().parseFromString(str, 'text/xml');
             var extxml: HTMLElement | null = document.importNode(xmlDoc.documentElement, true);
             if (extxml!.childNodes[0].nodeName == '#comment') {
                 extxml!.removeChild(extxml!.childNodes[0]);
             }
-            var images = IO.getImages(extxml, []);
+            var images = IO.getImages(extxml!, []);
             var imageCount = images.length;
             for (var i = 0; i < images.length; i++) {
                 var dataurl = images[i].getAttribute('xlink:href');
                 var svgimg = document.createElement('img');
-                svgimg.src = dataurl;
+                svgimg.src = dataurl!;
                 if (!svgimg.complete) {
                     svgimg.onload = function () {
                         readToLad();
@@ -166,7 +180,7 @@ export default class IO {
         }
     }
 
-    static getImages (p, res) {
+    static getImages (p: HTMLElement, res: HTMLElement[]) {
         for (var i = 0; i < p.childNodes.length; i++) {
             var elem = p.childNodes[i];
             if (elem.nodeName == 'metadata') {
@@ -182,15 +196,15 @@ export default class IO {
                 continue;
             }
             if (elem.nodeName == 'image') {
-                res.push(elem);
+                res.push(elem as HTMLElement);
             }
             if (elem.nodeName == 'g') {
-                IO.getImages(elem, res);
+                IO.getImages(elem as HTMLElement, res);
             }
         }
         return res;
     }
-    static getImageDataURL (md5, data) {
+    static getImageDataURL (md5: string, data: string) {
         var header = '';
         switch (IO.getExtension(md5)) {
         case 'svg': header = 'data:image/svg+xml;base64,';
@@ -201,9 +215,9 @@ export default class IO {
         return header + data;
     }
 
-    static getObject (md5, fcn) {
+    static getObject (md5: string, fcn: (obj: string) => void) {
         if (md5.indexOf('/') > -1) {
-            var gotit = function (str) {
+            var gotit = function (str: string) {
                 fcn(str);
             };
             IO.requestFromServer(md5, gotit);
@@ -212,26 +226,26 @@ export default class IO {
         }
     }
 
-    static getObjectinDB (db, md5, fcn) {
+    static getObjectinDB (db: string, md5: string, fcn: (obj: string) => void) {
         var json: SqlPayload = {};
         json.stmt = 'select * from ' + db + ' where id = ?';
         json.values = [md5];
         iOS.query(json, fcn);
     }
 
-    static setMedia (data, type, fcn) {
+    static setMedia (data: string, type: string, fcn?: (result: string) => void) {
         iOS.setmedia(btoa(data), type, fcn);
     }
 
-    static query (type, obj, fcn) {
+    static query (type: string, obj: SqlPayload, fcn: (result: string) => void) {
         var json: SqlPayload = {};
-        json.stmt = 'select ' + obj.items + ' from ' + type
-            + ' where ' + obj.cond + (obj.order ? ' order by ' + obj.order : '');
+        json.stmt = 'select ' + obj.items!.toString() + ' from ' + type
+            + ' where ' + obj.cond! + (obj.order ? ' order by ' + obj.order : '');
         json.values = obj.values;
         iOS.query(json, fcn);
     }
 
-    static deleteobject (type, id, fcn) {
+    static deleteobject (type: string, id: string, fcn?: (result: unknown) => void) {
         var json: SqlPayload = {};
         json.stmt = 'delete from ' + type + ' where id = ?';
         json.values = [id];
@@ -250,13 +264,13 @@ export default class IO {
         [mtime] => modification time
     */
 
-    static createProject (obj, fcn) {
+    static createProject (obj: ProjectRecord, fcn?: (result: unknown) => void) {
         var json: SqlPayload = {};
         var keylist = ['name', 'version', 'deleted', 'mtime', 'isgift'];
         var values = '?,?,?,?,?';
         var mtime = (new Date()).getTime().toString();
         var isGift = obj.isgift ? obj.isgift : '0';
-        json.values = [obj.name, obj.version, 'NO', mtime, isGift];
+        json.values = [obj.name!, obj.version!, 'NO', mtime, isGift];
         if (obj.json) {
             addValue('json', JSON.stringify(obj.json));
         }
@@ -265,39 +279,39 @@ export default class IO {
         }
         json.stmt = 'insert into ' + database + ' (' + keylist.toString() + ') values (' + values + ')';
         iOS.stmt(json, fcn);
-        function addValue (key, str) {
+        function addValue (key: string, str: string) {
             keylist.push(key);
             values += ',?';
             json.values!.push(str);
         }
     }
 
-    static saveProject (obj, fcn) {
+    static saveProject (obj: ProjectRecord, fcn?: (result: unknown) => void) {
         var json: SqlPayload = {};
         var keylist = ['version = ?', 'deleted = ?', 'name = ?', 'json = ?', 'thumbnail = ?', 'mtime = ?'];
-        json.values = [obj.version, obj.deleted, obj.name, JSON.stringify(obj.json),
+        json.values = [obj.version!, obj.deleted!, obj.name!, JSON.stringify(obj.json),
             JSON.stringify(obj.thumbnail), (new Date()).getTime().toString()];
         json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
-        json.values.push(obj.id);
+        json.values.push(obj.id!);
         iOS.stmt(json, fcn);
     }
 
     // Since saveProject is changing the modified time of the project,
     // let's just simply update the isgift flag in a separate function...
-    static setProjectIsGift (obj, fcn?) {
+    static setProjectIsGift (obj: ProjectRecord, fcn?: (result: unknown) => void) {
         var json: SqlPayload = {};
         var keylist = ['isgift = ?'];
-        json.values = [obj.isgift];
+        json.values = [obj.isgift!];
         json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
-        json.values.push(obj.id);
+        json.values.push(obj.id!);
         iOS.stmt(json, fcn);
     }
 
-    static getExtension (str) {
+    static getExtension (str: string) {
         return str.substring(str.indexOf('.') + 1, str.length);
     }
 
-    static getFilename (str) {
+    static getFilename (str: string) {
         return str.substring(0, str.indexOf('.'));
     }
 
@@ -313,9 +327,9 @@ export default class IO {
     // Sharing
     ////////////////////
 
-    static zipProject (projectReference, finished) {
-        IO.getObject(projectReference, function (projectFromDB) {
-            var projectMetadata = {
+    static zipProject (projectReference: string, finished: (contents: string) => void) {
+        IO.getObject(projectReference, function (projectFromDB: string) {
+            var projectMetadata: Record<string, string[]> = {
                 'thumbnails': [],
                 'characters': [],
                 'backgrounds': [],
@@ -334,7 +348,7 @@ export default class IO {
 
             // Method to determine if a particular asset needs to be collected
             // If it does, save the reference in projectMetadata for collection
-            var collectAsset = function (assetType, md5) {
+            var collectAsset = function (assetType: string, md5: string) {
                 if (md5 && (typeof md5 !== 'undefined')) {
                     if (md5.indexOf('samples/') < 0) { // Exclude sample assets
                         if (collectLibraryAssets) {
@@ -358,10 +372,12 @@ export default class IO {
             // Project thumbnail
             const thumbnail = jsonData.thumbnail;
             if (thumbnail && typeof thumbnail === 'object' && 'md5' in thumbnail) {
-                collectAsset('thumbnails', thumbnail.md5);
+                collectAsset('thumbnails', thumbnail.md5 as string);
             }
 
-            var projectData = jsonData.json;
+            // Nested project JSON (pages -> sprites) is an opaque bag; page/sprite
+            // shapes vary by project version, so index it dynamically.
+            var projectData = jsonData.json as Record<string, any>;
 
             // Data for each page
             if (projectData && typeof projectData === 'object' && 'pages' in projectData && Array.isArray(projectData.pages)) {
@@ -404,8 +420,8 @@ export default class IO {
             zipAssetsActual = 0;
 
             // Generic function for adding media to the zip file
-            var addMediaToZip = function (folder, md5) {
-                var addB64ToZip = function (b64data) {
+            var addMediaToZip = function (folder: string, md5: string) {
+                var addB64ToZip = function (b64data: string) {
                     zipFile!.file('project/' + folder + '/' + md5, b64data, {
                         base64: true,
                         createFolders: true
@@ -472,7 +488,7 @@ export default class IO {
                 if ((zipAssetsActual / zipAssetsExpected) == 1) {
                     finished((zipFile as unknown as LegacyZipArchive).generate({
                         'compression': 'STORE'
-                    }));
+                    }) as string);
                 } else {
                     setTimeout(checkStatus, 200);
                 }
@@ -481,20 +497,20 @@ export default class IO {
         });
     }
 
-    static uniqueProjectName (jsonData, callback, useOne?) {
+    static uniqueProjectName (jsonData: ProjectRecord, callback: (jsonData: ProjectRecord) => void, useOne?: boolean) {
         // Ensure the project name is not a duplicate
 
         // Split project name from trailing number
         // Returns [project name, number]
         // E.g., "Project 2" -> ["Project", 2]
         // "My project" -> ["My project", null];
-        var nameAndNumber = function (name) {
+        var nameAndNumber = function (name: string) {
             var splitName = name.split(' ');
             var lastPart = splitName.pop();
-            if (!isNaN(lastPart)) {
+            if (!isNaN(Number(lastPart))) {
                 return {
                     'name': splitName.join(' '),
-                    'number': parseInt(lastPart)
+                    'number': parseInt(lastPart as string)
                 };
             } else {
                 return {
@@ -504,20 +520,20 @@ export default class IO {
             }
         };
 
-        var giftProjectNameParts = nameAndNumber(jsonData.name);
+        var giftProjectNameParts = nameAndNumber(jsonData.name!);
 
         // Get project names already existing in the DB
         var json: SqlPayload = {};
         json.cond = 'deleted = ? AND gallery IS NULL';
         json.items = ['name'];
         json.values = ['NO'];
-        IO.query(iOS.database, json, function (existingProjects) {
+        IO.query(iOS.database, json, function (existingProjects: string) {
             var newNumber: number | null = null;
 
-            existingProjects = JSON.parse(existingProjects);
-            for (var i = 0; i < existingProjects.length; i++) {
-                var existingProjectName = IO.parseProjectData(existingProjects[i]).name;
-                var existingProjectNameParts = nameAndNumber(existingProjectName);
+            var existingProjectList = JSON.parse(existingProjects);
+            for (var i = 0; i < existingProjectList.length; i++) {
+                var existingProjectName = IO.parseProjectData(existingProjectList[i]).name;
+                var existingProjectNameParts = nameAndNumber(existingProjectName as string);
                 if (giftProjectNameParts.name == existingProjectNameParts.name) {
                     if (existingProjectNameParts.number != null) {
                         // "My project 2" -> "My project 3"
@@ -541,7 +557,7 @@ export default class IO {
     }
 
     // Receive a base64-encoded zip from iOS (upon open a project)
-    static loadProjectFromSjr (b64data) {
+    static loadProjectFromSjr (b64data: string) {
         // Together, these two provide a "progress" indication
         // that lets us know when to refresh the lobby (when sE/sA = 1)
         var saveExpected = 0; // How many assets we expect to save - updated as we process the zip
@@ -555,7 +571,7 @@ export default class IO {
         // To store character MD5 -> character name map
         // The character name is stored in the project JSON; when we load
         // the actual SVG asset, we need the associated name for storage in the DB
-        var characterNames = {};
+        var characterNames: Record<string, string> = {};
 
         // First find the data.json project file
         

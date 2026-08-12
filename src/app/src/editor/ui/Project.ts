@@ -10,6 +10,7 @@ import IO from '../../iPad/IO';
 import Paint from '../../painteditor/Paint';
 import SVG2Canvas from '../../utils/SVG2Canvas';
 import type Scripts from './Scripts';
+import type Block from '../blocks/Block';
 import {frame, gn, newHTML, scaleMultiplier, getIdFor,
     isAndroid, setProps, setCanvasSize} from '../../utils/lib';
 
@@ -17,11 +18,14 @@ let metadata: Record<string, unknown> | null = null;
 let mediaCount = -1;
 let saving = false;
 let interval: number | null = null;
-let pageid;
+let pageid: string | null = null;
 let loadIcon: HTMLImageElement | null = null;
 let error = false;
 let projectbarsize = 66;
 let mediaCountBase = 1;
+
+// Recursive strip encoding: [blocktype, arg, dx, dy, (nested strips)?]
+type EncodedStrip = Array<Array<string | number | EncodedStrip>>;
 
 export default class Project {
     static get metadata () {
@@ -58,7 +62,7 @@ export default class Project {
         UI.clear();
     }
 
-    static load (md5?) {
+    static load (md5?: string) {
         mediaCountBase = 1;
         ScratchJr.log('Project load status', ScratchJr.getTime(), 'sec', BlockSpecs.loadCount);
         if (BlockSpecs.loadCount > 0) {
@@ -84,16 +88,16 @@ export default class Project {
         ScratchJr.log('all UI assets recieved - procced to call server', ScratchJr.getTime(), 'sec');
         Project.setProgress(20);
         UI.layout();
-        IO.getObject(ScratchJr.currentProject, Project.dataRecieved);
+        IO.getObject(ScratchJr.currentProject!, Project.dataRecieved);
     }
 
-    static dataRecieved (str) {
+    static dataRecieved (str: string) {
         ScratchJr.log('got project metadata', ScratchJr.getTime(), 'sec');
         var data = JSON.parse(str)[0];
         metadata = IO.parseProjectData(data);
         mediaCount = -1;
         if (metadata!.json) {
-            Project.loadData(metadata.json, doneProjectLoad);
+            Project.loadData(metadata.json as Record<string, unknown>, doneProjectLoad);
         } else {
             mediaCount = 0;
             let page = new Page(getIdFor('page')); // eslint-disable-line no-unused-vars
@@ -132,12 +136,12 @@ export default class Project {
 
     static init () {
         ScratchJr.log('Project init', ScratchJr.getTime(), 'sec');
-        var bd = newHTML('div', 'modal-backdrop fade', frame.parentNode);
+        var bd = newHTML('div', 'modal-backdrop fade', frame.parentNode as HTMLElement);
         bd.setAttribute('id', 'backdrop');
         setProps(gn('backdrop')!.style, {
             display: 'none'
         });
-        var modalOuter = newHTML('div', 'modal-outer', frame.parentNode);
+        var modalOuter = newHTML('div', 'modal-outer', frame.parentNode as HTMLElement);
         var modalMiddle = newHTML('div', 'modal-middle', modalOuter);
         var modal = newHTML('div', 'modal hide fade', modalMiddle);
         modal.setAttribute('id', 'modaldialog');
@@ -168,10 +172,10 @@ export default class Project {
         var cover2 = newHTML('div', 'progressbar2', body);
         cover2.setAttribute('id', 'progressbar2');
         var li = newHTML('div', 'loadicon', body);
-        li.appendChild(loadIcon);
+        li.appendChild(loadIcon!);
     }
 
-    static setProgress (perc) {
+    static setProgress (perc: number) {
         if (!gn('progressbar')!) {
             return;
         }
@@ -196,7 +200,7 @@ export default class Project {
         gn('modaldialog')!.setAttribute('class', 'modal fade in');
     }
 
-    static loadwait (whenDone) {
+    static loadwait (whenDone: () => void) {
         if (interval != null) {
             window.clearInterval(interval);
         }
@@ -210,7 +214,7 @@ export default class Project {
         }
     }
 
-    static loadTask (whenDone) {
+    static loadTask (whenDone: () => void) {
         if (mediaCount <= 0) {
             Project.getStarted(whenDone);
         } else {
@@ -218,14 +222,14 @@ export default class Project {
         }
     }
 
-    static getMediaLoadRatio (f) {
+    static getMediaLoadRatio (f: number) {
         if (mediaCount > mediaCountBase) {
             mediaCountBase = mediaCount;
         }
         return 20 + f - (mediaCount / mediaCountBase) * f;
     }
 
-    static getStarted (whenDone) {
+    static getStarted (whenDone: () => void) {
         Project.setProgress(90);
         if (interval) {
             window.clearInterval(interval);
@@ -249,13 +253,13 @@ export default class Project {
         });
     }
 
-    static setLoadPage (pageid, whenDone) {
+    static setLoadPage (pageid: string | null, whenDone: () => void) {
         ScratchJr.log('setLoadPage', ScratchJr.getTime(), 'sec');
         var pages = ScratchJr.stage.getPagesID();
-        if (pages.indexOf(pageid) < 0) {
+        if (pages.indexOf(pageid!) < 0) {
             ScratchJr.stage.currentPage = ScratchJr.stage.pages[0];
         } else {
-            ScratchJr.stage.currentPage = ScratchJr.stage.getPage(pageid);
+            ScratchJr.stage.currentPage = ScratchJr.stage.getPage(pageid!);
         }
         ScratchJr.stage.currentPage.div.style.visibility = 'visible';
         var list = ScratchJr.stage.pages;
@@ -271,7 +275,7 @@ export default class Project {
         }
     }
 
-    static loadData (data, fcn) {
+    static loadData (data: Record<string, unknown>, fcn: () => void) {
         try {
             data = (typeof data === 'string') ? JSON.parse(data) : data;
             mediaCount = 0;
@@ -301,12 +305,12 @@ export default class Project {
         }
     }
 
-    static loadme (data, fcn) {
+    static loadme (data: Record<string, unknown>, fcn: () => void) {
         Project.recreate(data);
         Project.loadwait(fcn);
     }
 
-    static getLoadType (bkgid, sid, cid) {
+    static getLoadType (bkgid: string | null, sid: string | null, cid: string | null) {
         if (bkgid != null) {
             return 'bkg';
         }
@@ -323,19 +327,19 @@ export default class Project {
     // load project data
     //////////////////////////////////////////////////
 
-    static recreate (data) {
+    static recreate (data: Record<string, unknown>) {
         ScratchJr.log('Project data structures start loading', ScratchJr.getTime(), 'sec');
         mediaCount = 0;
         ScratchJr.stage.pages = [];
-        var pages = data.pages;
-        pageid = data.currentPage;
+        var pages = data.pages as unknown[];
+        pageid = data.currentPage as string;
         for (var i = 0; i < pages.length; i++) {
-            Project.recreatePage(pages[i], data[pages[i]]);
+            Project.recreatePage(pages[i] as string, data[pages[i] as string] as Record<string, unknown>);
         }
         mediaCountBase = mediaCount;
     }
 
-    static recreatePage (name, data, fcn?) {
+    static recreatePage (name: string, data: Record<string, unknown>, fcn?: () => void) {
         var page = new Page(name, data, fcn);
         page.div.style.visibility = 'hidden';
     }
@@ -348,15 +352,15 @@ export default class Project {
         Project.setProgress(Project.getMediaLoadRatio(70));
     }
 
-    static recreateObject (page, name, data, callBack, active?) {
-        var list = data.scripts;
+    static recreateObject (page: Page, name: string, data: Record<string, unknown>, callBack: (spr: Sprite) => void, active?: boolean) {
+        var list = data.scripts as unknown[];
         //delete data.scripts;
         var spr;
         data.page = page;
         if (data.type == 'sprite') {
             mediaCount++;
-            var fcn = function (spr) {
-                spr.setPos(data.xcoor, data.ycoor);
+            var fcn = function (spr: Sprite) {
+                spr.setPos(data.xcoor as number, data.ycoor as number);
                 mediaCount--;
                 if (gn('backdrop')!.className == 'modal-backdrop fade in') {
                     Project.setProgress(Project.getMediaLoadRatio(70));
@@ -383,7 +387,7 @@ export default class Project {
         } else {
             spr = new Sprite(data, callBack);
         }
-        spr.div.style.opacity = spr.shown ? 1 : 0;
+        spr.div.style.opacity = String(spr.shown ? 1 : 0);
         return spr;
     }
 
@@ -391,7 +395,7 @@ export default class Project {
     // Save project data
     //////////////////////////////////////////////////
 
-    static prepareToSave (id, whenDone) {
+    static prepareToSave (id: string, whenDone: () => void) {
         if (saving) {
             Alert.open(frame, gn('flip')!, 'Waiting', '#28A5DA');
             Project.waitUntilSaved(id, whenDone);
@@ -401,7 +405,7 @@ export default class Project {
         }
     }
 
-    static waitUntilSaved (id, fcn) {
+    static waitUntilSaved (id: string, fcn: () => void) {
         if (saving) {
             setTimeout(function () {
                 Project.waitUntilSaved(id, fcn);
@@ -413,12 +417,12 @@ export default class Project {
 
     // Determine if thumbnailMD5 is unique to projectID
     // callback(true/false)
-    static thumbnailUnique (thumbnailMD5, projectID, callback) {
+    static thumbnailUnique (thumbnailMD5: string, projectID: string, callback: (isUnique: boolean) => void) {
         var json: SqlPayload = {};
         json.cond = 'deleted = ? AND id != ? AND gallery IS NULL';
         json.items = ['name', 'thumbnail', 'id'];
         json.values = ['NO', projectID];
-        IO.query(iOS.database, json, function (result) {
+        IO.query(iOS.database, json, function (result: string) {
             var pdata = JSON.parse(result);
             var isUnique = true;
             for (var p = 0; p < pdata.length; p++) {
@@ -437,7 +441,7 @@ export default class Project {
         });
     }
 
-    static save (id, whenDone?) {
+    static save (id: string, whenDone?: () => void) {
         saving = true;
         var th = metadata!.thumbnail;
         if (th && ScratchJr.editmode != 'storyStarter') { // Don't try to delete the thumbnail in a sample project
@@ -453,25 +457,26 @@ export default class Project {
         metadata!.id = id;
         metadata!.json = Project.getProject(ScratchJr.stage.pages[0].id);
         Project.getThumbnailPNG(ScratchJr.stage.pages[0], 192, 144, getMD5);
-        function getMD5 (dataurl) {
+        function getMD5 (dataurl: string) {
             var pngBase64 = dataurl.split(',')[1];
-            iOS.getmd5(pngBase64, function (str) {
-                savePNG(str, pngBase64);
+            iOS.getmd5(pngBase64, function (str: string | null) {
+                savePNG(str!, pngBase64);
             });
         }
 
-        function savePNG (md5, pngBase64) {
+        function savePNG (md5: string, pngBase64: string) {
             var filename = ScratchJr.currentProject + '_' + md5;
-            iOS.setmedianame(pngBase64, filename, 'png', doNext);
+            iOS.setmedianame(pngBase64, filename, 'png', doNext as (result: unknown) => void);
         }
 
-        function doNext (md5) {
+        function doNext (md5: string) {
             metadata!.thumbnail = {
                 'pagecount': ScratchJr.stage.pages.length,
                 'md5': md5
             };
             metadata!.mtime = (new Date()).getTime().toString();
-            IO.saveProject(metadata, saveDone);
+            // IO.saveProject's ProjectRecord bag is structurally compatible with our metadata
+            IO.saveProject(metadata as unknown as Parameters<typeof IO.saveProject>[0], saveDone);
         }
 
         function saveDone () {
@@ -482,7 +487,7 @@ export default class Project {
         }
     }
 
-    static getProject (pageid) {
+    static getProject (pageid: string) {
         var obj: Record<string, unknown> = {};
         obj.pages = ScratchJr.stage.getPagesID();
         obj.currentPage = pageid;
@@ -496,12 +501,12 @@ export default class Project {
         return Project.getProject(ScratchJr.stage.currentPage.id);
     }
 
-    static encodeSprite (name) {
+    static encodeSprite (name: string) {
         return (gn(name)!.owner as Sprite).getData();
     }
 
-    static encodeStrip (b) {
-        var res: Array<Array<string | number | Array<Array<string | number>>>> = [];
+    static encodeStrip (b: Block | null) {
+        var res: EncodedStrip = [];
         var hasargs = ['playsnd', 'gotopage', 'playusersnd', 'setcolor', 'onmessage', 'message', 'setspeed'];
         var loops = ['repeat'];
         var carets = ['caretcmd', 'caretend', 'caretstart'];
@@ -516,13 +521,13 @@ export default class Project {
                 // Convert repeat carets to actual repeats for the encoding
                 bt = 'repeat';
             }
-            var arg = (b.arg != null) || (hasargs.indexOf(bt) > -1) ? b.getArgValue() : null;
+            var arg = (b.arg != null) || (hasargs.indexOf(bt) > -1) ? b.getArgValue() as string | number : null;
             if (!arg && (arg != 0)) {
                 arg = 'null';
             }
-            var dx = b.div.left / b.scale;
-            var dy = b.div.top / b.scale;
-            var data = [bt, arg, dx, dy];
+            var dx = b.div.left! / b.scale;
+            var dy = b.div.top! / b.scale;
+            var data: Array<string | number | EncodedStrip> = [bt, arg, dx, dy];
             if (loops.indexOf(bt) > -1) {
                 var inside = Project.encodeStrip(b.inside);
                 data.push(inside);
@@ -537,7 +542,7 @@ export default class Project {
     // Project PNG Thumbnail
     /////////////////////////////
 
-    static getThumbnailPNG (page, w, h, fcn) {
+    static getThumbnailPNG (page: Page, w: number, h: number, fcn: (dataurl: string) => void) {
         var scale = w / 480;
         var data: Record<string, unknown> = {};
         data.pagecount = ScratchJr.stage.pages.length;
@@ -552,16 +557,16 @@ export default class Project {
         } else {
             var pcnv;
             if (md5.substr(md5.length - 3) == 'png') {
-                var bgimg = page.div.firstElementChild.firstElementChild;
+                var bgimg = page.div.firstElementChild!.firstElementChild as HTMLImageElement;
                 pcnv = Project.drawPNGInCanvas(bgimg, 480, 360);
             } else {
-                pcnv = Project.drawSVGinCanvas(page.svg, 480, 360);
+                pcnv = Project.drawSVGinCanvas(page.svg!, 480, 360);
             }
             ctx.drawImage(pcnv, 0, 0, 480, 360, 0, 0, w, h);
             Project.drawSprites(page, scale, c, w, h, fcn);
         }
     }
-    static drawPNGInCanvas (png, w, h) {
+    static drawPNGInCanvas (png: HTMLImageElement, w: number, h: number) {
         var srccnv = document.createElement('canvas');
         setCanvasSize(srccnv, w, h);
         var ctx = srccnv.getContext('2d')!;
@@ -569,17 +574,17 @@ export default class Project {
         return srccnv;
     }
 
-    static drawSVGinCanvas (extxml, w, h) {
+    static drawSVGinCanvas (extxml: Element, w: number, h: number) {
         var srccnv = document.createElement('canvas');
         setCanvasSize(srccnv, w, h);
         var ctx = srccnv.getContext('2d')!;
         for (var i = 0; i < extxml.childElementCount; i++) {
-            SVG2Canvas.drawLayer(extxml.childNodes[i], ctx, SVG2Canvas.drawLayer);
+            SVG2Canvas.drawLayer(extxml.childNodes[i] as Element, ctx, SVG2Canvas.drawLayer);
         }
         return srccnv;
     }
 
-    static maskBorders (ctx, w, h) {
+    static maskBorders (ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.save();
         ctx.globalCompositeOperation = 'destination-in';
         if (window.Settings!.edition != 'PBS') {
@@ -588,15 +593,15 @@ export default class Project {
         ctx.restore();
     }
 
-    static drawSprites (page, scale, c, w, h, fcn) {
+    static drawSprites (page: Page, scale: number, c: HTMLCanvasElement, w: number, h: number, fcn: (dataurl: string) => void) {
         var ctx = c.getContext('2d')!;
         doNext(1);
-        function doNext (n) {
+        function doNext (n: number) {
             if (!(n < page.div.childElementCount)) {
                 Project.maskBorders(c.getContext('2d')!, w, h);
                 fcn(c.toDataURL('image/png'));
             } else {
-                var spr = page.div.childNodes[n].owner;
+                var spr = page.div.childNodes[n].owner as Sprite;
                 if (!spr || !spr.shown) {
                     doNext(n + 1);
                 } else {
@@ -605,7 +610,7 @@ export default class Project {
             }
         }
 
-        function drawLoadedImage (page, ctx, img, spr, scale, n) {
+        function drawLoadedImage (page: Page, ctx: CanvasRenderingContext2D, img: HTMLCanvasElement, spr: Sprite, scale: number, n: number) {
             page.drawSpriteImage(ctx, img, spr, scale);
             doNext(n + 1);
         }

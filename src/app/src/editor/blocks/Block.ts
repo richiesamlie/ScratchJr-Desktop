@@ -1,6 +1,7 @@
 import BlockSpecs from './BlockSpecs';
 import BlockArg from './BlockArg';
 import ScratchJr from '../ScratchJr';
+import type Sprite from '../engine/Sprite';
 import {setProps, setCanvasSize, scaleMultiplier} from '../../utils/lib';
 
 export default class Block {
@@ -37,7 +38,7 @@ export default class Block {
     inpalette!: boolean;
     done!: boolean;
 
-    constructor (spec, isPalette, scale) {
+    constructor (spec: unknown[], isPalette: boolean, scale: number) {
         this.div = document.createElement('div');
 
         // Top-level block parent shouldn't accept pointer events
@@ -91,12 +92,12 @@ export default class Block {
         return 66;
     }
 
-    setBlockshapeFromSpecs (spec, isPalette?, scale?) {
+    setBlockshapeFromSpecs (spec: unknown[], isPalette?: boolean, scale?: number) {
         this.spec = spec;
         this.isReporter = (spec[1] == 'reporter');
-        this.blocktype = spec[0];
+        this.blocktype = spec[0] as string;
         this.icon = spec[1];
-        this.image = spec[2];
+        this.image = spec[2] as HTMLImageElement;
         this.aStart = (this.blocktype == 'caretstart') || (this.image == BlockSpecs.yellowStart);
         this.anEnd = (this.blocktype == 'caretend')
             || (this.image == BlockSpecs.redEnd)
@@ -114,10 +115,10 @@ export default class Block {
         this.repeatCounter = -1;
         this.originalCount = -1;
         this.threads = [];
-        this.inpalette = isPalette;
-        this.min = spec[6];
-        this.max = spec[7];
-        this.shadowimg = (this.spec.length < 9) ? null : spec[8];
+        this.inpalette = isPalette ?? false;
+        this.min = spec[6] as number;
+        this.max = spec[7] as number;
+        this.shadowimg = (this.spec.length < 9) ? null as unknown as HTMLImageElement : spec[8] as HTMLImageElement;
         this.hrubberband = 0;
         this.vrubberband = 0;
         this.done = false;
@@ -261,7 +262,7 @@ export default class Block {
     drawIcon () {
         var dx = 0;
         var dy = 0;
-        var ctx = this.blockicon.getContext('2d');
+        var ctx = this.blockicon.getContext('2d')!;
         switch (this.blocktype) {
           case 'repeat':
             var w = Math.round(74 * this.scale * window.devicePixelRatio);
@@ -284,7 +285,7 @@ export default class Block {
         this.drawMyIcon(ctx, dx, dy);
     }
 
-    drawMyIcon (ctx, dx, dy) {
+    drawMyIcon (ctx: CanvasRenderingContext2D, dx: number, dy: number) {
         var me = this;
         var icon = this.icon as HTMLImageElement;
         if (!icon.complete) {
@@ -310,7 +311,7 @@ export default class Block {
         return this.arg.argValue;
     }
 
-    getSoundName (list) {
+    getSoundName (list: string[]) {
         var val = this.arg.argValue as number;
         if (Number(val).toString() == 'NaN') {
             return val;
@@ -321,13 +322,13 @@ export default class Block {
         return list[Number(val)];
     }
 
-    update (spr) {
+    update (spr: Sprite) {
         if (this.arg) {
             this.arg.update(spr);
         }
     }
 
-    setSound (bt) {
+    setSound (bt: string) {
         var p = this.arg.div;
         p.parentNode!.removeChild(p);
         var icon = this.blockicon;
@@ -339,7 +340,7 @@ export default class Block {
         this.createArgument();
     }
 
-    duplicateBlock (dx, dy, spr) {
+    duplicateBlock (dx: number, dy: number, spr: Sprite) {
         var op = this.blocktype;
         var specs = BlockSpecs.defs[op] as unknown[];
         specs[4] = this.getArgValue();
@@ -354,7 +355,7 @@ export default class Block {
         return bbx;
     }
 
-    resolveDocks () {
+    resolveDocks (): Array<[string, boolean, number, number]> {
         var w = this.getWidth();
         var h = this.getHeight();
         if (this.aStart) {
@@ -385,7 +386,7 @@ export default class Block {
     // Connect / Disconnect
     /////////////////////////////////////////
 
-    connectBlock (myn, you, yourn) {
+    connectBlock (myn: number, you: Block, yourn: number) {
         if (this.isConnectedAfterFirst(myn, you, yourn)) {
             return;
         }
@@ -394,29 +395,29 @@ export default class Block {
         you.setMyDock(yourn, this);
         if (this.cShape && (myn == 1) && this.inside.findLast().anEnd) {
             var theend = this.inside.findLast();
-            theend.prev.next = null;
+            theend.prev.next = null as unknown as Block;
             var last = this.findLast();
             last.next = theend;
             theend.prev = last;
         }
     }
 
-    getMyDock (dockn) {
-        var myprops = this.cShape ? ['prev', 'inside', 'next'] : ['prev', 'next'];
+    getMyDock (dockn: number) {
+        var myprops: ('prev' | 'inside' | 'next')[] = this.cShape ? ['prev', 'inside', 'next'] : ['prev', 'next'];
         return this[myprops[dockn]];
     }
 
-    setMyDock (dockn, you) {
-        var myprops = this.cShape ? ['prev', 'inside', 'next'] : ['prev', 'next'];
+    setMyDock (dockn: number, you: Block) {
+        var myprops: ('prev' | 'inside' | 'next')[] = this.cShape ? ['prev', 'inside', 'next'] : ['prev', 'next'];
         this[myprops[dockn]] = you;
     }
 
-    getMyDockNum (you) {
+    getMyDockNum (you: Block) {
         var connections = this.cShape ? [this.prev, this.inside, this.next] : [this.prev, this.next];
         return connections.indexOf(you);
     }
 
-    isConnectedAfterFirst (myn, you, yourn?) {
+    isConnectedAfterFirst (myn: number, you: Block, yourn?: number) {
         if (myn == 0) {
             return false;
         }
@@ -433,21 +434,21 @@ export default class Block {
         return true;
     }
 
-    findLast () {
+    findLast (): Block {
         if (this.next == null) {
             return this;
         }
         return this.next.findLast();
     }
 
-    findFirst () {
+    findFirst (): Block {
         if (this.prev == null) {
             return this;
         }
         return this.prev.findFirst();
     }
 
-    connectLast (myn, you, yourn) {
+    connectLast (myn: number, you: Block, yourn: number) {
         if (myn != 0) {
             return;
         }
@@ -464,7 +465,7 @@ export default class Block {
                 mylast.next = lastone;
                 var striplast = lastone.prev;
                 if (striplast) {
-                    striplast.next = null;
+                    striplast.next = null as unknown as Block;
                 }
                 lastone.prev = mylast;
             }
@@ -494,7 +495,7 @@ export default class Block {
     // Move
     /////////////////////////////////////////
 
-    moveBlock (dx, dy) {
+    moveBlock (dx: number, dy: number) {
         this.div.top = dy;
         this.div.left = dx;
         this.div.style.webkitTransform = 'translate3d(' + this.div.left + 'px,' + this.div.top + 'px, 0)';
@@ -524,7 +525,7 @@ export default class Block {
         this.arg.div.style.top = (this.blockshape.height / window.devicePixelRatio - 11 * this.scale) + 'px';
     }
 
-    redrawShape (cnv, img) {
+    redrawShape (cnv: HTMLCanvasElement, img: HTMLImageElement) {
         setCanvasSize(this.div,
             (92 + this.hrubberband + 84) * this.scale,
             (100 + this.vrubberband) * this.scale);
@@ -537,7 +538,7 @@ export default class Block {
                 + 'scale(' + (1 / window.devicePixelRatio) + ') '
                 + 'translate(' + (cnv.width / 2) + 'px, ' + (cnv.height / 2) + 'px)'
         });
-        var ctx = cnv.getContext('2d');
+        var ctx = cnv.getContext('2d')!;
         // top line
         ctx.drawImage(img, 0, 0, 92, 29, 0, 0, 92 * scaleAndRatio, 29 * scaleAndRatio);
         ctx.drawImage(img, 92, 0, 1, 29, 92 * scaleAndRatio, 0, this.hrubberband * scaleAndRatio, 29 * scaleAndRatio);

@@ -12,9 +12,22 @@ import ScratchAudio from '../utils/ScratchAudio';
 let buffer: string[] = [];
 let index = 0;
 
+// Event handler shape used across the paint editor: both mouse and touch events
+// reach these handlers, so only the members actually read are declared.
+type PaintEvt = {
+    touches?: TouchList;
+    changedTouches?: TouchList;
+    target?: EventTarget | null;
+    shiftKey?: boolean;
+    clientX?: number;
+    clientY?: number;
+    preventDefault(): void;
+    stopPropagation(): void;
+};
+
 export default class PaintUndo {
     // Getters/setters for globally used properties
-    static set buffer (newBuffer) {
+    static set buffer (newBuffer: string[]) {
         buffer = newBuffer;
     }
 
@@ -29,10 +42,10 @@ export default class PaintUndo {
     ////////////////////////////////////////
     // Undo Controls Setup
     ///////////////////////////////////////
-    static setup (p) {
+    static setup (p: HTMLElement) {
         var div = newHTML('div', 'paintundo', p);
         div.setAttribute('id', 'paintundocontrols');
-        var lib = [['undo', PaintUndo.undo], ['redo', PaintUndo.redo]];
+        var lib: Array<[string, (e: PaintEvt) => void]> = [['undo', PaintUndo.undo], ['redo', PaintUndo.redo]];
         var _dx = 20; // eslint-disable-line no-unused-vars
         for (var i = 0; i < lib.length; i++) {
             var bt = PaintUndo.newToggleClicky(div, 'id_p', lib[i][0], lib[i][1]);
@@ -42,13 +55,13 @@ export default class PaintUndo {
         PaintUndo.updateActiveUndo();
     }
 
-    static newToggleClicky (p, prefix, key, fcn) {
+    static newToggleClicky (p: HTMLElement, prefix: string, key: string, fcn: (e: PaintEvt) => void) {
         var button = newHTML('div', 'undocircle', p);
         newHTML('div', key + ' off', button);
         button.setAttribute('type', 'toggleclicky');
         button.setAttribute('id', prefix + key);
         if (fcn) {
-            button.onmousedown = function (evt) {
+            button.onmousedown = function (evt: MouseEvent) {
                     fcn(evt);
                 };
         }
@@ -65,7 +78,7 @@ export default class PaintUndo {
     }
 
     // you record before introducing a change
-    static record (dontStartStories?) {
+    static record (dontStartStories?: boolean) {
         if ((index + 1) <= buffer.length) {
             buffer.splice(index + 1, buffer.length);
         }
@@ -80,14 +93,14 @@ export default class PaintUndo {
     }
 
     static getCanvas () {
-        return SVGTools.svg2string(gn('layer1')!);
+        return SVGTools.svg2string(gn('layer1')! as Element);
     }
 
     //////////////////////////////////
     // Control buttons callbacks
     //////////////////////////////////
 
-    static undo (e) {
+    static undo (e: PaintEvt) {
         if (e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -110,7 +123,7 @@ export default class PaintUndo {
         PaintUndo.updateActiveUndo();
     }
 
-    static redo (e) {
+    static redo (e: PaintEvt) {
         if (e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -149,15 +162,15 @@ export default class PaintUndo {
         }
     }
 
-    static tunOnButton (p) {
-        var kid = p.childNodes[0];
-        var kclass = kid.getAttribute('class').split(' ')[0];
+    static tunOnButton (p: HTMLElement) {
+        var kid = p.childNodes[0] as HTMLElement;
+        var kclass = kid.getAttribute('class')!.split(' ')[0];
         kid.setAttribute('class', kclass + ' on');
     }
 
-    static tunOffButton (p) {
-        var kid = p.childNodes[0];
-        var kclass = kid.getAttribute('class').split(' ')[0];
+    static tunOffButton (p: HTMLElement) {
+        var kid = p.childNodes[0] as HTMLElement;
+        var kclass = kid.getAttribute('class')!.split(' ')[0];
         kid.setAttribute('class', kclass + ' off');
     }
 }

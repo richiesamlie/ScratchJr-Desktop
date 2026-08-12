@@ -22,7 +22,13 @@ import Camera from './Camera';
 import Events from '../utils/Events';
 import Transform from './Transform';
 import Vector from '../geom/Vector';
+import type {Point} from '../geom/Vector';
 import {gn, newHTML, setCanvasSize, getIdFor, isAndroid, setProps, hitRect, frame} from '../utils/lib';
+
+// The costume name input carries a local `firstTime` expando flag (see nameFocus).
+interface PaintNameInput extends HTMLInputElement {
+    firstTime?: boolean;
+}
 
 // Originally several files (Paint.js, PaintIO.js, PaintLayout.js)
 // were all contributing utility functions to the Paint object.
@@ -39,20 +45,20 @@ let mode: string = 'select';
 let pensizes = [1, 2, 4, 8, 16];
 
 let strokewidth = 2;
-let spriteId;
-let currentName;
-let costumeScale;
+let spriteId: string | undefined;
+let currentName: string | undefined;
+let costumeScale: string | number | undefined;
 let nativeJr;
 let isBkg = false;
-let currentMd5 = undefined;
+let currentMd5: string | null = null;
 let currentZoom = 1;
-let root;
+let root: SVGSVGElement;
 let saving = false;
-let paintFrame;
-let saveMD5 = undefined;
-let svgdata;
-let splash;
-let splashshade;
+let paintFrame: HTMLElement | null = null;
+let saveMD5: string | null = null;
+let svgdata: string | null = null;
+let splash: string | null = null;
+let splashshade: string | null = null;
 let maxZoom = 5;
 let minZoom = 1;
 let initialPoint = {
@@ -149,27 +155,27 @@ export default class Paint {
     //Opening and Layout
     ///////////////////////////////////////////
 
-    static init (w?, h?) {
+    static init (w?: number, h?: number) {
         paintFrame = document.getElementById('paintframe');
-        paintFrame.style.width = w + 'px';
-        paintFrame.style.height = h + 'px';
+        paintFrame!.style.width = w + 'px';
+        paintFrame!.style.height = h + 'px';
         BlockSpecs.loadCount++;
         IO.requestFromServer('assets/paint/splash.svg', Paint.setSplash);
         BlockSpecs.loadCount++;
         IO.requestFromServer('assets/paint/splashshade.svg', Paint.setSplashShade);
     }
 
-    static setSplash (str) {
+    static setSplash (str: string) {
         BlockSpecs.loadCount--;
         splash = str;
     }
 
-    static setSplashShade (str) {
+    static setSplashShade (str: string) {
         BlockSpecs.loadCount--;
         splashshade = 'data:image/svg+xml;base64,' + btoa(str);
     }
 
-    static open (bkg, md5, sname?, cname?, cscale?, sw?, sh?) {
+    static open (bkg: boolean, md5: string | undefined, sname?: string, cname?: string, cscale?: string | number, sw?: number, sh?: number) {
         iOS.analyticsEvent('editor', 'paint_editor_opened', bkg ? 'bkg' : 'character');
         PaintUndo.buffer = [];
         PaintUndo.index = 0;
@@ -179,8 +185,8 @@ export default class Paint {
         workspaceHeight = 384;
         Paint.clearWorkspace();
         frame.style.display = 'none';
-        paintFrame.className = 'paintframe appear';
-        currentMd5 = md5;
+        paintFrame!.className = 'paintframe appear';
+        currentMd5 = md5 ?? null;
         isBkg = bkg;
         spriteId = sname;
         currentName = cname;
@@ -207,7 +213,7 @@ export default class Paint {
     //Paint Editor Gestures
 
 
-    static blockGestures (e) {
+    static blockGestures (e: TouchEvent) {
         if (!e.touches) {
             return;
         }
@@ -216,7 +222,7 @@ export default class Paint {
         }
     }
 
-    static detectGesture (e) {
+    static detectGesture (e: MouseEvent | TouchEvent) {
        /* if (!e.touches) {
             return;
         }*/
@@ -231,7 +237,7 @@ export default class Paint {
         Paint.mouseDown(e);
     }
 
-    static clearEvents (e) {
+    static clearEvents (e: Event) {
         window.onmousemove = null;
         window.onmouseup = null;
         if (PaintAction.currentshape) {
@@ -241,12 +247,12 @@ export default class Paint {
         PaintAction.clearEvents();
     }
 
-    static ignore (e) {
+    static ignore (e: Event) {
         e.preventDefault();
         e.stopPropagation();
     }
 
-    static Scroll (e) {
+    static Scroll (e: Event) {
         e.preventDefault();
         e.stopPropagation();
         if (Paint.canvasFits()) {
@@ -254,7 +260,7 @@ export default class Paint {
         }
         Ghost.clearLayer();
         initialPoint = PaintAction.getScreenPt(e);
-        window.onmousemove = function (evt) {
+        window.onmousemove = function (evt: MouseEvent) {
             Paint.dragBackground(evt);
         };
         window.onmouseup = function () {
@@ -264,7 +270,7 @@ export default class Paint {
         };
     }
 
-    static pinchStart (e) {
+    static pinchStart (e: MouseEvent | TouchEvent) {
         e.preventDefault();
         e.stopPropagation();
         if (PaintAction.currentshape) {
@@ -275,7 +281,7 @@ export default class Paint {
         };
     }
 
-    static gestureStart (e) {
+    static gestureStart (e: MouseEvent | TouchEvent) {
         window.onmousemove = null;
         var skipmodes = ['path', 'ellipse', 'rect'];
         if (skipmodes.indexOf(mode) > -1) {
@@ -293,7 +299,7 @@ export default class Paint {
         window.onmouseup = Paint.gestureEnd;
     }
 
-    static gestureChange (e) {
+    static gestureChange (e: MouseEvent | TouchEvent) {
         e.preventDefault();
         var scale = Math.min(maxZoom, Events.scaleStartsAt * Events.zoomScale(e));
         scale = Math.max(minZoom, scale);
@@ -310,7 +316,7 @@ export default class Paint {
         Paint.adjustPos(delta);
     }
 
-    static gestureEnd (e) {
+    static gestureEnd (e: MouseEvent | TouchEvent) {
         e.preventDefault();
         window.onmousemove = null;
         window.onmouseup = null;
@@ -332,15 +338,16 @@ export default class Paint {
             && (gn('maincanvas')!.offsetHeight * currentZoom <= gn('workspacebkg')!.offsetHeight));
     }
 
-    static mouseDown (e) {
-        if (e.target.onmousedown) {
+    static mouseDown (e: MouseEvent | TouchEvent) {
+        var t = e.target as HTMLElement;
+        if (t.onmousedown) {
             return;
         }
         var pt = Events.getTargetPoint(e);
         if (hitRect(gn('donecheck')!, pt)) {
             Paint.backToProject(e);
         } else {
-            if (e.target.parentNode && e.target.parentNode.getAttribute('key')) {
+            if (t.parentNode && (t.parentNode as Element).getAttribute('key')) {
                 return;
             } else {
                 PaintAction.mouseDown(e);
@@ -350,7 +357,7 @@ export default class Paint {
 
     static close () {
         saving = true;
-        paintFrame.className = 'paintframe disappear';
+        paintFrame!.className = 'paintframe disappear';
         frame.style.display = 'block';
         ScratchJr.editorEvents();
         window.onmousemove = null;
@@ -366,7 +373,7 @@ export default class Paint {
         }, 500); // delay so it doesn't open the info box
     }
 
-    static backToProject (e) {
+    static backToProject (e: Event) {
         e.preventDefault();
         e.stopPropagation();
         if (saving) {
@@ -375,7 +382,8 @@ export default class Paint {
         if (PaintAction.dragGroup.length > 0) {
             return;
         }
-        if (e.touches && (e.touches.length > 1)) {
+        var te = e as TouchEvent;
+        if (te.touches && (te.touches.length > 1)) {
             return;
         }
         Path.quitEditMode();
@@ -391,7 +399,7 @@ export default class Paint {
         ScratchJr.onBackButtonCallback.pop();
     }
 
-    static saveEditState (fcn?) {
+    static saveEditState (fcn?: (result: unknown) => void) {
         Camera.close();
         ScratchJr.unfocus();
         ScratchAudio.sndFX('tap.wav');
@@ -406,12 +414,13 @@ export default class Paint {
     //Modes
     /////////////////////////
 
-    static setMode (e) {
-        if (e.touches && (e.touches.length > 1)) {
+    static setMode (e: Event) {
+        var te = e as TouchEvent;
+        if (te.touches && (te.touches.length > 1)) {
             return;
         }
         e.preventDefault();
-        var t;
+        var t: EventTarget | null;
         if (window.event) {
             t = window.event.srcElement;
         } else {
@@ -422,17 +431,17 @@ export default class Paint {
         }
         Path.quitEditMode();
         if (Camera.active) {
-            Camera.doAction(t.getAttribute('key'));
+            Camera.doAction((t as Element).getAttribute('key')!);
         } else {
             var tools = ['select', 'rotate', 'stamper', 'scissors', 'camera', 'paintbucket'];
-            if (tools.indexOf(t.getAttribute('key')) > -1) {
+            if (tools.indexOf((t as Element).getAttribute('key')!) > -1) {
                 ScratchAudio.sndFX('tap.wav');
             }
-            Paint.selectButton(t.getAttribute('key'));
+            Paint.selectButton((t as Element).getAttribute('key')!);
         }
     }
 
-    static selectButton (str) {
+    static selectButton (str: string) {
         Paint.selectButtonFromDiv(gn('painttools')!, str);
         Paint.selectButtonFromDiv(gn('selectortools')!, str);
         Paint.selectButtonFromDiv(gn('edittools')!, str);
@@ -444,25 +453,26 @@ export default class Paint {
         Paint.selectPenSize(pensizes.indexOf(strokewidth));
     }
 
-    static selectButtonFromDiv (p, str) {
+    static selectButtonFromDiv (p: HTMLElement, str: string) {
         for (var i = 0; i < p.childElementCount; i++) {
-            var elem = p.childNodes[i];
-            if (elem.childNodes[0].getAttribute('key') == str) {
+            var elem = p.childNodes[i] as Element;
+            var icon = elem.childNodes[0] as Element;
+            if (icon.getAttribute('key') == str) {
                 elem.setAttribute('class', Paint.getClass(elem, 'on'));
-                if (elem.childNodes[0].getAttribute('class')) {
-                    elem.childNodes[0].setAttribute('class', Paint.getClass(elem.childNodes[0], 'on'));
+                if (icon.getAttribute('class')) {
+                    icon.setAttribute('class', Paint.getClass(icon, 'on'));
                 }
             } else {
                 elem.setAttribute('class', Paint.getClass(elem, 'off'));
-                if (elem.childNodes[0].getAttribute('class')) {
-                    elem.childNodes[0].setAttribute('class', Paint.getClass(elem.childNodes[0], 'off'));
+                if (icon.getAttribute('class')) {
+                    icon.setAttribute('class', Paint.getClass(icon, 'off'));
                 }
             }
         }
     }
 
-    static getClass (elem, state) {
-        var list = elem.getAttribute('class').split(' ');
+    static getClass (elem: Element, state: string) {
+        var list = elem.getAttribute('class')!.split(' ');
         list.pop();
         list.push(state);
         return list.join(' ');
@@ -472,7 +482,7 @@ export default class Paint {
     //Zoom Management
     ///////////////////////////////////////////
 
-    static setZoomTo (value) {
+    static setZoomTo (value: number) {
         //currentZoom = value;
         currentZoom = 1;
         
@@ -481,14 +491,14 @@ export default class Paint {
         Ghost.drawOffscreen();
     }
 
-    static updateZoomScale (value) {
+    static updateZoomScale (value: number) {
         currentZoom = 1;
         
         // currentZoom = value;
         Paint.setCanvasTransform(value);
     }
 
-    static setCanvasTransform (value) {
+    static setCanvasTransform (value: number) {
         if (isAndroid) { // Use 3D translate to increase speed
             gn('maincanvas')!.style.webkitTransform = 'translate3d(' + gn('maincanvas')!.dx + 'px,'
                 + gn('maincanvas')!.dy + 'px, 0px) scale(' + value + ',' + value + ')';
@@ -499,9 +509,9 @@ export default class Paint {
         }
     }
 
-    static adjustPos (delta) {
-        gn('maincanvas')!.dx += delta.x;
-        gn('maincanvas')!.dy += delta.y;
+    static adjustPos (delta: Point) {
+        gn('maincanvas')!.dx! += delta.x;
+        gn('maincanvas')!.dy! += delta.y;
         Paint.setCanvasTransform(currentZoom);
     }
 
@@ -512,7 +522,7 @@ export default class Paint {
         gn('maincanvas')!.dy = Paint.canvasFits() ? my : Paint.getCoory(20, my);
     }
 
-    static getCoorx (indent, val) {
+    static getCoorx (indent: number, val: number) {
         if (gn('maincanvas')!.offsetWidth * currentZoom <= gn('workspacebkg')!.offsetWidth) {
             return val;
         }
@@ -528,7 +538,7 @@ export default class Paint {
         return gn('maincanvas')!.dx!;
     }
 
-    static getCoory (indent, val) {
+    static getCoory (indent: number, val: number) {
         if (gn('maincanvas')!.offsetHeight * currentZoom <= gn('workspacebkg')!.offsetHeight) {
             return val;
         }
@@ -545,12 +555,12 @@ export default class Paint {
     }
 
     static scaleToFit () {
-        var dh = root.parentNode.parentNode.offsetHeight / (workspaceHeight + 10);
-        var dw = root.parentNode.parentNode.offsetWidth / (workspaceWidth + 10);
+        var dh = (root.parentNode!.parentNode as HTMLElement).offsetHeight / (workspaceHeight + 10);
+        var dw = (root.parentNode!.parentNode as HTMLElement).offsetWidth / (workspaceWidth + 10);
         Paint.setZoomTo(Math.min(dw, dh));
     }
 
-    static dragBackground (evt) {
+    static dragBackground (evt: Event) {
         if (Paint.canvasFits()) {
             return;
         }
@@ -571,13 +581,13 @@ export default class Paint {
 
     static layout () {
         Paint.topbar();
-        var div = newHTML('div', 'innerpaint', paintFrame);
+        var div = newHTML('div', 'innerpaint', paintFrame!);
         Paint.leftPalette(div);
         var workspaceContainer = newHTML('div', 'workspacebkg-container', div);
         var workspace = newHTML('div', 'workspacebkg', workspaceContainer);
         workspace.setAttribute('id', 'workspacebkg');
         Paint.rightPalette(div);
-        Paint.colorPalette(paintFrame);
+        Paint.colorPalette(paintFrame!);
         Paint.selectButton('path');
         Paint.createSVGeditor(workspace);
     }
@@ -587,23 +597,23 @@ export default class Paint {
     /////////////////////////////////
 
     static topbar () {
-        var pt = newHTML('div', 'paintop', paintFrame);
+        var pt = newHTML('div', 'paintop', paintFrame!);
         Paint.checkMark(pt);
         PaintUndo.setup(pt); // plug here the undo
         Paint.nameOfcostume(pt);
     }
 
-    static checkMark (pt) {
+    static checkMark (pt: HTMLElement) {
         var clicky = newHTML('div', 'paintdone', pt);
         clicky.id = 'donecheck';
         clicky.onmousedown = Paint.backToProject;
     }
 
-    static nameOfcostume (p) {
-        var sform = newHTML('form', 'spriteform', p);
+    static nameOfcostume (p: HTMLElement) {
+        var sform = newHTML('form', 'spriteform', p) as HTMLFormElement;
         sform.name = 'spriteform';
-        var ti = newHTML('input', undefined, sform);
-        ti.autocomplete = false;
+        var ti = newHTML('input', undefined, sform) as PaintNameInput;
+        ti.autocomplete = false as unknown as AutoFill;
         ti.autocorrect = false;
         ti.name = 'name';
         ti.maxLength = 25;
@@ -616,18 +626,18 @@ export default class Paint {
         sform.onsubmit = Paint.submitNameChange;
     }
 
-    static submitNameChange (e) {
+    static submitNameChange (e: Event) {
         e.preventDefault();
-        var input = e.target;
+        var input = e.target as HTMLInputElement;
         input.blur();
     }
 
-    static nameFocus (e) {
+    static nameFocus (e: FocusEvent) {
         e.preventDefault();
         e.stopPropagation();
-        var ti = e.target;
+        var ti = e.target as PaintNameInput;
         ti.firstTime = true;
-        ScratchJr.activeFocus = ti;
+        ScratchJr.activeFocus = ti as unknown as typeof ScratchJr.activeFocus;
         if (isAndroid) {
             AndroidInterface.scratchjr_setsoftkeyboardscrolllocation(
                 ti.getBoundingClientRect().top * window.devicePixelRatio,
@@ -639,21 +649,21 @@ export default class Paint {
         }, 1);
     }
 
-    static nameBlur (e) {
+    static nameBlur (e: FocusEvent) {
         ScratchJr.activeFocus = undefined;
         var spr = ScratchJr.getSprite();
-        var ti = e.target;
+        var ti = e.target as PaintNameInput;
         var val = ScratchJr.validate(ti.value, (spr as Sprite).name);
         ti.value = val.substring(0, ti.maxLength);
         ScratchJr.storyStart('Paint.nameBlur');
     }
 
-    static handleNamePress (e) {
+    static handleNamePress (e: KeyboardEvent) {
         var key = e.keyCode || e.which;
         if (key == 13) {
             Paint.submitNameChange(e);
         } else {
-            var ti = e.target;
+            var ti = e.target as PaintNameInput;
             if (ti.firstTime) {
                 ti.firstTime = false;
                 ti.value = '';
@@ -664,9 +674,9 @@ export default class Paint {
         }
     }
 
-    static handleKeyRelease (e) {
+    static handleKeyRelease (e: KeyboardEvent) {
         var key = e.keyCode || e.which;
-        var ti = e.target;
+        var ti = e.target as PaintNameInput;
         if (key != 8) {
             return;
         }
@@ -680,7 +690,7 @@ export default class Paint {
     //Left Palette
     /////////////////////////////////
 
-    static leftPalette (div) {
+    static leftPalette (div: HTMLElement) {
         var leftpal = newHTML('div', 'side up', div);
         var pal = newHTML('div', 'paintpalette', leftpal);
         pal.setAttribute('id', 'paintpalette');
@@ -688,7 +698,7 @@ export default class Paint {
         Paint.createSizeSelector(pal);
     }
 
-    static setupEditPalette (pal) {
+    static setupEditPalette (pal: HTMLElement) {
         var section = newHTML('div', 'section', pal);
         section.setAttribute('id', 'painttools');
         var list = ['path', 'ellipse', 'rect', 'tri'];
@@ -701,7 +711,7 @@ export default class Paint {
         }
     }
 
-    static createSizeSelector (pal) {
+    static createSizeSelector (pal: HTMLElement) {
         var section = newHTML('div', 'section space', pal);
         section.setAttribute('id', 'sizeSelector');
         for (var i = 0; i < pensizes.length; i++) {
@@ -710,8 +720,8 @@ export default class Paint {
             ps.onmousedown = function (e) {  // eslint-disable-line no-loop-func
                 e.preventDefault();
                 e.stopPropagation();
-                var n = Number(this.key);
-                strokewidth = pensizes[Number(this.key)];
+                var n = Number((this as HTMLElement).key);
+                strokewidth = pensizes[Number((this as HTMLElement).key)];
                 Paint.selectPenSize(n);
             };
             var c = newHTML('div', 'line t' + i, ps);
@@ -726,7 +736,7 @@ export default class Paint {
     ////////////////////////////////////////
 
 
-    static drawPenSizeInColor (c) {
+    static drawPenSizeInColor (c: HTMLElement) {
         c.style.background = fillcolor;
     }
 
@@ -737,11 +747,11 @@ export default class Paint {
         }
         for (var i = 0; i < div.childElementCount; i++) {
             var elem = div.childNodes[i];
-            Paint.drawPenSizeInColor(elem.childNodes[0]);
+            Paint.drawPenSizeInColor(elem.childNodes[0] as HTMLElement);
         }
     }
 
-    static selectPenSize (str) {
+    static selectPenSize (str: number) {
         var p = gn('sizeSelector')!;
         for (var i = 0; i < p.childElementCount; i++) {
             var elem = p.childNodes[i];
@@ -757,14 +767,14 @@ export default class Paint {
     //Right Palette
     /////////////////////////////////
 
-    static rightPalette (div) {
+    static rightPalette (div: HTMLElement) {
         var rightpal = newHTML('div', 'side', div);
         Paint.addSidePalette(rightpal, 'selectortools', ['select', 'rotate']);
         Paint.addSidePalette(rightpal, 'edittools', ['stamper', 'scissors']);
         Paint.addSidePalette(rightpal, 'filltools', (iOS.camera == '1' && Camera.available) ? ['camera', 'paintbucket'] : ['paintbucket']);
     }
 
-    static addSidePalette (p, id, list) {
+    static addSidePalette (p: HTMLElement, id: string, list: string[]) {
         var pal = newHTML('div', 'paintpalette short', p);
         pal.setAttribute('id', id);
         for (var i = 0; i < list.length; i++) {
@@ -849,8 +859,8 @@ export default class Paint {
         div.dx = dx;
         div.dy = dy;
 
-        root.setAttributeNS(null, 'width', w);
-        root.setAttributeNS(null, 'height', h);
+        root.setAttributeNS(null, 'width', String(w));
+        root.setAttributeNS(null, 'height', String(h));
         Paint.drawGrid(w, h);
         PaintAction.clearEvents();
     }
@@ -859,7 +869,7 @@ export default class Paint {
     //Color Palette
     /////////////////////////////////
 
-    static colorPalette (div) {
+    static colorPalette (div: HTMLElement) {
         var swatchlist = Paint.initSwatchList();
         var spalContainer = newHTML('div', 'swatchpalette-container', div);
         var spal = newHTML('div', 'swatchpalette', spalContainer);
@@ -876,23 +886,24 @@ export default class Paint {
             Paint.addImageUrl(sf, splashshade);
             colour.onmousedown = Paint.selectSwatch;
         }
-        Paint.setSwatchColor(gn('swatches')!.childNodes[swatchlist.indexOf('#1C1C1C')]);
+        Paint.setSwatchColor(gn('swatches')!.childNodes[swatchlist.indexOf('#1C1C1C')] as HTMLElement);
     }
 
-    static setSplashColor (p, str, color) {
-        var dataurl = 'data:image/svg+xml;base64,' + btoa(str.replace(/#662D91/g, color));
+    static setSplashColor (p: HTMLElement, str: string | null, color: string) {
+        var dataurl = 'data:image/svg+xml;base64,' + btoa(str!.replace(/#662D91/g, color));
         Paint.addImageUrl(p, dataurl);
     }
 
-    static addImageUrl (p, url) {
+    static addImageUrl (p: HTMLElement, url: string | null) {
         var img = document.createElement('img');
-        img.src = url;
+        img.src = url!;
         img.style.position = 'absolute';
         p.appendChild(img);
     }
 
-    static selectSwatch (e) {
-        if (e.touches && (e.touches.length > 1)) {
+    static selectSwatch (e: Event) {
+        var te = e as TouchEvent;
+        if (te.touches && (te.touches.length > 1)) {
             return;
         }
         e.preventDefault();
@@ -900,16 +911,16 @@ export default class Paint {
         if (Camera.active) {
             return;
         }
-        var t;
+        var t: HTMLElement | null;
         if (window.event) {
-            t = window.event.srcElement;
+            t = window.event.srcElement as HTMLElement;
         } else {
-            t = e.target;
+            t = e.target as HTMLElement;
         }
-        var b = 'swatchbucket' != t.className;
+        var b = 'swatchbucket' != t!.className;
         while (b) {
-            t = t.parentNode;
-            b = t && ('swatchbucket' != t.className);
+            t = t!.parentNode as HTMLElement | null;
+            b = !!t && ('swatchbucket' != t.className);
         }
         if (!t) {
             return;
@@ -918,12 +929,12 @@ export default class Paint {
         Paint.setSwatchColor(t);
     }
 
-    static setSwatchColor (t) {
+    static setSwatchColor (t: HTMLElement | null) {
         var tools = ['select', 'wand', 'stamper', 'scissors', 'rotate'];
         if (t && (tools.indexOf(mode) > -1)) {
             Paint.selectButton('paintbucket');
         }
-        var c = t.childNodes[0].childNodes[0].style.backgroundColor;
+        var c = (t!.childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor;
         for (var i = 0; i < gn('swatches')!.childElementCount; i++) {
             const swatchNode = gn('swatches')!.childNodes[i] as HTMLElement;
             const swatchColor = swatchNode.childNodes[0].childNodes[0] as HTMLElement;
@@ -972,7 +983,7 @@ export default class Paint {
     ////////////////////////////////////////////////
 
 
-    static createSVGeditor (container) {
+    static createSVGeditor (container: HTMLElement) {
         var div = newHTML('div', 'maincanvas', container);
         div.setAttribute('id', 'maincanvas');
         div.style.background = '#F5F2F7';
@@ -980,7 +991,7 @@ export default class Paint {
         div.style.left = '0px';
         window.onmousemove = null;
         window.onmouseup = null;
-        root = SVGTools.create(div);
+        root = SVGTools.create(div as Element) as SVGSVGElement;
         root.setAttribute('class', 'active3d');
         window.xform = Transform.getTranslateTransform();
         window.selxform = Transform.getTranslateTransform();
@@ -992,7 +1003,7 @@ export default class Paint {
     }
 
     static clearWorkspace () {
-        var fcn = function (div) {
+        var fcn = function (div: HTMLElement) {
             while (div.childElementCount > 0) {
                 div.removeChild(div.childNodes[0]);
             }
@@ -1003,7 +1014,7 @@ export default class Paint {
         Path.quitEditMode();
     }
 
-    static drawGrid (w, h) {
+    static drawGrid (w: number, h: number) {
         var attr, path;
         if (!isBkg) {
             attr = {
@@ -1014,7 +1025,7 @@ export default class Paint {
                 'fill': 'none',
                 'stroke-width': 0.5
             };
-            path = SVGTools.addChild(gn('paintgrid')!, 'path', attr);
+            path = SVGTools.addChild(gn('paintgrid')! as Element, 'path', attr);
             path.setAttribute('style', 'pointer-events:none;');
         }
         attr = {
@@ -1025,11 +1036,11 @@ export default class Paint {
             'fill': 'none',
             'stroke-width': 0.5
         };
-        path = SVGTools.addChild(gn('paintgrid')!, 'path', attr);
+        path = SVGTools.addChild(gn('paintgrid')! as Element, 'path', attr);
         path.setAttribute('style', 'pointer-events:none;');
     }
 
-    static getGridPath (w, h, gridsize) {
+    static getGridPath (w: number, h: number, gridsize: number) {
         var str = '';
         var dx = gridsize;
         // vertical
@@ -1055,13 +1066,13 @@ export default class Paint {
     // Loading and saving
     //////////////////////////
 
-    static initBkg (ow, oh) {
+    static initBkg (ow: number, oh: number) {
         nativeJr = true;
         workspaceWidth = ow;
         workspaceHeight = oh;
         Paint.setUpCanvasArea();
-        var dh = root.parentNode.parentNode.offsetHeight / (workspaceHeight + 10);
-        var dw = root.parentNode.parentNode.offsetWidth / (workspaceWidth + 10);
+        var dh = (root.parentNode!.parentNode as HTMLElement).offsetHeight / (workspaceHeight + 10);
+        var dw = (root.parentNode!.parentNode as HTMLElement).offsetWidth / (workspaceWidth + 10);
         Paint.setZoomTo(Math.min(dw, dh));
         (document.forms as unknown as { spriteform: HTMLFormElement }).spriteform.style.visibility = 'hidden';
         if (currentMd5) {
@@ -1075,24 +1086,24 @@ export default class Paint {
             };
             var cmds = [['M', 0, 0], ['L', 480, 0], ['L', 480, 360], ['L', 0, 360], ['L', 0, 0]];
             (attr as Record<string, unknown>).d = SVG2Canvas.arrayToString(cmds);
-            SVGTools.addChild(gn('layer1')!, 'path', attr);
+            SVGTools.addChild(gn('layer1')! as Element, 'path', attr);
             Ghost.drawOffscreen();
             PaintUndo.record(true);
         }
     }
 
-    static loadBackground (md5) {
+    static loadBackground (md5: string) {
         if (md5.indexOf('samples/') >= 0) {
             // Load sample asset
             Paint.loadChar(md5);
-        } else if (!MediaLib.keys[md5]) {
+        } else if (!(MediaLib.keys as Record<string, unknown>)[md5]) {
             // Load user asset
             iOS.getmedia(md5, nextStep);
         } else {
             // Load library asset
             Paint.getBkg(MediaLib.path + md5);
         }
-        function nextStep (base64) {
+        function nextStep (base64: string) {
             var str = atob(base64);
             IO.getImagesInSVG(str, function () {
                 Paint.loadBkg(str);
@@ -1100,7 +1111,7 @@ export default class Paint {
         }
     }
 
-    static getBkg (url) {
+    static getBkg (url: string) {
         var xmlrequest = new XMLHttpRequest();
         xmlrequest.onreadystatechange = function () {
             if (xmlrequest.readyState == 4) {
@@ -1111,16 +1122,16 @@ export default class Paint {
         xmlrequest.send(null);
     }
 
-    static loadBkg (str) {
+    static loadBkg (str: string) {
         Paint.createBkgFromXML(str);
     }
 
-    static createBkgFromXML (str) {
+    static createBkgFromXML (str: string) {
         nativeJr = str.indexOf('Scratch Jr') > -1;
         str = str.replace(/>\s*</g, '><');
         var xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
         var extxml = document.importNode(xmlDoc.documentElement, true);
-        var flat = Paint.skipUnwantedElements(extxml, []);
+        var flat = Paint.skipUnwantedElements(extxml as Element, []);
         for (var i = 0; i < flat.length; i++) {
             gn('layer1')!.appendChild(flat[i]);
             if (flat[i].getAttribute('id') == 'fixed') {
@@ -1128,13 +1139,13 @@ export default class Paint {
             }
             flat[i].setAttribute('file', 'yes');
         }
-        Paint.doAbsolute(gn('layer1')!);
+        Paint.doAbsolute(gn('layer1')! as Element);
         if (!nativeJr) {
-            Paint.reassingIds(gn('layer1')!);
+            Paint.reassingIds(gn('layer1')! as Element);
         } // make sure there are unique mask names
         //	gn("layer1").childNodes[0].setAttribute('id', "staticbkg");
-        var dh = root.parentNode.parentNode.offsetHeight / (workspaceHeight + 10);
-        var dw = root.parentNode.parentNode.offsetWidth / (workspaceWidth + 10);
+        var dh = (root.parentNode!.parentNode as HTMLElement).offsetHeight / (workspaceHeight + 10);
+        var dw = (root.parentNode!.parentNode as HTMLElement).offsetWidth / (workspaceWidth + 10);
         Paint.setZoomTo(Math.min(dw, dh));
         PaintUndo.record(true);
         if (!nativeJr) {
@@ -1142,10 +1153,10 @@ export default class Paint {
         }
     }
 
-    static initSprite (ow, oh) {
+    static initSprite (ow?: number, oh?: number) {
         nativeJr = true;
         namedForms.spriteform.style.visibility = 'visible';
-        namedForms.spriteform.name.value = gn(currentName)! ? (gn(currentName)!.owner as Sprite).name : currentName;
+        namedForms.spriteform.name.value = gn(currentName!)! ? (gn(currentName!)!.owner as Sprite).name : currentName!;
         if (ow) {
             workspaceWidth = ow;
         }
@@ -1161,25 +1172,25 @@ export default class Paint {
                 Math.round(Number(root.getAttribute('width')) * currentZoom),
                 Math.round(Number(root.getAttribute('height')) * currentZoom)
             );
-            var dh = root.parentNode.parentNode.offsetHeight / (workspaceHeight + 10);
-            var dw = root.parentNode.parentNode.offsetWidth / (workspaceWidth + 10);
+            var dh = (root.parentNode!.parentNode as HTMLElement).offsetHeight / (workspaceHeight + 10);
+            var dw = (root.parentNode!.parentNode as HTMLElement).offsetWidth / (workspaceWidth + 10);
             Paint.setZoomTo(Math.min(dw, dh));
             PaintUndo.record(true);
         }
     }
 
-    static loadCharacter (md5) {
+    static loadCharacter (md5: string) {
         if (md5.indexOf('samples/') >= 0) {
             // Load sample asset
             Paint.loadChar(md5);
-        } else if (!MediaLib.keys[md5]) {
+        } else if (!(MediaLib.keys as Record<string, unknown>)[md5]) {
             // Load user asset
             iOS.getmedia(md5, nextStep);
         } else {
             // Load library asset
             Paint.loadChar(MediaLib.path + md5);
         }
-        function nextStep (base64) {
+        function nextStep (base64: string) {
             var str = atob(base64);
             IO.getImagesInSVG(str, function () {
                 Paint.loadSprite(str);
@@ -1187,11 +1198,11 @@ export default class Paint {
         }
     }
 
-    static loadSprite (svg) {
+    static loadSprite (svg: string) {
         Paint.createCharFromXML(svg, currentName);
     }
 
-    static loadChar (url) {
+    static loadChar (url: string) {
         var xmlrequest = new XMLHttpRequest();
         xmlrequest.onreadystatechange = function () {
             if (xmlrequest.readyState == 4) {
@@ -1202,45 +1213,45 @@ export default class Paint {
         xmlrequest.send(null);
     }
 
-    static adjustShapePosition (dx, dy) {
+    static adjustShapePosition (dx: number, dy: number) {
         window.xform!.setTranslate(dx, dy);
-        Transform.translateTo(gn('layer1')!, window.xform!);
+        Transform.translateTo(gn('layer1')! as Element, window.xform!);
     }
 
     ///////////////////////////////////
     // Saving
     /////////////////////////////////
 
-    static savePageImage (fcn?) {
+    static savePageImage (fcn?: (result: unknown) => void) {
         var worthsaving = (gn('layer1')!.childElementCount > 0);
         if (!worthsaving) {
             Paint.close();
         } else {
             saving = true;
             if (fcn) {
-                Alert.open(paintFrame, gn('donecheck')!, Localization.localize('ALERT_SAVING'), '#28A5DA');
-                Alert.balloon.style.zIndex = 12000;
+                Alert.open(paintFrame!, gn('donecheck')!, Localization.localize('ALERT_SAVING'), '#28A5DA');
+                Alert.balloon!.style.zIndex = String(12000);
             }
-            svgdata = SVGTools.saveBackground(gn('layer1')!, workspaceWidth, workspaceHeight);
-            IO.setMedia(svgdata, 'svg', function (str) {
+            svgdata = SVGTools.saveBackground(gn('layer1')! as Element, workspaceWidth, workspaceHeight);
+            IO.setMedia(svgdata, 'svg', function (str: string) {
                 Paint.changeBackground(str, fcn);
             });
         }
     }
 
-    static changeBackground (md5, fcn) {
+    static changeBackground (md5: string, fcn?: (result: unknown) => void) {
         saveMD5 = md5;
         var type = 'userbkgs';
         var mobj: SqlPayload = {};
         mobj.cond = 'md5 = ? AND version = ?';
         mobj.items = ['*'];
         mobj.values = [saveMD5, ScratchJr.version];
-        IO.query(type, mobj, function (str) {
+        IO.query(type, mobj, function (str: string) {
             Paint.checkDuplicateBkg(str, fcn);
         });
     }
 
-    static checkDuplicateBkg (str, fcn) {
+    static checkDuplicateBkg (str: string, fcn?: (result: unknown) => void) {
         var list = JSON.parse(str);
         if (list.length > 0) {
             if (fcn) {
@@ -1263,11 +1274,11 @@ export default class Paint {
        	[height] =>
     */
 
-    static addToBkgLib (fcn) {
-        var dataurl = IO.getThumbnail(svgdata, 480, 360, 120, 90);
+    static addToBkgLib (fcn?: (result: unknown) => void) {
+        var dataurl = IO.getThumbnail(svgdata!, 480, 360, 120, 90);
         var pngBase64 = dataurl.split(',')[1];
         iOS.setmedia(pngBase64, 'png', setBkgRecord);
-        function setBkgRecord (pngmd5) {
+        function setBkgRecord (pngmd5: string) {
             var json: SqlPayload = {};
             var keylist = ['md5', 'altmd5', 'version', 'width', 'height', 'ext'];
             var values = '?,?,?,?,?,?';
@@ -1278,46 +1289,46 @@ export default class Paint {
     }
 
     static changePage () {
-        ScratchJr.stage.currentPage.setBackground(saveMD5, ScratchJr.stage.currentPage.updateBkg);
+        ScratchJr.stage.currentPage.setBackground(saveMD5!, ScratchJr.stage.currentPage.updateBkg);
         Paint.close();
     }
 
-    static saveSprite (fcn?) {
+    static saveSprite (fcn?: (result: unknown) => void) {
         var cname = namedForms.spriteform.name.value;
         var worthsaving = (gn('layer1')!.childElementCount > 0) && (PaintUndo.index > 0);
         if (worthsaving) {
             saving = true;
             if (fcn) {
-                Alert.open(paintFrame, gn('donecheck')!, 'Saving...', '#28A5DA');
-                Alert.balloon.style.zIndex = 12000;
+                Alert.open(paintFrame!, gn('donecheck')!, 'Saving...', '#28A5DA');
+                Alert.balloon!.style.zIndex = String(12000);
             }
-            svgdata = SVGTools.saveShape(gn('layer1')!, workspaceWidth, workspaceHeight);
-            IO.setMedia(svgdata, 'svg', function (str) {
+            svgdata = SVGTools.saveShape(gn('layer1')! as Element, workspaceWidth, workspaceHeight);
+            IO.setMedia(svgdata, 'svg', function (str: string) {
                 Paint.addOrModifySprite(str, fcn);
             });
         } else {
             var type = Paint.getLoadType(spriteId, cname);
             if ((cname != currentName) && (type == 'modify')) {
-                ScratchJr.stage.currentPage.modifySpriteName(cname, spriteId);
+                ScratchJr.stage.currentPage.modifySpriteName(cname, spriteId!);
             } else if (currentMd5 && (type == 'add')) {
-                ScratchJr.stage.currentPage.addSprite(costumeScale, currentMd5, cname);
+                ScratchJr.stage.currentPage.addSprite(costumeScale as number, currentMd5, cname);
             }
             Paint.close();
         }
     }
 
-    static addOrModifySprite (str, fcn) {
+    static addOrModifySprite (str: string, fcn?: (result: unknown) => void) {
         saveMD5 = str;
         var mobj: SqlPayload = {};
         mobj.cond = 'md5 = ? AND version = ?';
         mobj.items = ['*'];
         mobj.values = [saveMD5, ScratchJr.version];
-        IO.query('usershapes', mobj, function (str) {
+        IO.query('usershapes', mobj, function (str: string) {
             Paint.checkDuplicate(str, fcn);
         });
     }
 
-    static checkDuplicate (str, fcn) {
+    static checkDuplicate (str: string, fcn?: (result: unknown) => void) {
         var list = JSON.parse(str);
         if (list.length > 0) {
             if (fcn) {
@@ -1343,18 +1354,18 @@ export default class Paint {
 
     */
 
-    static addToLib (fcn) {
+    static addToLib (fcn?: (result: unknown) => void) {
         var scale = '0.5'; // always saves with 1/2 the size
         var cname = namedForms.spriteform.name.value;
         cname = ((unescape(cname)).replace(/[0-9]/g, '')).replace(/\s*/g, '');
-        var box = SVGTools.getBox(gn('layer1')!).rounded();
+        var box = SVGTools.getBox(gn('layer1')! as Element).rounded();
         box = box.expandBy(20);
         var w = box.width.toString();
         var h = box.height.toString();
-        var dataurl = IO.getThumbnail(svgdata, w, h, 120, 90);
+        var dataurl = IO.getThumbnail(svgdata!, w, h, 120, 90);
         var pngBase64 = dataurl.split(',')[1];
         iOS.setmedia(pngBase64, 'png', setCostumeRecord);
-        function setCostumeRecord (pngmd5) {
+        function setCostumeRecord (pngmd5: string) {
             var json: SqlPayload = {};
             var keylist = ['scale', 'md5', 'altmd5', 'version', 'width', 'height', 'ext', 'name'];
             var values = '?,?,?,?,?,?,?,?';
@@ -1370,10 +1381,10 @@ export default class Paint {
         var type = Paint.getLoadType(spriteId, cname);
         switch (type) {
         case 'modify':
-            ScratchJr.stage.currentPage.modifySprite(saveMD5, cname, spriteId);
+            ScratchJr.stage.currentPage.modifySprite(saveMD5!, cname, spriteId!);
             break;
         case 'add':
-            ScratchJr.stage.currentPage.addSprite(costumeScale, saveMD5, cname);
+            ScratchJr.stage.currentPage.addSprite(costumeScale as number, saveMD5!, cname);
             break;
         default:
             ScratchJr.stage.currentPage.update();
@@ -1381,7 +1392,7 @@ export default class Paint {
         }
     }
 
-    static getLoadType (sid, cid) {
+    static getLoadType (sid: string | null | undefined, cid: string | null | undefined) {
         if (!cid) {
             return 'none';
         }
@@ -1395,9 +1406,9 @@ export default class Paint {
     // XML import processs
     ///////////////////////////
 
-    static skipUnwantedElements (p, res) {
+    static skipUnwantedElements (p: Element, res: Element[]) {
         for (var i = 0; i < p.childNodes.length; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if (elem.nodeName == 'metadata') {
                 continue;
             }
@@ -1412,7 +1423,7 @@ export default class Paint {
             }
             if ((elem.nodeName == 'g') && (elem.id == 'layer1')) {
                 Paint.skipUnwantedElements(elem, res);
-                if (elem.removeAttribute('id')) {
+                if (elem.removeAttribute('id') as unknown) {
                     elem.removeAttribute('id');
                 }
             } else {
@@ -1422,10 +1433,10 @@ export default class Paint {
         return res;
     }
 
-    static reassingIds (p) {
+    static reassingIds (p: Element) {
         for (var i = 0; i < p.childNodes.length; i++) {
-            var elem = p.childNodes[i];
-            if (elem.parentNode.getAttribute('fixed') == 'yes') {
+            var elem = p.childNodes[i] as Element;
+            if ((elem.parentNode as Element).getAttribute('fixed') == 'yes') {
                 elem.setAttribute('fixed', 'yes');
             }
             var id = elem.getAttribute('id');
@@ -1438,7 +1449,7 @@ export default class Paint {
         }
     }
 
-    static createCharFromXML (str, fcn?) {
+    static createCharFromXML (str: string, fcn?: string) {
         nativeJr = str.indexOf('Scratch Jr') > -1;
         var dx = (workspaceWidth < 432) ? Math.floor((432 - workspaceWidth) / 2) : 0;
         var dy = (workspaceHeight < 384) ? Math.floor((384 - workspaceHeight) / 2) : 0;
@@ -1452,14 +1463,14 @@ export default class Paint {
         str = str.replace(/>\s*</g, '><');
         var xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
         var extxml = document.importNode(xmlDoc.documentElement, true);
-        var flat = Paint.skipUnwantedElements(extxml, []);
+        var flat = Paint.skipUnwantedElements(extxml as Element, []);
         for (var i = 0; i < flat.length; i++) {
             gn('layer1')!.appendChild(flat[i]);
         }
-        Paint.doAbsolute(gn('layer1')!);
+        Paint.doAbsolute(gn('layer1')! as Element);
         Paint.adjustShapePosition(dx, dy);
         if (!nativeJr) {
-            Paint.reassingIds(gn('layer1')!);
+            Paint.reassingIds(gn('layer1')! as Element);
         } // make sure there are unique mask names
         Paint.scaleToFit();
         minZoom = currentZoom < 1 ? currentZoom / 2 : 1;
@@ -1475,21 +1486,21 @@ export default class Paint {
         }
     }
 
-    static doAbsolute (div) {
+    static doAbsolute (div: Element) {
         for (var i = 0; i < div.childElementCount; i++) {
-            var elem = div.childNodes[i];
+            var elem = div.childNodes[i] as Element;
             if (elem.tagName == 'path') {
                 SVG2Canvas.setAbsolutePath(elem);
             }
             if (elem.tagName == 'g') {
-                Paint.doAbsolute(div.childNodes[i]);
+                Paint.doAbsolute(elem);
             }
         }
     }
 
-    static getComponents (p, res) {
+    static getComponents (p: Element, res: Element[]) {
         for (var i = 0; i < p.childNodes.length; i++) {
-            var elem = p.childNodes[i];
+            var elem = p.childNodes[i] as Element;
             if (elem.nodeName == 'metadata') {
                 continue;
             }

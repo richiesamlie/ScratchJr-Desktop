@@ -13,6 +13,7 @@ import SVGImage from './SVGImage';
 import Camera from './Camera';
 import Events from '../utils/Events';
 import Rectangle from '../geom/Rectangle';
+import type {Point} from '../geom/Vector';
 import {gn, isTouch, getIdFor} from '../utils/lib';
 /*
 Type of objects:
@@ -39,12 +40,39 @@ Rules:
 
  */
 
+// Event handler shape used across the paint editor: both mouse and touch events
+// reach these handlers, so only the members actually read are declared.
+type PaintEvt = {
+    touches?: TouchList;
+    changedTouches?: TouchList;
+    target?: EventTarget | null;
+    shiftKey?: boolean;
+    clientX?: number;
+    clientY?: number;
+    preventDefault(): void;
+    stopPropagation(): void;
+};
+
+type ModeHandler = (evt: PaintEvt) => void;
+
+// Path.isTip was removed during the Path.ts refactor; keep the identical check local.
+function isPathTip (grab: Element | null): boolean {
+    var indx = Path.getDotPos(grab as HTMLElement);
+    if (indx < 0) {
+        return false;
+    }
+    if (indx == 0) {
+        return true;
+    }
+    return indx == (gn('pathdots')!.childElementCount - 1);
+}
+
 let currentShape: Element | null = null;
 let target: Element | null = null;
 let dragGroup: Element[] = [];
 let startAngle = 0;
 let dragging = false;
-let timeoutEvent;
+let timeoutEvent: ReturnType<typeof setTimeout> | null = null;
 let mindist = 10;
 
 
@@ -56,7 +84,7 @@ export default class PaintAction {
     static currentshape: HTMLElement;
 
     // Getters/setters for globally used properties
-    static set target (newTarget) {
+    static set target (newTarget: Element | null) {
         target = newTarget;
     }
 
@@ -64,7 +92,7 @@ export default class PaintAction {
         return dragGroup;
     }
 
-    static mouseDown (evt) {
+    static mouseDown (evt: PaintEvt) {
         target = null;
         if (!gn('layer1')!) {
             return;
@@ -74,7 +102,7 @@ export default class PaintAction {
         }
         PaintAction.clearDragGroup();
         dragging = false;
-        var mt = PaintAction.getMouseTarget(evt);
+        var mt = PaintAction.getMouseTarget(evt) as Element | null;
         if (!mt) {
             return;
         }
@@ -84,7 +112,7 @@ export default class PaintAction {
         evt.preventDefault();
         Paint.initialPoint = PaintAction.getScreenPt(evt);
         Paint.deltaPoint = PaintAction.getScreenPt(evt);
-        if (Path.hitDot(evt)) {
+        if (Path.hitDot(evt as MouseEvent)) {
             Paint.mode = 'grab';
         }
         currentShape = null;
@@ -96,18 +124,18 @@ export default class PaintAction {
     static clearDragGroup () {
         for (var j = 0; j < gn('layer1')!.childElementCount; j++) {
             var kid = gn('layer1')!.childNodes[j];
-            var erot = Transform.getRotation(kid);
+            var erot = Transform.getRotation(kid as Element);
             if (erot.angle == 0) {
                 continue;
             }
             var res: HTMLElement[] = [];
             for (let i = 0; i < (kid as HTMLElement).childElementCount; i++) {
-                var elem = kid.childNodes[i];
+                var elem = kid.childNodes[i] as HTMLElement;
                 if (!elem) {
                     continue;
                 }
-                Transform.rotateFromPoint(erot, elem);
-                res.push(elem as HTMLElement);
+                Transform.rotateFromPoint(erot, elem as Element);
+                res.push(elem);
             }
             for (let i = 0; i < (kid as HTMLElement).childElementCount; i++) {
                 gn('layer1')!.appendChild(res[i]);
@@ -122,7 +150,7 @@ export default class PaintAction {
         window.onmouseup = null;
     }
 
-    static stopAction (e) {
+    static stopAction (e: PaintEvt) {
         var list = ['path', 'ellipse', 'rect', 'tri'];
         var isCreator = list.indexOf(Paint.mode) > -1;
         if (currentShape && currentShape!.parentNode && isCreator) {
@@ -167,13 +195,13 @@ export default class PaintAction {
         };
     }
 
-    static mouseMove (evt) {
+    static mouseMove (evt: PaintEvt) {
         evt.preventDefault();
         cmdForMouseMove[Paint.mode](evt);
         Paint.deltaPoint = PaintAction.getScreenPt(evt);
     }
 
-    static mouseUp (evt) {
+    static mouseUp (evt: PaintEvt) {
         evt.preventDefault();
         cmdForMouseUp[Paint.mode](evt);
         Ghost.clearLayer();
@@ -201,7 +229,7 @@ export default class PaintAction {
     //Calls from the Mouse Down
 
 
-    static selectMouseDown (evt) {
+    static selectMouseDown (evt: PaintEvt) {
         PaintAction.fingerDown(evt);
         if (currentShape) {
             currentShape = currentShape!.getAttribute('stencil') == 'yes'
@@ -222,32 +250,32 @@ export default class PaintAction {
         }
     }
 
-    static fingerDown (evt) { // Paint Target is the one given by the
+    static fingerDown (evt: PaintEvt) { // Paint Target is the one given by the
         currentShape = Ghost.findTarget(evt);
         target = currentShape ? currentShape : target;
         dragGroup = [];
     }
 
-    static fingerUp (evt) {
+    static fingerUp (evt: PaintEvt) {
         currentShape = null;
         target = null;
         PaintAction.fingerDown(evt);
     }
 
-    static startHold (e?) {
+    static startHold (e?: PaintEvt) {
         //  console.log ("startHold", currentShape);
         if (!currentShape) {
             return;
         }
         var repeat = function () {
             //	console.log ("callback", currentShape);
-            Layer.bringToFront(currentShape);
+            Layer.bringToFront(currentShape!);
             timeoutEvent = null;
         };
         timeoutEvent = setTimeout(repeat, 600);
     }
 
-    static cloneMouseDown (evt) {
+    static cloneMouseDown (evt: PaintEvt) {
         PaintAction.fingerDown(evt);
         PaintAction.selectTarget();
         if (currentShape && (currentShape.id == 'staticbkg')) {
@@ -256,8 +284,8 @@ export default class PaintAction {
     }
 
     static pathMouseDown () {
-        currentShape = SVGTools.addPolyline(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
-        var mt = Path.getClosestPath(Paint.initialPoint, currentShape, gn('layer1')!, Path.maxDistance());
+        currentShape = SVGTools.addPolyline(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
+        var mt = Path.getClosestPath(Paint.initialPoint, currentShape, gn('layer1')! as Element, Path.maxDistance());
         if (!mt) {
             return;
         }
@@ -266,7 +294,7 @@ export default class PaintAction {
         if ((s != mt.getAttribute('stroke')) || (sw != mt.getAttribute('stroke-width'))) {
             return;
         }
-        var g = SVGTools.createGroup(gn('draglayer')!, 'cusorstate');
+        var g = SVGTools.createGroup(gn('draglayer')! as Element, 'cusorstate');
         Ghost.getKid(g, mt, 0.7);
         target = mt;
     }
@@ -281,8 +309,8 @@ export default class PaintAction {
         }
     }
 
-    static makeAgroup (group) {
-        var p = gn('layer1')!;
+    static makeAgroup (group: Element[]) {
+        var p = gn('layer1')! as Element;
         var g = SVGTools.createGroup(p, getIdFor('group'));
         for (var i = 0; i < group.length; i++) {
             p.removeChild(group[i]);
@@ -292,13 +320,13 @@ export default class PaintAction {
     }
 
     static ellipseMouseDown () {
-        currentShape = SVGTools.addEllipse(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
+        currentShape = SVGTools.addEllipse(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
     }
     static rectMouseDown () {
-        currentShape = SVGTools.addRect(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
+        currentShape = SVGTools.addRect(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
     }
     static triMouseDown () {
-        currentShape = SVGTools.addTriangle(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
+        currentShape = SVGTools.addTriangle(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
     }
 
     static grabMouseDown () {
@@ -311,20 +339,20 @@ export default class PaintAction {
     //Calls from the Mouse Move
 
 
-    static selectMouseMove (evt) {
+    static selectMouseMove (evt: PaintEvt) {
         if (evt.touches && (evt.touches.length > 1)) {
             return;
         }
         if (PaintAction.onBackground()) {
             PaintAction.clearEvents();
-            Paint.Scroll(evt);
+            Paint.Scroll(evt as Event);
             return; 
         } else {
             PaintAction.moveObject(evt);
         }
     }
 
-    static moveObject (evt) {
+    static moveObject (evt: PaintEvt) {
         if (!target) {
             return;
         }
@@ -339,7 +367,7 @@ export default class PaintAction {
         for (var i = 0; i < dragGroup.length; i++) {
             Transform.extract(dragGroup[i], 2).setTranslate(delta.x, delta.y);
         }
-        Transform.extract(gn('ghostgroup')!, 2).setTranslate(delta.x, delta.y);
+        Transform.extract(gn('ghostgroup')! as Element, 2).setTranslate(delta.x, delta.y);
     }
 
     static onBackground () {
@@ -353,11 +381,11 @@ export default class PaintAction {
         return false;
     }
 
-    static paintBucketMouseMove (evt) {
+    static paintBucketMouseMove (evt: PaintEvt) {
         Ghost.findTarget(evt);
     }
 
-    static isMoving (evt) {
+    static isMoving (evt: PaintEvt) {
         if (dragging) {
             return true;
         }
@@ -366,22 +394,22 @@ export default class PaintAction {
         return !dragging && (Vector.len(delta) > mindist);
     }
 
-    static fingerMove (evt) {
+    static fingerMove (evt: PaintEvt) {
         Ghost.findTarget(evt);
     }
 
-    static cloneMouseMove (evt) {
+    static cloneMouseMove (evt: PaintEvt) {
         Ghost.findTarget(evt);
     }
 
-    static startDragShape (e?) {
+    static startDragShape (e?: PaintEvt) {
         if (timeoutEvent) {
             clearTimeout(timeoutEvent);
         }
         PaintAction.selectTarget();
-        timeoutEvent = undefined;
+        timeoutEvent = null;
         Path.quitEditMode();
-        dragGroup = Layer.findGroup(currentShape);
+        dragGroup = Layer.findGroup(currentShape!);
         for (var i = 0; i < dragGroup.length; i++) {
             Transform.eleminateTranslates(dragGroup[i]);
             gn('layer1')!.appendChild(dragGroup[i]);
@@ -390,11 +418,11 @@ export default class PaintAction {
         for (var j = 0; j < dragGroup.length; j++) {
             Transform.appendForMove(dragGroup[j], Transform.getTranslateTransform());
         }
-        Transform.appendForMove(gn('ghostgroup')!, Transform.getTranslateTransform());
+        Transform.appendForMove(gn('ghostgroup')! as Element, Transform.getTranslateTransform());
         dragging = true;
     }
 
-    static rotateMouseMove (evt) {
+    static rotateMouseMove (evt: PaintEvt) {
         if (!target) {
             return;
         }
@@ -410,10 +438,10 @@ export default class PaintAction {
             return;
         }
         PaintAction.rotateFromMouse(evt, currentShape);
-        PaintAction.rotateFromMouse(evt, gn('ghostgroup')!);
+        PaintAction.rotateFromMouse(evt, gn('ghostgroup')! as Element);
     }
 
-    static startRotateShape (evt) {
+    static startRotateShape (evt: PaintEvt) {
         PaintAction.selectTarget();
         if (!currentShape) {
             return;
@@ -446,7 +474,7 @@ export default class PaintAction {
     }
 
 
-    static rotateFromMouse (evt, elem) {
+    static rotateFromMouse (evt: PaintEvt, elem: Element) {
         var pt = PaintAction.getScreenPt(evt);
         var rot = Transform.getRotation(elem);
         var mtx = Transform.getCombinedMatrices(elem); // skips rotation matrices
@@ -465,7 +493,7 @@ export default class PaintAction {
         rot.setRotate(angle, center.x, center.y);
     }
 
-    static rectMouseMove (evt) {
+    static rectMouseMove (evt: PaintEvt) {
         var pt = PaintAction.getScreenPt(evt);
         var delta = Vector.diff(pt, Paint.initialPoint);
         if (!dragging && (Vector.len(delta) > mindist)) {
@@ -485,18 +513,18 @@ export default class PaintAction {
             new_x = Math.min(Paint.initialPoint.x, pt.x);
             new_y = Math.min(Paint.initialPoint.y, pt.y);
         }
-        var attr = {
+        var attr: Record<string, number> = {
             'width': w,
             'height': h,
             'x': new_x,
             'y': new_y
         };
         for (var val in attr) {
-            currentShape!.setAttributeNS(null, val, attr[val]);
+            currentShape!.setAttributeNS(null, val, String(attr[val]));
         }
     }
 
-    static triMouseMove (evt) {
+    static triMouseMove (evt: PaintEvt) {
         var pt = PaintAction.getScreenPt(evt);
         var delta = Vector.diff(pt, Paint.initialPoint);
         if (!dragging && (Vector.len(delta) > mindist)) {
@@ -514,7 +542,7 @@ export default class PaintAction {
         currentShape!.setAttribute('d', d);
     }
 
-    static pathMouseMove (evt) {
+    static pathMouseMove (evt: PaintEvt) {
         var pt = PaintAction.getScreenPt(evt);
         var delta = Vector.diff(pt, Paint.initialPoint);
         if (!dragging && (Vector.len(delta) > mindist)) {
@@ -529,7 +557,7 @@ export default class PaintAction {
         currentShape!.setAttributeNS(null, 'points', d!);
     }
 
-    static ellipseMouseMove (evt) {
+    static ellipseMouseMove (evt: PaintEvt) {
         var pt = PaintAction.getScreenPt(evt);
         var delta = Vector.diff(pt, Paint.initialPoint);
         if (!dragging && (Vector.len(delta) > mindist)) {
@@ -554,23 +582,23 @@ export default class PaintAction {
         var ry = h / 2;
         var cy = new_y + ry;
 
-        var attr = {
+        var attr: Record<string, number> = {
             'cx': cx,
             'cy': cy,
             'rx': rx,
             'ry': ry
         };
         for (var val in attr) {
-            currentShape!.setAttributeNS(null, val, attr[val]);
+            currentShape!.setAttributeNS(null, val, String(attr[val]));
         }
     }
 
-    static grabMouseMove (evt) {
+    static grabMouseMove (evt: PaintEvt) {
         var pt = PaintAction.getScreenPt(evt);
         var delta = Vector.diff(pt, Paint.deltaPoint);
         PaintAction.movePointByDrag(delta.x, delta.y);
         dragging = true;
-        var elem = gn(currentShape!.getAttribute('parentid'))!;
+        var elem = gn(currentShape!.getAttribute('parentid')!)! as Element;
         var state = SVG2Canvas.isCloseDPath(elem);
         Path.reshape(elem);
         var newstate = SVG2Canvas.isCloseDPath(elem);
@@ -580,37 +608,37 @@ export default class PaintAction {
         if (SVG2Canvas.isCloseDPath(elem)) {
             return;
         }
-        if (!Path.isTip(currentShape)) {
+        if (!isPathTip(currentShape)) {
             return;
         }
         Ghost.clearLayer();
-        var mt = Path.getClosestPath(pt, elem, gn('layer1')!, Path.maxDistance());
+        var mt = Path.getClosestPath(pt, elem, gn('layer1')! as Element, Path.maxDistance());
         if (!mt) {
             return;
         }
-        var g = SVGTools.createGroup(gn('draglayer')!, 'cusorstate');
+        var g = SVGTools.createGroup(gn('draglayer')! as Element, 'cusorstate');
         Ghost.getKid(g, mt, 0.7);
         target = mt;
     }
 
-    static playSnapSound (state) {
+    static playSnapSound (state: boolean) {
         ScratchAudio.sndFX(state ? 'cut.wav' : 'snap.wav');
     }
 
-    static movePointByDrag (dx, dy) {
+    static movePointByDrag (dx: number, dy: number) {
         var cx = currentShape!.getAttribute('cx');
         var cy = currentShape!.getAttribute('cy');
         var newcx = Number(cx) + dx;
         var newcy = Number(cy) + dy;
-        currentShape!.setAttributeNS(null, 'cx', newcx);
-        currentShape!.setAttributeNS(null, 'cy', newcy);
+        currentShape!.setAttributeNS(null, 'cx', String(newcx));
+        currentShape!.setAttributeNS(null, 'cy', String(newcy));
     }
 
 
     //Calls from the Mouse Up
 
 
-    static rectMouseUp (evt) {
+    static rectMouseUp (evt: PaintEvt) {
         var w = Number(currentShape!.getAttribute('width'));
         var h = Number(currentShape!.getAttribute('height'));
         var x = Number(currentShape!.getAttribute('x'));
@@ -628,7 +656,7 @@ export default class PaintAction {
             x: x,
             y: y + h
         }];
-        var shape = Path.makeRectangle(currentShape!.parentNode, pl);
+        var shape = Path.makeRectangle(currentShape!.parentNode as Element, pl);
         currentShape!.parentNode!.removeChild(currentShape!);
         currentShape = shape;
         var box = SVGTools.getBox(currentShape);
@@ -637,25 +665,25 @@ export default class PaintAction {
         }
     }
 
-    static triMouseUp (evt) {
+    static triMouseUp (evt: PaintEvt) {
         var box = SVGTools.getBox(currentShape);
         if (SVGTools.notValidBox(box)) {
             PaintAction.removeShape(evt);
         }
     }
 
-    static ellipseMouseUp (evt) {
+    static ellipseMouseUp (evt: PaintEvt) {
         var box = SVGTools.getBox(currentShape);
         if (SVGTools.notValidBox(box)) {
             PaintAction.removeShape(evt);
         } else {
-            var shape = Path.makeEllipse(currentShape);
+            var shape = Path.makeEllipse(currentShape!);
             currentShape!.parentNode!.removeChild(currentShape!);
             currentShape = shape;
         }
     }
 
-    static rotateMouseUp (evt) {
+    static rotateMouseUp (evt: PaintEvt) {
         if (!currentShape) {
             return;
         }
@@ -674,21 +702,21 @@ export default class PaintAction {
         currentShape = target;
     }
 
-    static pathMouseUp (evt) {
+    static pathMouseUp (evt: PaintEvt) {
         if (dragging) {
-            currentShape = Path.process(currentShape);
+            currentShape = Path.process(currentShape!);
             var box1 = SVGTools.getBox(currentShape);
             var box2 = new Rectangle(0, 0, Paint.workspaceWidth, Paint.workspaceHeight);
             if (!box1.intersects(box2)) {
                 PaintAction.removeShape(evt); // outside the working area
             } else if (!SVG2Canvas.isCloseDPath(currentShape)) { // check if it is a join issue
                 var pt = PaintAction.getScreenPt(evt);
-                var mt = Path.getClosestPath(pt, currentShape, gn('layer1')!, Path.maxDistance()); // check the end
+                var mt = Path.getClosestPath(pt, currentShape, gn('layer1')! as Element, Path.maxDistance()); // check the end
                 if (!mt) {
                     pt = Path.getCommands(currentShape!.getAttribute('d'))[0].pt;
                     mt = Path.getClosestPath(pt,
                         currentShape,
-gn('layer1')!,
+gn('layer1')! as Element,
 Path.maxDistance()); // check the start
                 }
                 var s = currentShape!.getAttribute('stroke');
@@ -705,7 +733,7 @@ Path.maxDistance()); // check the start
         }
     }
 
-    static selectMouseUp (evt) {
+    static selectMouseUp (evt: PaintEvt) {
         if (timeoutEvent) {
             clearTimeout(timeoutEvent);
         }
@@ -726,7 +754,7 @@ Path.maxDistance()); // check the start
         }
     }
 
-    static scissorsMouseUp (evt) {
+    static scissorsMouseUp (evt: PaintEvt) {
         PaintAction.fingerUp(evt);
         PaintAction.selectTarget();
         if (currentShape && (currentShape.id == 'fixed')) {
@@ -753,11 +781,11 @@ Path.maxDistance()); // check the start
         } else if (currentShape!.parentNode) {
             currentShape!.parentNode!.removeChild(currentShape!);
         }
-        SVGTools.cleanup(gn('layer1')!);
+        SVGTools.cleanup(gn('layer1')! as Element);
         PaintUndo.record();
     }
 
-    static cameraMouseUp (evt) {
+    static cameraMouseUp (evt: PaintEvt) {
         if (isTouch) {
             PaintAction.fingerUp(evt);
         }
@@ -770,7 +798,7 @@ Path.maxDistance()); // check the start
         });
     }
 
-    static cloneMouseUp (evt) {
+    static cloneMouseUp (evt: PaintEvt) {
         PaintAction.fingerUp(evt);
         PaintAction.selectTarget();
         if (currentShape && (currentShape.id == 'staticbkg')) {
@@ -810,7 +838,7 @@ Path.maxDistance()); // check the start
         PaintUndo.record();
     }
 
-    static paintBucketMouseUp (evt) {
+    static paintBucketMouseUp (evt: PaintEvt) {
         PaintAction.fingerUp(evt);
         if (!currentShape) {
             return;
@@ -818,15 +846,15 @@ Path.maxDistance()); // check the start
         PaintAction.paintRegion(evt);
     }
 
-    static paintRegion (e?) {
+    static paintRegion (e?: PaintEvt) {
         ScratchAudio.sndFX('splash.wav');
         switch (PaintAction.getPaintType()) {
         case 'paths':
-            Path.setData(currentShape);
+            Path.setData(currentShape!);
             break;
         case 'image':
             var mt = SVGImage.getImage(currentShape);
-            SVGImage.paint(mt);
+            SVGImage.paint(mt!);
             break;
         // if the stroke and fill are the same and they are "relatedto" paths stokes needs to be changed too.
         case 'check':
@@ -850,7 +878,7 @@ Path.maxDistance()); // check the start
         if (mtimage) {
             return 'image';
         }
-        if (!PaintAction.justPaint(currentShape)) {
+        if (!PaintAction.justPaint(currentShape!)) {
             return 'paths';
         }
         if ((currentShape!.getAttribute('fill') == null)
@@ -863,7 +891,7 @@ Path.maxDistance()); // check the start
         return 'none';
     }
 
-    static justPaint (mt) {
+    static justPaint (mt: Element) {
         //only compound the ones created with this tool
         if (mt.tagName != 'path') {
             return true;
@@ -911,7 +939,7 @@ Path.maxDistance()); // check the start
             }
             window.xform!.setTranslate(delta.x, delta.y);
             for (var k = 0; k < dragGroup.length; k++) {
-                Transform.translateTo(dragGroup[k], window.xform);
+                Transform.translateTo(dragGroup[k], window.xform!);
             }
         }
         dragGroup = [];
@@ -919,23 +947,23 @@ Path.maxDistance()); // check the start
 
     static ignoreEvt () {}
 
-    static backToSelect (e?) {
+    static backToSelect (e?: PaintEvt) {
         Paint.selectButton('select');
     }
 
-    static grabMouseUp (evt) {
-        var elem = gn(currentShape!.getAttribute('parentid'))!;
-        currentShape!.setAttributeNS(null, 'fill', Path.getDotColor(elem, currentShape));
+    static grabMouseUp (evt: PaintEvt) {
+        var elem = gn(currentShape!.getAttribute('parentid')!)! as Element;
+        currentShape!.setAttributeNS(null, 'fill', Path.getDotColor(elem, currentShape! as HTMLElement));
         currentShape!.setAttributeNS(null, 'r', String(Number(currentShape!.getAttribute('r')!) / 1.5));
         var pt = PaintAction.getScreenPt(evt);
         if (!dragging) {
-            Path.deleteDot(currentShape, elem);
+            Path.deleteDot(currentShape! as HTMLElement, elem);
         } else {
             var delta = Vector.diff(pt, Paint.deltaPoint);
             PaintAction.movePointByDrag(delta.x, delta.y);
             Path.reshape(elem);
-            if (Path.isTip(currentShape) && !SVG2Canvas.isCloseDPath(elem)) {
-                var mt = Path.getClosestPath(pt, elem, gn('layer1')!, Path.maxDistance());
+            if (isPathTip(currentShape) && !SVG2Canvas.isCloseDPath(elem)) {
+                var mt = Path.getClosestPath(pt, elem, gn('layer1')! as Element, Path.maxDistance());
                 if (!mt) {
                     return;
                 }
@@ -951,7 +979,7 @@ Path.maxDistance()); // check the start
     //Calls for click
 
 
-    static removeShape (e?) {
+    static removeShape (e?: PaintEvt | null) {
         if (currentShape == undefined) {
             return;
         }
@@ -959,12 +987,12 @@ Path.maxDistance()); // check the start
         currentShape = null;
     }
 
-    static rectClick (evt) {
+    static rectClick (evt: PaintEvt) {
         if (!currentShape) {
             return;
         }
         PaintAction.removeShape(evt);
-        currentShape = SVGTools.addRect(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
+        currentShape = SVGTools.addRect(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
         var c = currentShape!.getAttribute('stroke');
         var attr: Record<string, string | number> = {
             'width': 16 / Paint.currentZoom,
@@ -984,12 +1012,12 @@ Path.maxDistance()); // check the start
         PaintUndo.record();
     }
 
-    static ellipseClick (evt) {
+    static ellipseClick (evt: PaintEvt) {
         if (!currentShape) {
             return;
         }
         PaintAction.removeShape(evt);
-        currentShape = SVGTools.addEllipse(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
+        currentShape = SVGTools.addEllipse(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
         var c = currentShape!.getAttribute('stroke');
         var attr: Record<string, string | number> = {
             'rx': 8 / Paint.currentZoom,
@@ -1009,7 +1037,7 @@ Path.maxDistance()); // check the start
         PaintUndo.record();
     }
 
-    static pathClick (evt) {
+    static pathClick (evt: PaintEvt) {
         currentShape = Ghost.findWho(evt);
         if (!currentShape) {
             return;
@@ -1019,12 +1047,12 @@ Path.maxDistance()); // check the start
         }
     }
 
-    static triClick (evt) {
+    static triClick (evt: PaintEvt) {
         if (!currentShape) {
             return;
         }
         PaintAction.removeShape(evt);
-        currentShape = SVGTools.addTriangle(gn('layer1')!, Paint.initialPoint.x, Paint.initialPoint.y);
+        currentShape = SVGTools.addTriangle(gn('layer1')! as Element, Paint.initialPoint.x, Paint.initialPoint.y);
         var w = 16 / Paint.currentZoom;
         var h = 16 / Paint.currentZoom;
         var x = Paint.initialPoint.x;
@@ -1033,22 +1061,22 @@ Path.maxDistance()); // check the start
         var d = SVG2Canvas.arrayToString(cmds);
         d += 'z';
         var c = currentShape!.getAttribute('stroke');
-        var attr = {
-            'fill': c,
+        var attr: Record<string, string | number> = {
+            'fill': String(c),
             'stroke-width': 2,
             'd': d
         };
         for (var val in attr) {
-            currentShape!.setAttribute(val, attr[val]);
+            currentShape!.setAttribute(val, String(attr[val]));
         }
         PaintUndo.record();
     }
 
-    static selectClick (evt) {
+    static selectClick (evt: PaintEvt) {
         if (!timeoutEvent) {
             return;
         }
-        timeoutEvent = undefined;
+        timeoutEvent = null;
         if (!currentShape) {
             return;
         }
@@ -1081,21 +1109,23 @@ Path.maxDistance()); // check the start
     //Mouse Targets and groups
     ///////////////////////////
 
-    static getMouseTarget (evt) {
-        var mt;
+    static getMouseTarget (evt: PaintEvt | null) {
+        var mt: Element | null = null;
         if (evt == null) {
             return null;
         }
         if (window.event) {
-            mt = window.event.srcElement;
+            mt = (window.event as MouseEvent).srcElement as Element;
         } else {
-            mt = evt.target;
+            mt = evt.target as Element;
         }
         if (!mt) {
             return null;
         }
-        if (mt.correspondingUseElement) {
-            mt = mt.correspondingUseElement;
+        // correspondingUseElement (legacy SVG2) is not in lib.dom; cast structurally
+        var useEl = mt as { correspondingUseElement?: EventTarget | null };
+        if (useEl.correspondingUseElement) {
+            mt = useEl.correspondingUseElement as Element;
         }
         if (mt.id == 'maincanvas') {
             return mt.childNodes[0];
@@ -1104,7 +1134,7 @@ Path.maxDistance()); // check the start
             return mt;
         }
         while (mt && (Paint.xmlns != mt.namespaceURI) && (mt != Paint.root) && (mt != Paint.frame)) {
-            mt = mt.parentNode;
+            mt = mt.parentNode as Element;
         }
         if (!mt) {
             return null;
@@ -1112,18 +1142,18 @@ Path.maxDistance()); // check the start
         if (!mt.parentNode) {
             return null;
         }
-        if ((mt.parentNode.id).indexOf('group_') > -1) {
+        if ((mt.parentNode as Element).id.indexOf('group_') > -1) {
             return mt.parentNode;
         }
         return mt;
     }
 
-    static getScreenPt (evt) {
-        var pt = Events.getTargetPoint(evt);
+    static getScreenPt (evt: PaintEvt) {
+        var pt = Events.getTargetPoint(evt as MouseEvent | TouchEvent);
         return PaintAction.zoomPt(pt);
     }
 
-    static zoomPt (pt) {
+    static zoomPt (pt: Point) {
         var mc = gn('maincanvas')!;
         if (!mc) {
             return pt;
@@ -1131,7 +1161,7 @@ Path.maxDistance()); // check the start
         var pt2 = Paint.root.createSVGPoint();
         pt2.x = pt.x;
         pt2.y = pt.y;
-        var globalPoint = pt2.matrixTransform(Paint.root.getScreenCTM().inverse());
+        var globalPoint = pt2.matrixTransform(Paint.root.getScreenCTM()!.inverse());
         globalPoint.x = globalPoint.x / Paint.currentZoom;
         globalPoint.y = globalPoint.y / Paint.currentZoom;
         return globalPoint;
@@ -1142,7 +1172,7 @@ Path.maxDistance()); // check the start
 
 
 
-let cmdForMouseDown = {
+let cmdForMouseDown: Record<string, ModeHandler> = {
     'select': PaintAction.selectMouseDown,
     'rotate': PaintAction.fingerDown,
     'tri': PaintAction.triMouseDown,
@@ -1156,7 +1186,7 @@ let cmdForMouseDown = {
     'camera': PaintAction.fingerDown
 };
 
-let cmdForMouseMove = {
+let cmdForMouseMove: Record<string, ModeHandler> = {
     'select': PaintAction.selectMouseMove,
     'rotate': PaintAction.rotateMouseMove,
     'tri': PaintAction.triMouseMove,
@@ -1170,7 +1200,7 @@ let cmdForMouseMove = {
     'camera': PaintAction.fingerMove
 };
 
-let cmdForMouseUp = {
+let cmdForMouseUp: Record<string, ModeHandler> = {
     'select': PaintAction.selectMouseUp,
     'rotate': PaintAction.rotateMouseUp,
     'tri': PaintAction.triMouseUp,
@@ -1184,7 +1214,7 @@ let cmdForMouseUp = {
     'camera': PaintAction.cameraMouseUp
 };
 
-let cmdForClick = {
+let cmdForClick: Record<string, ModeHandler> = {
     'select': PaintAction.selectClick,
     'rotate': PaintAction.ignoreEvt,
     'tri': PaintAction.triClick,

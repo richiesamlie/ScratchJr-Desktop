@@ -22,7 +22,7 @@ export default class Grid {
         return hidden;
     }
 
-    static init (div) {
+    static init (div: HTMLElement) {
         var w = div.offsetWidth;
         var h = div.offsetHeight;
         var grid = newDiv(div, 0, 0, width, height, {
@@ -38,7 +38,7 @@ export default class Grid {
         Grid.createXcursor();
     }
 
-    static setScaleAndPosition (grid, scale, x, y, w, h) {
+    static setScaleAndPosition (grid: HTMLElement, scale: number, x: number, y: number, w: number, h: number) {
         setProps(grid.style, {
             webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
                 + 'scale(' + scale + ') '
@@ -46,7 +46,7 @@ export default class Grid {
         });
     }
 
-    static drawLines (grid, w, h) {
+    static drawLines (grid: HTMLElement, w: number, h: number) {
         var cnv = newCanvas(grid, 0, 0, w, h, {
             position: 'absolute'
         });
@@ -75,7 +75,7 @@ export default class Grid {
             };
     }
 
-    static createNumbering (w, h) {
+    static createNumbering (w: number, h: number) {
         var row = newDiv(gn('stageframe')!, 0, 0, w - 46 - 30, 24, {
             position: 'absolute',
             zIndex: ScratchJr.layerTop
@@ -123,7 +123,7 @@ export default class Grid {
         num.setAttribute('class', 'circle');
         num.style.background = '#6a99c1';
         num.setAttribute('id', 'ycursor');
-        var p = newP(num, 15, {});
+        var p = newP(num, String(15), {});
         p.setAttribute('class', 'circlenum');
     }
 
@@ -135,7 +135,7 @@ export default class Grid {
         num.setAttribute('class', 'circle');
         num.style.background = '#6a99c1';
         num.setAttribute('id', 'xcursor');
-        var p = newP(num, 1, {});
+        var p = newP(num, String(1), {});
         p.setAttribute('class', 'circlenum');
     }
 
@@ -161,7 +161,7 @@ export default class Grid {
         gc.onmousedown = Grid.mouseDownOnCursor;
     }
 
-    static mouseDownOnCursor (e) {
+    static mouseDownOnCursor (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
         var pt = ScratchJr.stage.getStagePt(e);
@@ -194,7 +194,7 @@ export default class Grid {
             gn('ycursor')!.style.visibility = 'hidden';
             return;
         }
-        var spr = gn(ScratchJr.stage.currentPage.currentSpriteName)!;
+        var spr = gn(ScratchJr.stage.currentPage.currentSpriteName!)!;
         if (!spr) {
             return;
         }
@@ -211,7 +211,7 @@ export default class Grid {
         Grid.setCursorsValues(dx, dy);
     }
 
-    static setCursorsValues (dx, dy) {
+    static setCursorsValues (dx: number, dy: number) {
         var c = gn('circlenum')!;
         var numX = Math.round(dx / size);
         var numY = Math.round(dy / size);
@@ -246,7 +246,7 @@ export default class Grid {
         });
     }
 
-    static hide (b) {
+    static hide (b: boolean) {
         hidden = b;
         var mystate = hidden ? 'hidden' : 'visible';
         gn('livegrid')!.style.visibility = mystate;

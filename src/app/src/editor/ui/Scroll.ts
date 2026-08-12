@@ -18,7 +18,7 @@ export default class Scroll {
     getContent: () => HTMLElement;
     getObjects: () => unknown[];
 
-    constructor (div, id, w, h, cfcn, ofcn) {
+    constructor (div: HTMLElement, id: string, w: number, h: number, cfcn: () => HTMLElement, ofcn: () => unknown[]) {
         this.hasHorizontal = true;
         this.hasVertical = true;
         this.arrowDistance = 6;
@@ -32,7 +32,7 @@ export default class Scroll {
         this.addArrows(div, w, h);
         this.getContent = cfcn;
         this.getObjects = ofcn;
-        div.scroll = this; // for now;
+        (div as unknown as { scroll?: unknown }).scroll = this; // for now;
     }
 
     update () {
@@ -45,7 +45,7 @@ export default class Scroll {
     // Arrows
     ////////////////////////////////////////////////////////////
 
-    addArrows (sc, w, h) {
+    addArrows (sc: HTMLElement, w: number, h: number) {
         this.aleft = newHTML('div', 'leftarrow', sc);
         this.aleft.style.height = h + 'px';
         var larrow = newHTML('span', undefined, this.aleft);
@@ -84,7 +84,7 @@ export default class Scroll {
     // Scrolling
     ////////////////////////////////////////////////////////////
 
-    repositionArrows (h) {
+    repositionArrows (h: number) {
         this.aleft.style.height = h + 'px';
         const leftArrow = this.aleft.childNodes[0] as HTMLElement;
         leftArrow.style.top = Math.floor((h - leftArrow.offsetHeight) / 2) + 'px';
@@ -93,7 +93,7 @@ export default class Scroll {
         rightArrow.style.top = Math.floor((h - rightArrow.offsetHeight) / 2) + 'px';
     }
 
-    getAdjustment (rect) { // rect of the dragg block canvas
+    getAdjustment (rect: { x: number; y: number; width: number; height: number }) { // rect of the dragg block canvas
         var d = this.contents.parentNode as HTMLElement; // scripts
         var w = d.offsetWidth;
         var h = d.offsetHeight;
@@ -208,7 +208,7 @@ export default class Scroll {
         var bc = this.getContent(); // blockcanvas
         var w = p.offsetWidth;
         var h = p.offsetHeight;
-        var you;
+        var you: HTMLElement | null = null;
         var needleft = 'hidden';
         var needright = 'hidden';
         var needup = 'hidden';
@@ -226,16 +226,16 @@ export default class Scroll {
             if (you.style.visibility == 'hidden') {
                 continue;
             }
-            if (you.left + bc.left < 0) {
+            if (you.left! + bc.left! < 0) {
                 needleft = 'visible';
             }
-            if ((you.left + you.offsetWidth + bc.left) > w) {
+            if ((you.left! + you.offsetWidth + bc.left!) > w) {
                 needright = 'visible';
             }
-            if (you.top + bc.top + 10 < 0) {
+            if (you.top! + bc.top! + 10 < 0) {
                 needup = 'visible';
             }
-            if ((you.top + you.offsetHeight + bc.top) > h) {
+            if ((you.top! + you.offsetHeight + bc.top!) > h) {
                 needdown = 'visible';
             }
         }
@@ -252,7 +252,7 @@ export default class Scroll {
         var h = p.offsetHeight;
         var ow = bc.offsetWidth;
         var oh = bc.offsetHeight;
-        var you;
+        var you: HTMLElement | null = null;
         var minx = 99999;
         var maxwidth = 0;
         var miny = 99999;
@@ -271,17 +271,17 @@ export default class Scroll {
             if (you.style.visibility == 'hidden') {
                 continue;
             }
-            if (you.left < minx) {
-                minx = you.left;
+            if (you.left! < minx) {
+                minx = you.left!;
             }
-            if ((you.left + you.offsetWidth + padding) > maxwidth) {
-                maxwidth = you.left + you.offsetWidth + padding;
+            if ((you.left! + you.offsetWidth + padding) > maxwidth) {
+                maxwidth = you.left! + you.offsetWidth + padding;
             }
-            if (you.top < miny) {
-                miny = you.top;
+            if (you.top! < miny) {
+                miny = you.top!;
             }
-            if ((you.top + you.offsetHeight + 20) > maxheight) {
-                maxheight = you.top + you.offsetHeight + 20;
+            if ((you.top! + you.offsetHeight + 20) > maxheight) {
+                maxheight = you.top! + you.offsetHeight + 20;
             }
         }
         if (minx < 0) {
@@ -313,11 +313,11 @@ export default class Scroll {
         }
     }
 
-    moveBlocks (dx, dy) {
+    moveBlocks (dx: number, dy: number) {
         var allblocks = this.getObjects();
         for (var i = 0; i < allblocks.length; i++) {
             var b = allblocks[i] as Block;
-            b.moveBlock(b.div.left + dx, b.div.top + dy);
+            b.moveBlock(b.div.left! + dx, b.div.top! + dy);
         }
     }
 
@@ -325,7 +325,7 @@ export default class Scroll {
     // Scrolling
     ////////////////////////////////////////////////////////////
 
-    scrolldown (e) {
+    scrolldown (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -353,7 +353,7 @@ export default class Scroll {
         CSSTransition3D(sc, transition);
     }
 
-    scrollup (e) {
+    scrollup (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -381,7 +381,7 @@ export default class Scroll {
         CSSTransition3D(sc, transition);
     }
 
-    scrollright (e) {
+    scrollright (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -409,7 +409,7 @@ export default class Scroll {
         CSSTransition3D(sc, transition);
     }
 
-    scrollleft (e) {
+    scrollleft (e: MouseEvent & { touches?: TouchList }) {
         if (isTouch && e.touches && (e.touches.length > 1)) {
             return;
         }
@@ -440,8 +440,8 @@ export default class Scroll {
     fitToScreen () {
         var p = this.contents;
         var sc = this.getContent();
-        var valx = sc.left;
-        var valy = sc.top;
+        var valx = sc.left!;
+        var valy = sc.top!;
         var h = p.offsetHeight;
         var w = p.offsetWidth;
         var rect = {

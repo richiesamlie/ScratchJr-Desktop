@@ -2,11 +2,11 @@ import {isAndroid} from './lib';
 import iOS from '../iPad/iOS';
 
 export default class Sound {
-    url;
-    soundPlayId;
-    name;
-    time;
-    playing;
+    url!: string;
+    soundPlayId!: number | null;
+    name!: string;
+    time: string | undefined;
+    playing!: boolean;
 
     constructor (name: string, time?: string) {
         if (isAndroid) {

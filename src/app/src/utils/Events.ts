@@ -5,16 +5,16 @@ the caller should define the window event and call startDrag with the appropiate
 import {gn, scaleMultiplier, isTouch} from './lib';
 
 let dragged = false;
-let dragthumbnail;
+let dragthumbnail: any; // drag element (block/thumb div) with expando props; cross-module glue
 let dragmousex = 0;
 let dragmousey = 0;
-let timeoutEvent;
-let dragcanvas;
-let dragDiv;
-let fcnstart;
-let fcnend;
-let updatefcn;
-let fcnclick;
+let timeoutEvent: ReturnType<typeof setTimeout> | undefined;
+let dragcanvas: any; // drag element with expando props; cross-module glue
+let dragDiv!: HTMLDivElement;
+let fcnstart: ((e: MouseEvent) => void) | undefined;
+let fcnend: ((e: MouseEvent | TouchEvent, c: HTMLElement) => void) | undefined;
+let updatefcn: ((e: MouseEvent, c: HTMLElement) => void) | undefined;
+let fcnclick: ((e: MouseEvent | TouchEvent, c: HTMLElement) => void) | undefined;
 let scaleStartsAt = 1;
 let delta = 10;
 let pinchcenter = {
@@ -100,7 +100,7 @@ export default class Events {
         dragDiv.style.position = 'absolute';
         dragDiv.style.width = '0px'; // size doesn't matter since children float
         dragDiv.style.height = '0px';
-        dragDiv.style.zIndex = 7001; // slightly higher than ScratchJr.dragginLayer
+        dragDiv.style.zIndex = '7001'; // slightly higher than ScratchJr.dragginLayer
         var frameDiv = gn('frame')!;
         frameDiv.appendChild(dragDiv);
         window.addEventListener('blur', function () {
@@ -109,7 +109,11 @@ export default class Events {
             }
         });
     }
-    static startDrag (e, c, atstart, atend, atdrag, atclick, athold?) {
+    static startDrag (e: MouseEvent, c: HTMLElement, atstart: (e: MouseEvent) => void,
+        atend: (e: MouseEvent | TouchEvent, c: HTMLElement) => void,
+        atdrag: (e: MouseEvent, c: HTMLElement) => void,
+        atclick: (e: MouseEvent | TouchEvent, c: HTMLElement) => void,
+        athold?: (c: HTMLElement) => void) {
         dragged = false;
         var pt = Events.getTargetPoint(e);
         dragmousex = pt.x;
@@ -148,7 +152,7 @@ export default class Events {
         }
     }
 
-    static holdit (c, fcn) {
+    static holdit (c: HTMLElement, fcn: (c: HTMLElement) => void) {
         var repeat = function () {
             Events.clearEvents();
             fcn(dragthumbnail);
@@ -168,19 +172,17 @@ export default class Events {
         fcnclick = undefined;
     }
 
-    static mouseMove (e) {
+    static mouseMove (e: MouseEvent) {
         // be forgiving about the click
         var pt = Events.getTargetPoint(e);
         if (!dragged && (Events.distance(dragmousex - pt.x, dragmousey - pt.y) < delta)) {
             return;
         }
-        if (timeoutEvent) {
-            clearTimeout(timeoutEvent);
-        }
+        clearTimeout(timeoutEvent);
         timeoutEvent = undefined;
         if (!dragged) {
             try {
-                fcnstart(e);
+                fcnstart!(e);
             } catch (err) {
                 console.error('Events.mouseMove: fcnstart failed', err);
                 Events.clearDragAndDrop();
@@ -195,14 +197,12 @@ export default class Events {
         dragmousey = pt.y;
     }
 
-    static distance (dx, dy) {
+    static distance (dx: number, dy: number) {
         return Math.round(Math.sqrt((dx * dx) + (dy * dy)));
     }
 
-    static mouseUp (e) {
-        if (timeoutEvent) {
-            clearTimeout(timeoutEvent);
-        }
+    static mouseUp (e: MouseEvent | TouchEvent) {
+        clearTimeout(timeoutEvent);
         timeoutEvent = undefined;
         Events.clearEvents();
         try {
@@ -218,9 +218,7 @@ export default class Events {
     }
 
     static cancelAll () {
-        if (timeoutEvent) {
-            clearTimeout(timeoutEvent);
-        }
+        clearTimeout(timeoutEvent);
         timeoutEvent = undefined;
         Events.clearEvents();
     }
@@ -237,33 +235,35 @@ export default class Events {
         }
     }
 
-    static performMouseUpAction (e) {
+    static performMouseUpAction (e: MouseEvent | TouchEvent) {
         if (fcnend) {
             fcnend(e, dragcanvas);
         }
     }
 
-    static itIsAClick (e) {
+    static itIsAClick (e: MouseEvent | TouchEvent) {
         if (fcnclick) {
             fcnclick(e, dragthumbnail);
         }
     }
 
-    static moveThumbnail (el, dx, dy) {
+    static moveThumbnail (el: HTMLElement, dx: number, dy: number) {
         if (!el) {
             return;
         }
-        el.top += dy;
-        el.left += dx;
+        el.top = el.top! + dy;
+        el.left = el.left! + dx;
         el.style.top = el.top + 'px';
         el.style.left = el.left + 'px';
     }
 
-    static move3D (el, dx, dy) {
+    static move3D (el: HTMLElement, dx: number, dy: number) {
         if (!el) {
             return;
         }
-        var mtx = new WebKitCSSMatrix(window.getComputedStyle(el).webkitTransform);
+        // globals.d.ts augments HTMLElement with `next?: unknown`, breaking
+        // HTMLElement -> Element assignability; cast to the DOM API shape.
+        var mtx = new WebKitCSSMatrix(window.getComputedStyle(el as Element).webkitTransform);
         el.top = dy + mtx.m42;
         el.left = dx + mtx.m41;
         el.style.webkitTransform = 'translate3d(' + el.left + 'px,' + el.top + 'px, 0)';
@@ -284,34 +284,37 @@ export default class Events {
     page is scrolled horizontally.
     */
 
-    static getTargetPoint (e) {
+    static getTargetPoint (e: MouseEvent | TouchEvent) {
+        const te = e as TouchEvent;
         if (isTouch) {
-            if (e.touches && (e.touches.length > 0)) {
+            if (te.touches && (te.touches.length > 0)) {
                 return {
-                    x: e.touches[0].pageX,
-                    y: e.touches[0].pageY
+                    x: te.touches[0].pageX,
+                    y: te.touches[0].pageY
                 };
-            } else if (e.changedTouches) {
+            } else if (te.changedTouches) {
                 return {
-                    x: e.changedTouches[0].pageX,
-                    y: e.changedTouches[0].pageY
+                    x: te.changedTouches[0].pageX,
+                    y: te.changedTouches[0].pageY
                 };
             }
         }
+        const me = e as MouseEvent;
         return {
-            x: e.clientX,
-            y: e.clientY
+            x: me.clientX,
+            y: me.clientY
         };
     }
 
-    static updatePinchCenter (e) {
-        if (e.touches.length != 2) {
+    static updatePinchCenter (e: MouseEvent | TouchEvent) {
+        const te = e as TouchEvent;
+        if (te.touches.length != 2) {
             return;
         }
-        var x1 = e.touches[0].clientX,
-            y1 = e.touches[0].clientY;
-        var x2 = e.touches[1].clientX,
-            y2 = e.touches[1].clientY;
+        var x1 = te.touches[0].clientX,
+            y1 = te.touches[0].clientY;
+        var x2 = te.touches[1].clientX,
+            y2 = te.touches[1].clientY;
         var cx = x1 + (x2 - x1) / 2,
             cy = y1 + (y2 - y1) / 2;
         var d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
@@ -322,14 +325,15 @@ export default class Events {
         };
     }
 
-    static zoomScale (e) {
-        if (e.touches.length !== 2) {
+    static zoomScale (e: MouseEvent | TouchEvent) {
+        const te = e as TouchEvent;
+        if (te.touches.length !== 2) {
             return lastZoomScale;
         }
-        var x1 = e.touches[0].clientX,
-            y1 = e.touches[0].clientY;
-        var x2 = e.touches[1].clientX,
-            y2 = e.touches[1].clientY;
+        var x1 = te.touches[0].clientX,
+            y1 = te.touches[0].clientY;
+        var x2 = te.touches[1].clientX,
+            y2 = te.touches[1].clientY;
         var d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         lastZoomScale = d / pinchcenter.distance;
         return lastZoomScale;

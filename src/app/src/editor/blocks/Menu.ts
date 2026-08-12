@@ -1,8 +1,9 @@
 import BlockSpecs from './BlockSpecs';
+import type Block from './Block';
 import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTouch,
     newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly} from '../../utils/lib';
 
-let openMenu;
+let openMenu: HTMLElement | null = null;
 
 export default class Menu {
     // Referenced by the dropdown hover path but never defined anywhere in the
@@ -14,29 +15,30 @@ export default class Menu {
         return openMenu;
     }
 
-    static set openMenu (newOpenMenu) {
+    static set openMenu (newOpenMenu: HTMLElement | null) {
         openMenu = newOpenMenu;
     }
 
-    static openDropDown (b, fcn) {
+    static openDropDown (b: HTMLElement, fcn: (e: MouseEvent, mu: HTMLElement, b: HTMLElement, c: string) => void) {
         var size = 50;
-        var color = b.owner.blocktype == 'setspeed' ? 'orange' : 'yellow';
-        var list = JSON.parse(b.owner.arg.list);
-        var num = b.owner.arg.numperrow;
-        var p = b.parentNode;
+        const block = b.owner as Block;
+        var color = block.blocktype == 'setspeed' ? 'orange' : 'yellow';
+        var list = JSON.parse(block.arg.list);
+        var num = block.arg.numperrow;
+        var p = b.parentNode as HTMLElement & { width?: number };
         var dh = size * Math.round(list.length / num);
         var rows = list.length / num;
         var w = size * list.length / rows;
         var scaledWidth = w * scaleMultiplier;
-        var dx = b.left + (b.offsetWidth - scaledWidth) / 2;
-        if ((dx + scaledWidth) > p.width) {
-            dx -= ((dx + scaledWidth) - p.width);
+        var dx = b.left! + (b.offsetWidth - scaledWidth) / 2;
+        if ((dx + scaledWidth) > p.width!) {
+            dx -= ((dx + scaledWidth) - p.width!);
         }
         if (dx < 5) {
             dx = 5;
         }
         dx += globalx(p);
-        var dy = b.top + b.offsetHeight - ((10 + 18) * scaleMultiplier) + globaly(p);
+        var dy = b.top! + b.offsetHeight - ((10 + 18) * scaleMultiplier) + globaly(p);
         if ((dy + ((10 + dh) * scaleMultiplier)) > getDocumentHeight()) {
             dy = getDocumentHeight() - ((15 + dh) * scaleMultiplier);
         }
@@ -55,10 +57,10 @@ export default class Menu {
         openMenu = mu;
     }
 
-    static addImageToDropDown (mu, c, block, fcn) {
+    static addImageToDropDown (mu: HTMLElement, c: string, block: HTMLElement, fcn: (e: MouseEvent, mu: HTMLElement, b: HTMLElement, c: string) => void) {
         var img = BlockSpecs.getImageFrom('assets/blockicons/' + c, 'svg');
         var cs = newHTML('div', 'ddchoice', mu);
-        var micon = newHTML('canvas', undefined, cs);
+        var micon = newHTML('canvas', undefined, cs) as HTMLCanvasElement;
         var iconSize = 42;
         var scaledIconSize = iconSize * window.devicePixelRatio;
         setCanvasSize(micon, scaledIconSize, scaledIconSize);
@@ -75,21 +77,21 @@ export default class Menu {
             drawThumbnail(img, micon);
         }
         if (isTouch) {
-            cs.onmousedown = function (evt) {
+            cs.onmousedown = function (evt: MouseEvent) {
                 handleTouchStart(evt);
             };
         } else {
-            cs.onmouseover = function (evt) {
+            cs.onmouseover = function (evt: MouseEvent) {
                 Menu.highlightdot(evt);
             };
-            cs.onmouseout = function (evt) {
+            cs.onmouseout = function (evt: MouseEvent) {
                 Menu.unhighlightdot(evt);
             };
-            cs.onmousedown = function (evt) {
+            cs.onmousedown = function (evt: MouseEvent) {
                 fcn(evt, mu, block, c);
             };
         }
-        function handleTouchStart (e) {
+        function handleTouchStart (e: MouseEvent & { touches?: TouchList }) {
             if (isTouch && e.touches && (e.touches.length > 1)) {
                 return;
             }
@@ -103,7 +105,7 @@ export default class Menu {
         if (!openMenu) {
             return;
         }
-        openMenu.parentNode.removeChild(openMenu);
-        openMenu = undefined;
+        openMenu.parentNode!.removeChild(openMenu);
+        openMenu = null;
     }
 }

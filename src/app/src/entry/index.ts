@@ -67,7 +67,7 @@ function indexLoadOptions () {
     
 }
 
-function indexLoadStart (afterUsage?) {
+function indexLoadStart (afterUsage?: boolean) {
     gn('authors')!.className = 'credits hide';
     gn('authorsText')!.className = 'creditsText hide';
 
@@ -130,7 +130,7 @@ function indexLoadUsage() {
 
 }
 
-function setClassOfElementById(id, className) { // eslint-disable-line no-unused-vars
+function setClassOfElementById(id: string, className: string) { // eslint-disable-line no-unused-vars
 	let element = gn(id)!;
 		
 	if (!element) {
@@ -162,10 +162,11 @@ function indexGettingstarted () {
     window.location.href = 'gettingstarted.html?place=home';
 }
 
-function indexSetUsage (e) {
+function indexSetUsage (e: MouseEvent) {
     var usageText = '';
+    var usageTarget = e.target as HTMLElement;
 
-    switch (e.target.parentElement.id) {
+    switch (usageTarget.parentElement!.id) {
     case 'usageSchool':
         usageText = 'school';
         break;

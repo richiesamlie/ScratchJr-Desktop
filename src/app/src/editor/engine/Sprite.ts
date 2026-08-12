@@ -76,12 +76,12 @@ export default class Sprite {
     border!: HTMLCanvasElement;
     balloon: HTMLElement | null = null;
     page!: Page;
-    watermark: unknown;
+    watermark!: Element;
     thumbnail!: HTMLElement;
     oldvalue!: string;
     readOnly!: boolean;
 
-    constructor (attr, whenDone?) {
+    constructor (attr: Record<string, any>, whenDone?: (spr: Sprite) => void) {
         if (attr.type == 'sprite') {
             this.createSprite(attr.page, attr.md5, attr.id, attr, whenDone);
         } else {
@@ -89,7 +89,7 @@ export default class Sprite {
         }
     }
 
-    createSprite (page, md5, id, attr, fcn) {
+    createSprite (page: Page, md5: string, id: string, attr: Record<string, any>, fcn?: (spr: Sprite) => void) {
         ScratchJr.storyStart('Sprite.prototype.createSprite');
         this.div = document.createElement('div');
         setProps(this.div.style, {
@@ -119,25 +119,26 @@ export default class Sprite {
         page.div.appendChild(this.div);
         this.div.style.visibility = 'hidden';
         this.getAsset(gotImage); // sets the SVG and the image
-        function gotImage (dataurl) {
+        function gotImage (dataurl: string) {
             me.setCostume(dataurl, fcn);
         }
     }
 
-    getAsset (whenDone) {
+    getAsset (whenDone: (dataurl: string) => void) {
         var md5 = this.md5;
         var spr = this;
-        var url = (MediaLib.keys[md5]) ? MediaLib.path + md5 : (md5.indexOf('/') < 0) ? iOS.path + md5 : md5;
-        md5 = (MediaLib.keys[md5]) ? MediaLib.path + md5 : md5;
+        var keys = MediaLib.keys as Record<string, unknown>;
+        var url = (keys[md5]) ? MediaLib.path + md5 : (md5.indexOf('/') < 0) ? iOS.path + md5 : md5;
+        md5 = (keys[md5]) ? MediaLib.path + md5 : md5;
         if (md5.indexOf('/') > -1) {
             IO.requestFromServer(md5, doNext);
         } else {
             iOS.getmedia(md5, nextStep);
         }
-        function nextStep (base64) {
+        function nextStep (base64: string) {
             doNext(atob(base64));
         }
-        function doNext (str) {
+        function doNext (str: string) {
             str = str.replace(/>\s*</g, '><');
             spr.setSVG(str);
             if ((str.indexOf('xlink:href') < 0) && iOS.path) {
@@ -151,7 +152,7 @@ export default class Sprite {
         }
     }
 
-    setSVG (str) {
+    setSVG (str: string) {
         var xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
         var extxml = document.importNode(xmlDoc.documentElement, true);
         if (extxml.childNodes[0].nodeName == '#comment') {
@@ -160,7 +161,7 @@ export default class Sprite {
         this.svg = extxml as Element;
     }
 
-    setCostume (dataurl, fcn) {
+    setCostume (dataurl: string, fcn?: (spr: Sprite) => void) {
         var img = document.createElement('img');
         img.src = dataurl;
         this.img = img;
@@ -182,7 +183,7 @@ export default class Sprite {
         }
     }
 
-    displaySprite (whenDone) {
+    displaySprite (whenDone?: (spr: Sprite) => void) {
         var w = this.img.width;
         var h = this.img.height;
         this.div.style.width = this.img.width + 'px';
@@ -195,12 +196,12 @@ export default class Sprite {
         this.doRender(whenDone);
     }
 
-    doRender (whenDone) {
+    doRender (whenDone?: (spr: Sprite) => void) {
         this.drawBorder(); // canvas draw border
         this.render();
         SVG2Canvas.drawInCanvas(this); // canvas draws mask for pixel detection
         this.readOnly = SVG2Canvas.svgerror;
-        this.watermark = SVGTools.getWatermark(this.svg, '#B3B3B3'); // svg for watermark
+        this.watermark = SVGTools.getWatermark(this.svg, '#B3B3B3') as Element; // svg for watermark
         if (whenDone) {
             whenDone(this);
         }
@@ -233,12 +234,12 @@ export default class Sprite {
     // sprite thumbnail
     /////////////////////////////////////
 
-    spriteThumbnail (p) {
+    spriteThumbnail (p: HTMLElement) {
         var tb = newHTML('div', 'spritethumb off', p);
         tb.setAttribute('id', getIdFor('spritethumb'));
         tb.type = 'spritethumb';
         tb.owner = this.id;
-        var c = newHTML('canvas', 'thumbcanvas', tb);
+        var c = newHTML('canvas', 'thumbcanvas', tb) as HTMLCanvasElement;
 
         // TODO: Merge these to get better thumbnail rendering on iOS
         if (isAndroid) {
@@ -265,14 +266,14 @@ export default class Sprite {
         tb.childNodes[1].textContent = this.name;
     }
 
-    drawMyImage (cnv, w, h) {
+    drawMyImage (cnv: HTMLCanvasElement, w: number, h: number) {
         if (!this.img) {
             return;
         }
         setCanvasSize(cnv, w, h);
 
         // TODO: Merge these to get better thumbnail rendering on iOS
-        var img;
+        var img: HTMLImageElement;
         if (isAndroid) {
             img = this.originalImg;
         } else {
@@ -346,7 +347,7 @@ export default class Sprite {
         return false;
     }
 
-    verifyHit (other) {
+    verifyHit (other: Sprite) {
         var ctx = ScratchJr.workingCanvas.getContext('2d')!;
         var ctx2 = ScratchJr.workingCanvas2.getContext('2d')!;
         ctx.clearRect(0, 0, 480, 360);
@@ -392,16 +393,16 @@ export default class Sprite {
         return false;
     }
 
-    getAlpha (data, node, w) {
+    getAlpha (data: Uint8ClampedArray, node: {x: number; y: number}, w: number) {
         return data[(node.x * 4) + node.y * w * 4 + 3];
     }
 
-    setHeading (angle) {
+    setHeading (angle: number) {
         this.angle = angle % 360;
         this.render();
     }
 
-    setPos (dx, dy) {
+    setPos (dx: number, dy: number) {
         this.dirx = ((dx - this.xcoor) == 0) ? 1 : (dx - this.xcoor) / Math.abs(dx - this.xcoor);
         this.diry = ((dy - this.ycoor) == 0) ? 1 : (dy - this.ycoor) / Math.abs(dy - this.ycoor);
         this.xcoor = dx;
@@ -540,7 +541,7 @@ export default class Sprite {
         this.borderOn = false;
     }
 
-    setTransform (transform) {
+    setTransform (transform: string) {
         this.div.style.webkitTransform = transform;
     }
 
@@ -556,14 +557,14 @@ export default class Sprite {
         this.setScaleTo(this.defaultScale);
     }
 
-    changeSizeBy (num) {
+    changeSizeBy (num: number) {
         var n = Number(num) + Number(this.scale) * 100;
         this.scale = this.getScale(n / 100);
         this.setPos(this.xcoor, this.ycoor);
         this.render();
     }
 
-    setScaleTo (n) {
+    setScaleTo (n: number) {
         n = this.getScale(n);
         if (n == this.scale) {
             return;
@@ -573,7 +574,7 @@ export default class Sprite {
         this.render();
     }
 
-    getScale (n) {
+    getScale (n: number) {
         var mins = Math.max(Math.max(this.w, this.h) * n, 36);
         var maxs = Math.min(Math.min(this.w, this.h) * n, 360);
         if (mins == 36) {
@@ -620,7 +621,7 @@ Math.floor(h));
         this.balloon = null;
     }
 
-    openBalloon (label) {
+    openBalloon (label: string) {
         if (this.balloon) {
             this.closeBalloon();
         }
@@ -732,7 +733,7 @@ Math.floor(h));
     // Sprite rendering
     ////////////////////////////////////
 
-    stamp (ctx, deltax?, deltay?) {
+    stamp (ctx: CanvasRenderingContext2D, deltax?: number, deltay?: number) {
         var w = this.outline.width * this.scale;
         var h = this.outline.height * this.scale;
         var dx = deltax ? deltax : 0;
@@ -751,7 +752,7 @@ Math.floor(h));
     // Text Creation
     /////////////////////////////////////
 
-    createText (attr, whenDone) {
+    createText (attr: Record<string, any>, whenDone?: (spr: Sprite) => void) {
         var page = attr.page;
         setProps(this, attr);
         this.div = newHTML('p', 'textsprite', page.div);
@@ -810,7 +811,7 @@ Math.floor(h));
             };
         }
         var ci = BlockSpecs.fontcolors.indexOf(rgbToHex(this.color));
-        UI.setMenuTextColor(gn('textcolormenu')!.childNodes[(ci < 0) ? 9 : ci]);
+        UI.setMenuTextColor(gn('textcolormenu')!.childNodes[(ci < 0) ? 9 : ci] as HTMLElement);
         setProps(ti.style, styles);
 
         // TODO: Merge these for iOS
@@ -892,7 +893,7 @@ Math.floor(h));
         }
     }
 
-    deleteText (record) {
+    deleteText (record: boolean) {
         var id = this.id;
         var page = ScratchJr.stage.currentPage;
         page.textstartat = (this.ycoor + (this.fontsize * 1.35)) > 360 ? 36 : this.ycoor;
@@ -917,7 +918,7 @@ Math.floor(h));
         }
     }
 
-    noChars (str) {
+    noChars (str: string) {
         for (var i = 0; i < str.length; i++) {
             if (str[i] != ' ') {
                 return false;
@@ -932,7 +933,7 @@ Math.floor(h));
         this.recalculateText();
     }
 
-    clickOnText (e) {
+    clickOnText (e: Event) {
         e.stopPropagation();
         this.setTextBox();
         gn('textbox')!.style.visibility = 'visible';
@@ -976,26 +977,30 @@ Math.floor(h));
         }
     }
 
-    handleWrite (e) {
+    handleWrite (e: KeyboardEvent) {
         var key = e.keyCode || e.which;
-        var ti = e.target;
+        var ti = e.target as HTMLInputElement;
         if (key == 13) {
             e.preventDefault();
-            e.target.blur();
+            ti.blur();
         } else {
-            if (!(ti.parentNode).textsprite) {
+            if (!(ti.parentNode as HTMLFormElement).textsprite) {
                 gn('textbox')!.style.visibility = 'hidden';
                 this.deactivateInput();
             }
         }
     }
 
-    handleKeyUp (e) {
-        var ti = e.target;
-        if (!(ti.parentNode).textsprite) {
+    handleKeyUp (e: KeyboardEvent) {
+        var ti = e.target as HTMLInputElement;
+        var form = ti.parentNode as HTMLFormElement;
+        if (!form.textsprite) {
             return;
         }
-        (ti.parentNode).textsprite.str = ti.value;
+        // textsprite expando is the active text Sprite (setTextBox assigns `this`);
+        // the globals.d.ts declaration only exposes a partial shape
+        const sprite = form.textsprite as Sprite;
+        sprite.str = ti.value;
     }
 
     deactivateInput () {
@@ -1023,7 +1028,7 @@ Math.floor(h));
         setProps(img.style, attr);
     }
 
-    getSVGimage (svg) {
+    getSVGimage (svg: Element) {
         var img = document.createElement('img');
         var str = (new XMLSerializer()).serializeToString(svg);
         str = str.replace(/ href="data:image/g, ' xlink:href="data:image');
@@ -1035,12 +1040,12 @@ Math.floor(h));
     // Text fcn
     ////////////////////////////////////////////////
 
-    setColor (c) {
+    setColor (c: string) {
         this.color = c;
         this.div.style.color = this.color;
     }
 
-    setFontSize (n) {
+    setFontSize (n: number) {
         if (n < 12) {
             n = 12;
         }
@@ -1074,7 +1079,7 @@ Math.floor(h));
 
     startShaking () {
         var p = this.div.parentNode;
-        var shake = newHTML('div', 'shakeme', p);
+        var shake = newHTML('div', 'shakeme', p as HTMLElement);
         shake.id = 'shakediv';
 
         // TODO: merge these for iOS
@@ -1174,7 +1179,7 @@ Math.floor(h));
             return data;
         }
         const scriptsOwner = gn(this.id + '_scripts')!.owner as Scripts;
-        var res: (string | number | (string | number)[][])[][][] = [];
+        var res: ReturnType<typeof Project.encodeStrip>[] = [];
         var topblocks = scriptsOwner.getEncodableBlocks();
         for (var i = 0; i < topblocks.length; i++) {
             res.push(Project.encodeStrip(topblocks[i]));

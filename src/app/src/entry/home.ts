@@ -7,7 +7,7 @@ export function homeMain () {  // eslint-disable-line import/prefer-default-expo
     gn('logotab')!.onmousedown = homeGoBack;
     homeStrings();
     iOS.getsettings(doNext);
-    function doNext (str) {
+    function doNext (str: string) {
         var list = str.split(',');
         iOS.path = list[1] == '0' ? list[0] + '/' : undefined;
         Lobby.appinit(window.Settings!.scratchJrVersion);

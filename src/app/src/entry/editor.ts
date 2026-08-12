@@ -5,7 +5,7 @@ import Record from '../editor/ui/Record';
 
 export function editorMain () { // eslint-disable-line import/prefer-default-export
     iOS.getsettings(doNext);
-    function doNext (str) {
+    function doNext (str: string) {
         var list = str.split(',');
         iOS.path = list[1] == '0' ? list[0] + '/' : undefined;
         if (list.length > 2) {
