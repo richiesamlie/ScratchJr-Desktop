@@ -154,7 +154,7 @@ export function newDiv (parent, x, y, w, h, styles) {
     return el;
 }
 
-export function newImage (parent, src, styles) {
+export function newImage (parent, src, styles?) {
     var img = document.createElement('img');
     img.src = src;
     setProps(img.style, styles);
@@ -555,7 +555,7 @@ export function newForm (parent, str, x, y, w, h, styles) {
     return el;
 }
 
-export function newTextInput (p, type, str, mstyle) {
+export function newTextInput (p, type, str?, mstyle?) {
     var input = document.createElement('input');
     input.value = str;
     setProps(input.style, mstyle);

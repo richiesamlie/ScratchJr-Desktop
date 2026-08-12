@@ -1,14 +1,14 @@
 import ScratchJr from '../ScratchJr.js';
-import Project from '../ui/Project.js';
-import Thumbs from '../ui/Thumbs.js';
-import UI from '../ui/UI.js';
+import Project from '../ui/Project';
+import Thumbs from '../ui/Thumbs';
+import UI from '../ui/UI';
 import Sprite from './Sprite';
-import Palette from '../ui/Palette.js';
+import Palette from '../ui/Palette';
 import BlockSpecs from '../blocks/BlockSpecs';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
-import Undo from '../ui/Undo.js';
+import Undo from '../ui/Undo';
 import Matrix from '../../geom/Matrix';
 import Vector from '../../geom/Vector';
 import {newHTML, newDiv, gn,
@@ -27,7 +27,7 @@ export default class Page {
     textstartat: number;
     thumbnail: unknown;
 
-    constructor (id, data, fcn) {
+    constructor (id, data?, fcn?) {
         var container = ScratchJr.stage.pagesdiv;
         this.div = newHTML('div', 'stagepage', container); // newDiv(container,0,0, 480, 360, {position: 'absolute'});
         this.div.owner = this;
@@ -173,7 +173,7 @@ export default class Page {
         if (extxml.childNodes[0].nodeName == '#comment') {
             extxml.removeChild(extxml.childNodes[0]);
         }
-        this.svg = extxml;
+        this.svg = extxml as Element;
     }
 
     setBackgroundImage (url, fcn) {

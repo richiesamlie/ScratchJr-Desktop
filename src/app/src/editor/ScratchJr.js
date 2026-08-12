@@ -1,18 +1,18 @@
-import Project from './ui/Project.js';
+import Project from './ui/Project';
 import ScratchAudio from '../utils/ScratchAudio';
 import Paint from '../painteditor/Paint.js';
 import Prims from './engine/Prims';
-import Undo from './ui/Undo.js';
-import Alert from './ui/Alert.js';
-import Palette from './ui/Palette.js';
-import Record from './ui/Record.js';
+import Undo from './ui/Undo';
+import Alert from './ui/Alert';
+import Palette from './ui/Palette';
+import Record from './ui/Record';
 import IO from '../iPad/IO';
 import iOS from '../iPad/iOS';
-import UI from './ui/UI.js';
+import UI from './ui/UI';
 import Menu from './blocks/Menu';
-import Library from './ui/Library.js';
-import Grid from './ui/Grid.js';
-import ScriptsPane from './ui/ScriptsPane.js';
+import Library from './ui/Library';
+import Grid from './ui/Grid';
+import ScriptsPane from './ui/ScriptsPane';
 import Events from '../utils/Events';
 import BlockSpecs from './blocks/BlockSpecs';
 import Runtime from './engine/Runtime';
@@ -128,6 +128,10 @@ export default class ScratchJr {
 
     static get currentProject () {
         return currentProject;
+    }
+
+    static set currentProject (newValue) {
+        currentProject = newValue;
     }
 
     static get editmode () {

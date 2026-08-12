@@ -283,7 +283,7 @@ export default class IO {
 
     // Since saveProject is changing the modified time of the project,
     // let's just simply update the isgift flag in a separate function...
-    static setProjectIsGift (obj, fcn) {
+    static setProjectIsGift (obj, fcn?) {
         var json: SqlPayload = {};
         var keylist = ['isgift = ?'];
         json.values = [obj.isgift];

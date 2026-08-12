@@ -73,7 +73,7 @@ export default class SVG2Canvas {
         }
     }
 
-    static drawLayer (elem, ctx) {
+    static drawLayer (elem, ctx, _fcn) {
         // svg no fill means black
         ctx.fillStyle = !elem.getAttribute('fill')
             ? 'black'

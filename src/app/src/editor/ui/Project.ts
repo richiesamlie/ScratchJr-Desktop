@@ -1,14 +1,15 @@
 import ScratchJr from '../ScratchJr.js';
 import BlockSpecs from '../blocks/BlockSpecs';
-import Alert from './Alert.js';
-import Palette from './Palette.js';
-import UI from './UI.js';
+import Alert from './Alert';
+import Palette from './Palette';
+import UI from './UI';
 import Page from '../engine/Page';
 import Sprite from '../engine/Sprite';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import Paint from '../../painteditor/Paint.js';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';
+import type Scripts from './Scripts';
 import {frame, gn, newHTML, scaleMultiplier, getIdFor,
     isAndroid, setProps, setCanvasSize} from '../../utils/lib';
 
@@ -334,7 +335,7 @@ export default class Project {
         mediaCountBase = mediaCount;
     }
 
-    static recreatePage (name, data, fcn) {
+    static recreatePage (name, data, fcn?) {
         var page = new Page(name, data, fcn);
         page.div.style.visibility = 'hidden';
     }
@@ -347,7 +348,7 @@ export default class Project {
         Project.setProgress(Project.getMediaLoadRatio(70));
     }
 
-    static recreateObject (page, name, data, callBack, active) {
+    static recreateObject (page, name, data, callBack, active?) {
         var list = data.scripts;
         //delete data.scripts;
         var spr;
@@ -370,7 +371,7 @@ export default class Project {
             }
             spr = new Sprite(data, fcn);
             // load scripts
-            var sc = gn(name + '_scripts').owner;
+            var sc = gn(name + '_scripts').owner as Scripts;
             for (var j = 0; j < list.length; j++) {
                 sc.recreateStrip(list[j]);
             }
@@ -413,7 +414,7 @@ export default class Project {
     // Determine if thumbnailMD5 is unique to projectID
     // callback(true/false)
     static thumbnailUnique (thumbnailMD5, projectID, callback) {
-        var json = {};
+        var json: SqlPayload = {};
         json.cond = 'deleted = ? AND id != ? AND gallery IS NULL';
         json.items = ['name', 'thumbnail', 'id'];
         json.values = ['NO', projectID];
@@ -482,7 +483,7 @@ export default class Project {
     }
 
     static getProject (pageid) {
-        var obj = {};
+        var obj: Record<string, unknown> = {};
         obj.pages = ScratchJr.stage.getPagesID();
         obj.currentPage = pageid;
         for (var i = 0; i < ScratchJr.stage.pages.length; i++) {
@@ -496,7 +497,7 @@ export default class Project {
     }
 
     static encodeSprite (name) {
-        return gn(name).owner.getData();
+        return (gn(name).owner as Sprite).getData();
     }
 
     static encodeStrip (b) {
@@ -538,7 +539,7 @@ export default class Project {
 
     static getThumbnailPNG (page, w, h, fcn) {
         var scale = w / 480;
-        var data = {};
+        var data: Record<string, unknown> = {};
         data.pagecount = ScratchJr.stage.pages.length;
         var c = document.createElement('canvas');
         setCanvasSize(c, w, h);

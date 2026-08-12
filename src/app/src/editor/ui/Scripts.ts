@@ -5,13 +5,20 @@
 import ScratchJr from '../ScratchJr.js';
 import Block from '../blocks/Block';
 import BlockSpecs from '../blocks/BlockSpecs';
-import ScriptsPane from './ScriptsPane.js';
+import ScriptsPane from './ScriptsPane';
 import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {gn, newHTML, setCanvasSize, setProps,
     localx, localy, scaleMultiplier, hit3DRect, isTouch} from '../../utils/lib';
+import type Sprite from '../engine/Sprite';
 
 export default class Scripts {
+    // Instance state
+    flowCaret: Block | null;
+    spr: Sprite;
+    dragList: Block[];
+    sc: HTMLElement;
+
     constructor (spr) {
         this.flowCaret = null;
         this.spr = spr;
@@ -83,7 +90,7 @@ export default class Scripts {
             if (!ths.owner) {
                 continue;
             }
-            if (ths.owner.isCaret) {
+            if ((ths.owner as Block).isCaret) {
                 continue;
             }
             if (!hit3DRect(ths, pt)) {
@@ -305,7 +312,7 @@ export default class Scripts {
         return Math.sqrt((x * x) + (y * y));
     }
 
-    findClosest (choices) {
+    findClosest (choices, b?) {
         var min = 9999;
         var item = null;
         for (var i = 0; i < choices.length; i++) {
@@ -423,10 +430,10 @@ export default class Scripts {
             if (!b) {
                 continue;
             }
-            if (b.type != 'block') {
+            if ((b as Block).type != 'block') {
                 continue;
             }
-            if (b.isCaret) {
+            if ((b as Block).isCaret) {
                 continue;
             }
             res.push(b);
@@ -435,7 +442,7 @@ export default class Scripts {
     }
 
     findGroup (b) {
-        if (b.type != 'block') {
+        if ((b as Block).type != 'block') {
             return [];
         }
         var res = [];
@@ -474,7 +481,7 @@ export default class Scripts {
         var sc = this.sc;
         for (var i = 0; i < sc.childElementCount; i++){
             var b = sc.childNodes[i].owner;
-            if (!b || b.type != 'block') {
+            if (!b || (b as Block).type != 'block') {
                 continue;
             }
             list.push(b);
@@ -693,7 +700,7 @@ export default class Scripts {
         var val = data[1] == 'null' ? null : data[1];
         var dx = data[2];
         var dy = data[3];
-        var spec = BlockSpecs.defs[op].concat();
+        var spec = (BlockSpecs.defs[op] as unknown[]).concat();
         if (val != null) {
             spec.splice(4, 1, val);
         }

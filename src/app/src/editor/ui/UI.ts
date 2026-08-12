@@ -4,15 +4,17 @@
 
 import ScratchJr from '../ScratchJr.js';
 import BlockSpecs from '../blocks/BlockSpecs';
-import Alert from './Alert.js';
-import Project from './Project.js';
-import Thumbs from './Thumbs.js';
-import Palette from './Palette.js';
-import Grid from './Grid.js';
+import Alert from './Alert';
+import Project from './Project';
+import Thumbs from './Thumbs';
+import Palette from './Palette';
+import type Sprite from '../engine/Sprite';
+import type Page from '../engine/Page';
+import Grid from './Grid';
 import Stage from '../engine/Stage';
-import ScriptsPane from './ScriptsPane.js';
-import Undo from './Undo.js';
-import Library from './Library.js';
+import ScriptsPane from './ScriptsPane';
+import Undo from './Undo';
+import Library from './Library';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
@@ -23,12 +25,19 @@ import ScratchAudio from '../../utils/ScratchAudio';
 import {frame, gn, CSSTransition, localx, newHTML, scaleMultiplier, getIdFor, isTouch, newDiv,
     newTextInput, isAndroid, getDocumentWidth, getDocumentHeight, setProps, globalx} from '../../utils/lib';
 
+// Named-form access: document.forms.projectname.myproject
+const namedForms = document.forms as unknown as Record<string, HTMLFormElement & Record<string, HTMLInputElement>>;
+
 let projectNameTextInput = null;
 let info = null;
 let okclicky = null;
 let infoBoxOpen = false;
 
 export default class UI {
+    // Static DOM handles
+    static nextpage: HTMLElement;
+    static prevpage: HTMLElement;
+
     static get infoBoxOpen () {
         return infoBoxOpen;
     }
@@ -74,8 +83,8 @@ export default class UI {
             return;
         }
 
-        var leftPanel = library.parentNode;
-        var rightPanel = pages.parentNode;
+        var leftPanel = library.parentNode as HTMLElement;
+        var rightPanel = pages.parentNode as HTMLElement;
         var stageframe = gn('stageframe');
 
         // Clear previous adjustments
@@ -391,7 +400,7 @@ export default class UI {
         return ti;
     }
 
-    static handleTextFieldSave (dontHide) {
+    static handleTextFieldSave (dontHide?) {
         // Handle story-starter mode project
         if (ScratchJr.isEditable() && ScratchJr.editmode == 'storyStarter' && !Project.error) {
             iOS.analyticsEvent('samples', 'story_starter_edited', Project.metadata.name);
@@ -456,14 +465,14 @@ export default class UI {
         }, 500);
         projectNameTextInput.onblur = function () {
             if (ScratchJr.isEditable()) {
-                (document.forms.projectname.myproject).focus();
+                namedForms.projectname.myproject.focus();
             }
         };
         info.onmousedown = null;
 
         ScratchJr.onBackButtonCallback.push(function () {
             var e2 = document.createEvent('TouchEvent');
-            e2.initTouchEvent();
+            (e2 as TouchEvent & { initTouchEvent: () => void }).initTouchEvent();
             e2.preventDefault();
             e2.stopPropagation();
             UI.hideInfoBox(e2);
@@ -477,7 +486,7 @@ export default class UI {
         }
 
         if (ScratchJr.isEditable()) {
-            (document.forms.projectname.myproject).value = Project.metadata.name;
+            namedForms.projectname.myproject.value = Project.metadata.name;
         } else {
             gn('pname').textContent = Project.metadata.name;
         }
@@ -500,7 +509,7 @@ export default class UI {
         return year + '-' + month + '-' + day + ' ' + hour + ':' + min + ':' + sec;
     }
 
-    static hideInfoBox (e) {
+    static hideInfoBox (e, dontHide?) {
         e.preventDefault();
         e.stopPropagation();
         ScratchJr.onBackButtonCallback.pop();
@@ -511,7 +520,7 @@ export default class UI {
         }, 500);
 
         if (ScratchJr.isEditable()) {
-            (document.forms.projectname.myproject).blur();
+            namedForms.projectname.myproject.blur();
             UI.handleTextFieldSave();
         } else {
             ScratchAudio.sndFX('exittap.wav');
@@ -546,8 +555,8 @@ export default class UI {
         }
     }
 
-    static mascotData (page) {
-        var sprAttr = {
+    static mascotData (page?) {
+        var sprAttr: Record<string, unknown> = {
             flip: false,
             angle: 0,
             shown: true,
@@ -569,7 +578,7 @@ export default class UI {
         };
         sprAttr.page = page;
         sprAttr.md5 = ScratchJr.defaultSprite;
-        var catkey = MediaLib.keys[sprAttr.md5].name;
+        var catkey = MediaLib.keys[sprAttr.md5 as string].name;
         sprAttr.id = getIdFor(catkey);
         sprAttr.name = catkey;
         return sprAttr;
@@ -581,7 +590,7 @@ export default class UI {
 
     static needsScroll () {
         var sc = gn('spritecc');
-        var p = sc.parentNode;
+        var p = sc.parentNode as HTMLElement;
         if (((sc.scrollHeight / p.offsetHeight) == 1) || (gn('spritecc').childElementCount == 0)) {
             gn('scrollbar').setAttribute('class', 'scrollbar off');
         } else {
@@ -593,7 +602,7 @@ export default class UI {
     static updateSpriteScroll () {
         var sc = gn('spritecc');
         var dy = sc.offsetTop;
-        var p = sc.parentNode;
+        var p = sc.parentNode as HTMLElement;
         var top = -dy / (sc.scrollHeight / p.offsetHeight);
         var size = (p.offsetHeight / sc.scrollHeight) * p.offsetHeight;
         var thumb = gn('sbthumb');
@@ -623,7 +632,7 @@ export default class UI {
         if (!achild) {
             return;
         }
-        var h = gn('spritecc').parentNode.offsetHeight;
+        var h = (gn('spritecc').parentNode as HTMLElement).offsetHeight;
         var scroll = -gn('spritecc').offsetTop;
         var dy = -gn('spritecc').offsetTop;
         if ((achild.offsetTop + achild.offsetHeight + scroll) > h) {
@@ -718,14 +727,14 @@ export default class UI {
         UI.spriteScolling(e, Events.dragthumbnail);
     }
 
-    static spriteScolling (e) {
+    static spriteScolling (e, c?) {
         var pt = Events.getTargetPoint(e);
         var deltay = Events.dragmousey - pt.y;
         Events.dragmousey = pt.y;
         var sc = gn('spritecc');
         var dy = sc.offsetTop;
         dy -= deltay;
-        var p = sc.parentNode;
+        var p = sc.parentNode as HTMLElement;
         if (dy > 0) {
             dy = 0;
         }
@@ -746,7 +755,7 @@ export default class UI {
             t = e.target;
         }
         if (ScratchJr.isEditable() && ScratchJr.getSprite()
-            && (((t.className == 'sname') && (el.owner == ScratchJr.getSprite().id))
+            && (((t.className == 'sname') && (el.owner == (ScratchJr.getSprite() as Sprite).id))
             || (t.className == 'brush'))) {
             UI.putInPaintEditor(e);
             return;
@@ -759,7 +768,7 @@ export default class UI {
 
     static putInPaintEditor (e) {
         ScratchJr.unfocus(e);
-        var s = ScratchJr.getSprite();
+        var s = ScratchJr.getSprite() as Sprite;
         if (!s) {
             return;
         }
@@ -877,15 +886,16 @@ export default class UI {
             gn(list[i]).className = gn(list[i]).className + ' presentationmode';
             frame.appendChild(gn(list[i]));
         }
-        var scale = Math.min((w - (136 * scaleMultiplier)) / gn('stage').owner.width, h / gn('stage').owner.height);
-        var dx = Math.floor((w - (gn('stage').owner.width * scale)) / 2);
-        var dy = Math.floor((h - (gn('stage').owner.height * scale)) / 2);
+        const stageOwner = gn('stage').owner as Stage;
+        var scale = Math.min((w - (136 * scaleMultiplier)) / stageOwner.width, h / stageOwner.height);
+        var dx = Math.floor((w - (stageOwner.width * scale)) / 2);
+        var dy = Math.floor((h - (stageOwner.height * scale)) / 2);
 
         ScratchJr.stage.setStageScaleAndPosition(scale, dx / scale, dy / scale);
 
-        gn('stage').owner.currentZoom = Math.floor(scale * 100) / 100;
-        gn('stage').style.webkitTextSizeAdjust = Math.floor(gn('stage').owner.currentZoom * 100) + '%';
-        document.body.parentNode.style.background = 'black';
+        stageOwner.currentZoom = Math.floor(scale * 100) / 100;
+        gn('stage').style.webkitTextSizeAdjust = Math.floor(stageOwner.currentZoom * 100) + '%';
+        (document.body.parentNode as HTMLElement).style.background = 'black';
         gn('stage').setAttribute('class', 'stage fullscreen');
         UI.nextpage.setAttribute('class', 'nextpage on');
     }
@@ -898,9 +908,10 @@ export default class UI {
         div.appendChild(gn('go'));
         gn('full').className = 'fullscreen';
         div.appendChild(gn('full'));
-        gn('stage').owner.currentZoom = 1;
+        const stageOwner = gn('stage').owner as Stage;
+        stageOwner.currentZoom = 1;
         gn('stage').style.webkitTextSizeAdjust = '100%';
-        document.body.parentNode.style.background = 'none';
+        (document.body.parentNode as HTMLElement).style.background = 'none';
         gn('stage').setAttribute('class', 'stage normal');
         UI.nextpage.setAttribute('class', 'nextpage off');
         UI.prevpage.setAttribute('class', 'nextpage off');
@@ -1057,13 +1068,16 @@ export default class UI {
     }
 
     static setMenuTextColor (t) {
-        var c = t.childNodes[0].childNodes[0].style.backgroundColor;
+        const colorNode = t.childNodes[0].childNodes[0] as HTMLElement;
+        var c = colorNode.style.backgroundColor;
         for (var i = 0; i < gn('textcolormenu').childElementCount; i++) {
-            var mycolor = gn('textcolormenu').childNodes[i].childNodes[0].childNodes[0].style.backgroundColor;
+            const colorMenuChild = gn('textcolormenu').childNodes[i] as HTMLElement;
+            const colorDot = colorMenuChild.childNodes[0].childNodes[0] as HTMLElement;
+            var mycolor = colorDot.style.backgroundColor;
             if (c == mycolor) {
-                gn('textcolormenu').childNodes[i].childNodes[1].setAttribute('class', 'splasharea on');
+                (colorMenuChild.childNodes[1] as HTMLElement).setAttribute('class', 'splasharea on');
             } else {
-                gn('textcolormenu').childNodes[i].childNodes[1].setAttribute('class', 'splasharea off');
+                (colorMenuChild.childNodes[1] as HTMLElement).setAttribute('class', 'splasharea off');
             }
         }
     }
@@ -1071,13 +1085,13 @@ export default class UI {
     static setMenuTextSize (t) {
         var c = t.fs;
         for (var i = 0; i < gn('textfontsizes').childElementCount; i++) {
-            var kid = gn('textfontsizes').childNodes[i];
+            var kid = gn('textfontsizes').childNodes[i] as HTMLElement & { fs?: string };
             var fs = kid.fs;
             var ckid = kid.className.split(' ')[1];
             if (c == fs) {
-                gn('textfontsizes').childNodes[i].className = 'textuisize ' + ckid + ' on';
+                (gn('textfontsizes').childNodes[i] as HTMLElement).className = 'textuisize ' + ckid + ' on';
             } else {
-                gn('textfontsizes').childNodes[i].className = 'textuisize ' + ckid + ' off';
+                (gn('textfontsizes').childNodes[i] as HTMLElement).className = 'textuisize ' + ckid + ' off';
             }
         }
     }
@@ -1095,8 +1109,9 @@ export default class UI {
         } else {
             gn('fontsizebutton').className = 'fontsizeText off';
             gn('textfontsizes').className = 'textuifont off';
-            var text = document.forms.activetextbox.textsprite;
-            var indx = BlockSpecs.fontcolors.indexOf(text);
+            var text = namedForms.activetextbox.textsprite;
+            // Legacy: indexOf over the sprite object never matches (always -1)
+            var indx = BlockSpecs.fontcolors.indexOf(text as unknown as string);
             if (indx > -1) {
                 UI.setMenuTextColor(gn('textcolormenu').childNodes[indx]);
             }
@@ -1127,16 +1142,17 @@ export default class UI {
         }
         ScratchAudio.sndFX('splash.wav');
         UI.setMenuTextColor(t);
-        var text = document.forms.activetextbox.textsprite;
+        var text = namedForms.activetextbox.textsprite;
         var c = t.childNodes[0].childNodes[0].style.background;
         text.setColor(c);
+        const textOwnerPage = text.div.parentNode.owner as Page;
         Undo.record({
             action: 'edittext',
-            where: text.div.parentNode.owner.id,
+            where: textOwnerPage.id,
             who: text.id
         });
         ScratchJr.storyStart('UI.setTextColor'); // Record a change for sample projects in story-starter mode
-        var ti = document.forms.activetextbox.typing;
+        var ti = namedForms.activetextbox.typing;
         ti.style.color = c;
     }
 
@@ -1149,7 +1165,7 @@ export default class UI {
         } else {
             gn('fontcolorbutton').className = 'changecolorText off';
             gn('textcolormenu').className = 'textuicolormenu off';
-            var text = document.forms.activetextbox.textsprite;
+            var text = namedForms.activetextbox.textsprite;
             var indx = BlockSpecs.fontsizes.indexOf(text.fontsize);
             if (indx > -1) {
                 UI.setMenuTextSize(gn('textfontsizes').childNodes[indx]);
@@ -1179,17 +1195,18 @@ export default class UI {
             return;
         }
         UI.setMenuTextSize(t);
-        var text = document.forms.activetextbox.textsprite;
+        var text = namedForms.activetextbox.textsprite;
         text.setFontSize(t.fs);
+        const textOwnerPage = text.div.parentNode.owner as Page;
         Undo.record({
             action: 'edittext',
-            where: text.div.parentNode.owner.id,
+            where: textOwnerPage.id,
             who: text.id
         });
         ScratchJr.storyStart('UI.setTextSize'); // Record a change for sample projects in story-starter mode
-        var ti = document.forms.activetextbox.typing;
+        var ti = namedForms.activetextbox.typing;
         ti.style.fontSize = (t.fs * scaleMultiplier) + 'px';
-        setProps(document.forms.activetextbox.style, {
+        setProps(namedForms.activetextbox.style, {
             height: ((t.fs + 10) * scaleMultiplier) + 'px'
         });
     }

@@ -1,7 +1,7 @@
 import ScratchAudio from '../utils/ScratchAudio';
 import {gn, getUrlVars, isAndroid, isiOS} from '../utils/lib';
 import iOS from '../iPad/iOS';
-import UI from '../editor/ui/UI.js';
+import UI from '../editor/ui/UI';
 import Localization from '../utils/Localization';
 import AppUsage from '../utils/AppUsage';
 

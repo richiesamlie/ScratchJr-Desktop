@@ -3,10 +3,13 @@
 //////////////////////////////////
 
 import ScratchJr from '../ScratchJr.js';
-import Thumbs from './Thumbs.js';
-import Project from './Project.js';
-import Palette from './Palette.js';
-import UI from './UI.js';
+import Thumbs from './Thumbs';
+import Project from './Project';
+import Palette from './Palette';
+import type Scripts from '../ui/Scripts.js';
+import type Sprite from '../engine/Sprite';
+import type Page from '../engine/Page';
+import UI from './UI';
 import ScratchAudio from '../../utils/ScratchAudio';
 import {newHTML, isTouch, gn} from '../../utils/lib';
 
@@ -45,7 +48,8 @@ export default class Undo {
     static record (obj) {
         //console.log ("record", index, JSON.stringify(obj));
         if (ScratchJr.getActiveScript()) {
-            ScratchJr.getActiveScript().owner.removeCaret();
+            const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
+            activeScripts.removeCaret();
         }
         if ((index + 1) <= buffer.length) {
             buffer.splice(index + 1, buffer.length);
@@ -126,13 +130,14 @@ export default class Undo {
             ScratchJr.stage.setPage(gn(data.currentPage).owner, false);
             break;
         case 'changebkg':
-            gn(page).owner.redoChangeBkg(data);
+            (gn(page).owner as Page).redoChangeBkg(data);
             break;
         case 'scripts':
             Undo.redoScripts(data, page, spr);
             if (spr && gn(spr)) {
-                gn(page).owner.setCurrentSprite(gn(spr).owner); // sets the variables
-                Thumbs.selectThisSprite(gn(spr).owner); // sets the UI
+                const pageOwner = gn(page).owner as Page;
+                pageOwner.setCurrentSprite(gn(spr).owner as Sprite); // sets the variables
+                Thumbs.selectThisSprite(gn(spr).owner as Sprite); // sets the UI
                 UI.resetSpriteLibrary();
             }
             break;
@@ -154,7 +159,7 @@ export default class Undo {
             break;
         case 'deletesound':
             var sounds = data[page][spr].sounds.concat();
-            gn(spr).owner.sounds = sounds;
+            (gn(spr).owner as Sprite).sounds = sounds;
             Undo.redoScripts(data, page, spr);
             if (Palette.numcat == 3) {
                 Palette.selectCategory(3);
@@ -192,7 +197,7 @@ export default class Undo {
     static copyPage (obj, page) {
         var sc = ScratchJr.getSprite() ? gn(ScratchJr.stage.currentPage.currentSpriteName + '_scripts') : undefined;
         if (sc) {
-            sc.owner.deactivate();
+            (sc.owner as Scripts).deactivate();
         }
         Project.recreatePage(page, obj[page], nextStep2);
         function nextStep2 () {
@@ -201,8 +206,8 @@ export default class Undo {
             Undo.recreateAllScripts(obj);
             var spritename = obj[obj.currentPage].lastSprite;
             if (spritename && gn(spritename)) {
-                var spr = gn(spritename).owner;
-                var page = spr.div.parentNode.owner;
+                var spr = gn(spritename).owner as Sprite;
+                var page = spr.div.parentNode.owner as Page;
                 page.setCurrentSprite(spr);
                 Thumbs.selectThisSprite(spr);
                 if (Palette.numcat == 5) {
@@ -267,7 +272,7 @@ export default class Undo {
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
         }
-        var sc = div.owner;
+        var sc = div.owner as Scripts;
         var list = data[page][spr].scripts;
         for (var j = 0; j < list.length; j++) {
             sc.recreateStrip(list[j]);
@@ -298,13 +303,13 @@ export default class Undo {
         if (page != ScratchJr.stage.currentPage.id) {
             return;
         }
-        var pageobj = gn(page).owner;
+        var pageobj = gn(page).owner as Page;
         var lastspritename = data[page].lastSprite;
         var lastsprite = lastspritename ? gn(lastspritename) : undefined;
         if (!lastsprite) {
             pageobj.setCurrentSprite(undefined);
         } else {
-            var cs = lastsprite.owner;
+            var cs = lastsprite.owner as Sprite;
             pageobj.setCurrentSprite(cs);
             UI.needsScroll();
             Thumbs.updateSprites();
@@ -315,10 +320,10 @@ export default class Undo {
         if (!gn(spr)) {
             return;
         }
-        var sprite = gn(spr).owner;
+        var sprite = gn(spr).owner as Sprite;
         var th = sprite.thumbnail;
         ScratchJr.runtime.stopThreadSprite(sprite);
-        var pageobj = gn(page).owner;
+        var pageobj = gn(page).owner as Page;
         var list = JSON.parse(pageobj.sprites);
         var n = list.indexOf(spr);
         list.splice(n, 1);
@@ -343,7 +348,8 @@ export default class Undo {
         ScratchJr.stage.pages = [];
         var pages = data.pages;
         if (data.projectsounds) {
-            ScratchAudio.projectsounds = data.projectsounds;
+            const scratchAudioWithTypos = ScratchAudio as unknown as { projectsounds?: unknown };
+            scratchAudioWithTypos.projectsounds = data.projectsounds;
         }
         for (var i = 0; i < pages.length; i++) {
             Project.recreatePage(pages[i], data[pages[i]]);

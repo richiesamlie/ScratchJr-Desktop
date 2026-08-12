@@ -1,5 +1,5 @@
 import Prims from './Prims';
-import Grid from '../ui/Grid.js';
+import Grid from '../ui/Grid';
 import Vector from '../../geom/Vector';
 import Sprite from './Sprite';
 

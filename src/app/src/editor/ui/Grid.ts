@@ -4,6 +4,7 @@
 
 import ScratchJr from '../ScratchJr.js';
 import Events from '../../utils/Events';
+import type Sprite from '../engine/Sprite';
 import Localization from '../../utils/Localization';
 import {gn, scaleMultiplier, newDiv, setProps, newP, newCanvas} from '../../utils/lib';
 
@@ -49,7 +50,7 @@ export default class Grid {
         var cnv = newCanvas(grid, 0, 0, w, h, {
             position: 'absolute'
         });
-        cnv.style.opacity = 0.5;
+        cnv.style.opacity = '0.5';
         var ctx = cnv.getContext('2d');
         ctx.strokeStyle = '#B3B3B3';
         ctx.lineWidth = 1;
@@ -164,7 +165,7 @@ export default class Grid {
         e.preventDefault();
         e.stopPropagation();
         var pt = ScratchJr.stage.getStagePt(e);
-        var spr = ScratchJr.getSprite();
+        var spr = ScratchJr.getSprite() as Sprite;
         ScratchJr.stage.initialPoint = {
             x: pt.x,
             y: pt.y
@@ -197,7 +198,7 @@ export default class Grid {
         if (!spr) {
             return;
         }
-        var obj = spr.owner;
+        var obj = spr.owner as Sprite;
         var c = gn('circlenum');
         if (!c) {
             return;

@@ -62,12 +62,12 @@ export default class Library {
         document.onmousemove = undefined;
         window.onresize = undefined;
 
-        gn('library_paintme').style.opacity = 1;
+        gn('library_paintme').style.opacity = '1';
         gn('library_paintme').onmousedown = Library.editResource;
 
         // Set the back button callback
         ScratchJr.onBackButtonCallback.push(function () {
-            var e = document.createEvent('TouchEvent');
+            var e = document.createEvent('TouchEvent') as TouchEvent & { initTouchEvent: () => void };
             e.initTouchEvent();
             Library.cancelPick(e);
         });
@@ -111,12 +111,12 @@ export default class Library {
         }, 1000);
     }
 
-    static addThumbnails () {
+    static addThumbnails (type?) {
         var div = gn('scrollarea');
         Library.addEmptyThumb(div, (type == 'costumes') ? (118 * scaleMultiplier) : (120 * scaleMultiplier), (type == 'costumes') ? (90 * scaleMultiplier) : (90 * scaleMultiplier));
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
         // Student' assets
-        var json = {};
+        var json: SqlPayload = {};
         json.cond = 'ext = ? AND version = ?';
         json.items = ((type == 'costumes')
             ? ['md5', 'altmd5', 'name', 'scale', 'width', 'height'] : ['altmd5', 'md5', 'width', 'height']);
@@ -185,11 +185,11 @@ export default class Library {
         var tb = document.createElement('div');
         parent.appendChild(tb);
         tb.byme = nativeJr ? 1 : 0;
-        var md5 = data.md5;
+        var md5 = data.md5 as string;
         tb.setAttribute('class', 'assetbox off');
         tb.setAttribute('id', md5);
-        tb.scale = (!data.scale) ? 0.5 : data.scale;
-        tb.fieldname = data.name;
+        tb.scale = (!data.scale) ? 0.5 : (data.scale as number);
+        tb.fieldname = data.name as string;
         tb.w = Number(data.width);
         tb.h = Number(data.height);
         var scale = Math.min(w / tb.w, h / tb.h);
@@ -197,7 +197,7 @@ export default class Library {
         img.style.left = (9 * scaleMultiplier) + 'px';
         img.style.top = (7 * scaleMultiplier) + 'px';
         img.style.position = 'relative';
-        img.style.height = (data.height * scale) + 'px';
+        img.style.height = (Number(data.height) * scale) + 'px';
         if (data.altmd5) {
             IO.getAsset(data.altmd5, drawMe);
         }
@@ -215,8 +215,8 @@ export default class Library {
         var md5 = data.md5;
         tb.byme = nativeJr ? 1 : 0;
         tb.setAttribute('id', md5);
-        tb.scale = (!data.scale) ? 0.5 : data.scale;
-        tb.fieldname = data.name;
+        tb.scale = (!data.scale) ? 0.5 : (data.scale as number);
+        tb.fieldname = data.name as string;
         tb.w = Number(data.width);
         tb.h = Number(data.height);
 
@@ -287,7 +287,7 @@ export default class Library {
             Library.stopShaking();
         }
         if (tb.byme && (tb.id != 'none')) {
-            holdit(tb);
+            holdit();
         }
         tb.onmouseup = function (evt) {
             clickMe(evt, tb);
@@ -368,7 +368,7 @@ export default class Library {
         var b = shaking;
         b.parentNode.removeChild(b);
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
-        var json = {};
+        var json: SqlPayload = {};
         json.cond = 'md5 = ?';
         json.items = ['*'];
         json.values = [b.id];
@@ -384,7 +384,7 @@ export default class Library {
     // callback: called with true if unique, false if duplicate exists
     static assetThumbnailUnique (md5, type, callback) {
         var key = (type == 'costumes') ? 'usershapes' : 'userbkgs';
-        var json = {};
+        var json: SqlPayload = {};
         json.cond = 'ext = ? AND altmd5 = ?';
         json.items = ['md5', 'altmd5'];
         json.values = ['svg', md5];
@@ -414,8 +414,8 @@ export default class Library {
         IO.deleteobject(key, data.id, iOS.trace);
     }
 
-    static parseAssetData (data) {
-        var res = {};
+    static parseAssetData (data: Record<string, unknown>): Record<string, unknown> {
+        var res: Record<string, unknown> = {};
         for (var key in data) {
             res[key.toLowerCase()] = data[key];
         }
@@ -436,10 +436,10 @@ export default class Library {
             var thumbID = tb.id;
             var thumbType = thumbID.substr(thumbID.length - 3);
             if (thumbType == 'png') {
-                gn('library_paintme').style.opacity = 0;
+                gn('library_paintme').style.opacity = '0';
                 gn('library_paintme').onmousedown = null;
             } else {
-                gn('library_paintme').style.opacity = 1;
+                gn('library_paintme').style.opacity = '1';
                 gn('library_paintme').onmousedown = Library.editResource;
             }
 
@@ -456,7 +456,7 @@ export default class Library {
         var div = gn('scrollarea');
         for (var i = 0; i < div.childElementCount; i++) {
             if (div.childNodes[i].nodeName == 'DIV') {
-                div.childNodes[i].className = 'assetbox off';
+                (div.childNodes[i] as HTMLElement).className = 'assetbox off';
             }
         }
     }
@@ -497,12 +497,12 @@ export default class Library {
         }
     }
 
-    static editBackground () {
+    static editBackground (e?) {
         var md5 = selectedOne && (selectedOne != 'none') ? selectedOne : undefined;
         Paint.open(true, md5);
     }
 
-    static editCostume () {
+    static editCostume (e?) {
         var sname;
         var cname = selectedOne ? clickThumb.fieldname : Localization.localize('LIBRARY_CHARACTER');
         var scale = selectedOne && (selectedOne != 'none') ? clickThumb.scale : 0.5;

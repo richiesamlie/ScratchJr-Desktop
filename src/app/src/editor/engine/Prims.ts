@@ -1,10 +1,10 @@
 import ScratchJr from '../ScratchJr.js';
 import ScratchAudio from '../../utils/ScratchAudio';
-import Grid from '../ui/Grid.js';
+import Grid from '../ui/Grid';
 import Vector from '../../geom/Vector';
 import {gn} from '../../utils/lib';
 import type Thread from './Thread';
-import type Scripts from '../ui/Scripts.js';
+import type Scripts from '../ui/Scripts';
 
 let tinterval = 1;
 let hopList = [-48, -30, -22, -14, -6, 0, 6, 14, 22, 30, 48];

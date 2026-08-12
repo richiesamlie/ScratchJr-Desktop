@@ -8,22 +8,22 @@
 ////////////////////////////////////////////////////////////
 
 import ScratchJr from '../ScratchJr.js';
-import Project from '../ui/Project.js';
-import Thumbs from '../ui/Thumbs.js';
-import UI from '../ui/UI.js';
+import Project from '../ui/Project';
+import Thumbs from '../ui/Thumbs';
+import UI from '../ui/UI';
 import BlockSpecs from '../blocks/BlockSpecs';
 import iOS from '../../iPad/iOS';
 import IO from '../../iPad/IO';
 import MediaLib from '../../iPad/MediaLib';
-import Undo from '../ui/Undo.js';
-import ScriptsPane from '../ui/ScriptsPane.js';
+import Undo from '../ui/Undo';
+import ScriptsPane from '../ui/ScriptsPane';
 import SVG2Canvas from '../../utils/SVG2Canvas.js';
 import SVGTools from '../../painteditor/SVGTools.js';
 import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events';
 import Localization from '../../utils/Localization';
 import ScratchAudio from '../../utils/ScratchAudio';
-import Scripts from '../ui/Scripts.js';
+import Scripts from '../ui/Scripts';
 import {newHTML, newDiv, newP, gn,
     setCanvasSizeScaledToWindowDocumentHeight,
     DEGTOR, getIdFor, setProps, isTouch, isiOS,
@@ -33,7 +33,9 @@ import type Stage from './Stage';
 import type Page from './Page';
 
 // Named-form access: namedForms.activetextbox etc.
-const namedForms = document.forms as HTMLCollectionOf<HTMLFormElement> & Record<string, HTMLFormElement>;
+const namedForms = document.forms as unknown as {
+    activetextbox: HTMLFormElement & { typing: HTMLInputElement };
+};
 
 export default class Sprite {
     // Instance state — populated from project attrs and during asset load
@@ -73,6 +75,7 @@ export default class Sprite {
     color: string;
     border: HTMLCanvasElement;
     balloon: HTMLElement;
+    page: Page;
     watermark: unknown;
     thumbnail: HTMLElement;
     oldvalue: string;
@@ -154,7 +157,7 @@ export default class Sprite {
         if (extxml.childNodes[0].nodeName == '#comment') {
             extxml.removeChild(extxml.childNodes[0]);
         }
-        this.svg = extxml;
+        this.svg = extxml as Element;
     }
 
     setCostume (dataurl, fcn) {
@@ -823,8 +826,9 @@ Math.floor(h));
         // TODO: Merge these for iOS
         var dx;
         if (isAndroid) {
+            const inputParent = ti.parentNode.parentNode as HTMLElement;
             AndroidInterface.scratchjr_setsoftkeyboardscrolllocation(dy * window.devicePixelRatio, (dy
-                + ti.parentNode.parentNode.getBoundingClientRect().height * 1.7) * window.devicePixelRatio);
+                + inputParent.getBoundingClientRect().height * 1.7) * window.devicePixelRatio);
             dx = (-10 + 240 - Math.round(formsize / 2)) * scaleMultiplier + globalx(gn('stage'));
             setProps(gn('textbox').style, {
                 top: dy + 'px',

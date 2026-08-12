@@ -109,7 +109,7 @@ export default class Events {
             }
         });
     }
-    static startDrag (e, c, atstart, atend, atdrag, atclick, athold) {
+    static startDrag (e, c, atstart, atend, atdrag, atclick, athold?) {
         dragged = false;
         var pt = Events.getTargetPoint(e);
         dragmousex = pt.x;

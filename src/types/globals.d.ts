@@ -15,6 +15,7 @@ interface AndroidInterfaceStatic {
     scratchjr_setsoftkeyboardscrolllocation(x: number, y: number): void;
     scratchjr_forceShowKeyboard(): void;
     scratchjr_forceHideKeyboard(): void;
+    notifyEditorDoneLoading(): void;
     // filled in as more call sites are typed
     [key: string]: unknown;
 }
@@ -157,10 +158,23 @@ interface HTMLElement {
     img?: HTMLImageElement;
     originalImg?: HTMLImageElement;
     active?: unknown;
+    index?: number;
+    bkg?: string;
+    next?: unknown;
+    prev?: unknown;
+    byme?: number;
+    scale?: number;
+    fieldname?: string;
+    w?: number;
+    h?: number;
+    next?: unknown;
+    prev?: unknown;
 }
 
 interface ChildNode {
     owner?: unknown;
+    next?: ChildNode;
+    prev?: ChildNode;
 }
 
 interface ParentNode {
@@ -169,7 +183,13 @@ interface ParentNode {
 
 interface HTMLFormElement {
     // Named form bag expando: the active text Sprite (or null)
-    textsprite?: { id?: string } | null;
+    textsprite?: {
+        id?: string;
+        div?: HTMLElement;
+        fontsize?: number;
+        setColor?(c: string): void;
+        setFontSize?(n: number): void;
+    } | null;
 }
 
 interface Window {
@@ -189,4 +209,5 @@ interface Window {
     loadPage?: unknown;
     isTouch?: boolean;
     devicePixelRatio?: number;
+    reloadDebug?: unknown;
 }

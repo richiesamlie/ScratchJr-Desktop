@@ -3,9 +3,21 @@
 ////////////////////////////////////////////////
 
 import Events from '../../utils/Events';
+import type Block from '../blocks/Block';
 import {newDiv, newHTML, CSSTransition3D, isTouch, setCanvasSize} from '../../utils/lib';
 
 export default class Scroll {
+    hasHorizontal: boolean;
+    hasVertical: boolean;
+    arrowDistance: number;
+    aleft: HTMLElement;
+    aright: HTMLElement;
+    aup: HTMLElement;
+    adown: HTMLElement;
+    contents: HTMLElement;
+    getContent: () => HTMLElement;
+    getObjects: () => unknown[];
+
     constructor (div, id, w, h, cfcn, ofcn) {
         this.hasHorizontal = true;
         this.hasVertical = true;
@@ -74,13 +86,15 @@ export default class Scroll {
 
     repositionArrows (h) {
         this.aleft.style.height = h + 'px';
-        this.aleft.childNodes[0].style.top = Math.floor((h - this.aleft.childNodes[0].offsetHeight) / 2) + 'px';
+        const leftArrow = this.aleft.childNodes[0] as HTMLElement;
+        leftArrow.style.top = Math.floor((h - leftArrow.offsetHeight) / 2) + 'px';
         this.aright.style.height = h + 'px';
-        this.aright.childNodes[0].style.top = Math.floor((h - this.aright.childNodes[0].offsetHeight) / 2) + 'px';
+        const rightArrow = this.aright.childNodes[0] as HTMLElement;
+        rightArrow.style.top = Math.floor((h - rightArrow.offsetHeight) / 2) + 'px';
     }
 
     getAdjustment (rect) { // rect of the dragg block canvas
-        var d = this.contents.parentNode; // scripts
+        var d = this.contents.parentNode as HTMLElement; // scripts
         var w = d.offsetWidth;
         var h = d.offsetHeight;
         if ((rect.x > 0) && (rect.y > 0)) {
@@ -124,7 +138,12 @@ export default class Scroll {
             width: bc.offsetWidth,
             height: bc.offsetHeight
         };
-        var transition = {
+        var transition: {
+            duration: number;
+            transition: string;
+            style: Record<string, string>;
+            onComplete: () => void;
+        } = {
             duration: 0.5,
             transition: 'ease-out',
             style: {},
@@ -196,7 +215,8 @@ export default class Scroll {
         var needdown = 'hidden';
         var allblocks = this.getObjects();
         for (var i = 0; i < allblocks.length; i++) {
-            you = allblocks[i].div;
+            const block = allblocks[i] as Block;
+            you = block.div;
             if (you == null) {
                 continue;
             }
@@ -240,7 +260,8 @@ export default class Scroll {
         var padding = 0;
         var allblocks = this.getObjects();
         for (var i = 0; i < allblocks.length; i++) {
-            you = allblocks[i].div;
+            const block = allblocks[i] as Block;
+            you = block.div;
             if (you == null) {
                 continue;
             }
@@ -295,7 +316,7 @@ export default class Scroll {
     moveBlocks (dx, dy) {
         var allblocks = this.getObjects();
         for (var i = 0; i < allblocks.length; i++) {
-            var b = allblocks[i];
+            var b = allblocks[i] as Block;
             b.moveBlock(b.div.left + dx, b.div.top + dy);
         }
     }

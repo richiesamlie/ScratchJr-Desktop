@@ -24,8 +24,8 @@ export default class Alert {
         var scale = scaleMultiplier;
         var w = 80;
         var h = 24;
-        var dx = (globalx(obj, obj.offsetLeft) + (obj.offsetWidth / 2)) - (w + 7 * 2 + 4) * scale / 2;
-        var dy = globaly(obj, obj.offsetTop) - (24 * scale);
+        var dx = (globalx(obj) + (obj.offsetWidth / 2)) - (w + 7 * 2 + 4) * scale / 2;
+        var dy = globaly(obj) - (24 * scale);
         if (dy < 5 * scale) {
             dy = 5 * scale;
         }
@@ -40,7 +40,7 @@ export default class Alert {
         if (w < 36) {
             w = 36;
         }
-        dx = (globalx(obj, obj.offsetLeft) + (obj.offsetWidth / 2)) - (w + 7 * 2 + 4) * scale / 2;
+        dx = (globalx(obj) + (obj.offsetWidth / 2)) - (w + 7 * 2 + 4) * scale / 2;
         if (dx < 5 * scale) {
             dx = 5 * scale;
         }

@@ -1,7 +1,7 @@
 import ScratchJr from '../ScratchJr.js';
 import BlockSpecs from './BlockSpecs';
 import Menu from './Menu';
-import Undo from '../ui/Undo.js';
+import Undo from '../ui/Undo';
 import {setCanvasSize, setProps, writeText, scaleMultiplier,
     newHTML, newDiv, newCanvas, getStringSize, isTouch,
     newP, globalx, globaly} from '../../utils/lib';

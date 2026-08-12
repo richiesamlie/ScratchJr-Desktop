@@ -1,8 +1,10 @@
 import ScratchJr from '../ScratchJr.js';
-import Palette from './Palette.js';
-import Undo from './Undo.js';
+import Palette from './Palette';
+import Undo from './Undo';
 import iOS from '../../iPad/iOS';
 import ScratchAudio from '../../utils/ScratchAudio';
+import type Sprite from '../engine/Sprite';
+import type Page from '../engine/Page';
 import {frame, gn, newHTML, isAndroid, setProps} from '../../utils/lib';
 
 let interval = null;
@@ -16,6 +18,9 @@ let timeLimit = null;
 let playTimeLimit = null;
 
 export default class Record {
+    // Assigned by startRecording; retained for debugging
+    static soundname: string;
+
     static get available () {
         return available;
     }
@@ -63,7 +68,8 @@ export default class Record {
         gn('recorddialog').setAttribute('class', 'record fade in');
         ScratchJr.stopStrips();
         dialogOpen = true;
-        ScratchJr.onBackButtonCallback.push(Record.saveSoundandClose);
+        // Typo in original (pushed undefined); intent is the save handler
+        ScratchJr.onBackButtonCallback.push(Record.saveSoundAndClose);
     }
 
     static disappear () {
@@ -97,7 +103,8 @@ export default class Record {
         var element = 'id_' + button;
         var newStateStr = (newState) ? 'on' : 'off';
         var attrclass = button + 'snd';
-        gn(element).childNodes[0].setAttribute('class', attrclass + ' ' + newStateStr);
+        const childNode = gn(element).childNodes[0] as HTMLElement;
+        childNode.setAttribute('class', attrclass + ' ' + newStateStr);
     }
 
     // Volume UI updater
@@ -108,7 +115,8 @@ export default class Record {
             num = 0;
         }
         for (var i = 0; i < 13; i++) {
-            div.childNodes[i].childNodes[0].setAttribute('class', ((i > num) ? 'soundlevel off' : 'soundlevel on'));
+            const childNode = div.childNodes[i].childNodes[0] as HTMLElement;
+            childNode.setAttribute('class', ((i > num) ? 'soundlevel off' : 'soundlevel on'));
         }
     }
 
@@ -117,7 +125,8 @@ export default class Record {
         Record.toggleButtonUI('record', false);
         var div = gn('soundvolume');
         for (var i = 0; i < gn('soundvolume').childElementCount; i++) {
-            div.childNodes[i].childNodes[0].setAttribute('class', 'soundlevel off');
+            const childNode = div.childNodes[i].childNodes[0] as HTMLElement;
+            childNode.setAttribute('class', 'soundlevel off');
         }
     }
 
@@ -230,7 +239,7 @@ export default class Record {
     }
 
     // Stop playing the sound and switch UI appropriately
-    static stopPlayingSound (fcn) {
+    static stopPlayingSound (fcn?) {
         iOS.stopplay(fcn);
         Record.toggleButtonUI('play', false);
         isPlaying = false;
@@ -239,7 +248,7 @@ export default class Record {
     }
 
     // Stop the volume monitor and recording
-    static stopRecording (fcn) {
+    static stopRecording (fcn?) {
         if (timeLimit != null) {
             clearTimeout(timeLimit);
             timeLimit = null;
@@ -290,8 +299,8 @@ export default class Record {
     static registerProjectSound () {
         function whenDone (snd) {
             if (snd != 'error') {
-                var spr = ScratchJr.getSprite();
-                var page = spr.div.parentNode.owner;
+                var spr = ScratchJr.getSprite() as Sprite;
+                var page = spr.div.parentNode.owner as Page;
                 spr.sounds.push(recordedSound);
                 Undo.record({
                     action: 'recordsound',
@@ -313,7 +322,7 @@ export default class Record {
     }
 
     // Called on error - remove everything and hide the recorder
-    static killRecorder () {
+    static killRecorder (e?) {
         // Inform iOS and then tear-down
         if (isPlaying) {
             Record.stopPlayingSound(Record.closeContinueRemove); // stop playing and tear-down

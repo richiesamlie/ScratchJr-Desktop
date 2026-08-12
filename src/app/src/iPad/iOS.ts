@@ -1,7 +1,7 @@
 import {isiOS, gn} from '../utils/lib';
 import IO from './IO.js';
 import Lobby from '../lobby/Lobby';
-import Alert from '../editor/ui/Alert.js';
+import Alert from '../editor/ui/Alert';
 import ScratchAudio from '../utils/ScratchAudio';
 import AppUsage from '../utils/AppUsage';
 
@@ -84,7 +84,7 @@ export default class iOS {
         }
     }
 
-    static setfield (db, id, fieldname, val, fcn) {
+    static setfield (db, id, fieldname, val, fcn?) {
         var json: SqlPayload = {};
         var keylist = [fieldname + ' = ?', 'mtime = ?'];
         json.values = [val, (new Date()).getTime().toString()];
@@ -236,7 +236,7 @@ export default class iOS {
         }
     }
 
-    static volume (fcn) {
+    static volume (fcn, err?) {
         var result = tabletInterface.recordsound_volume();
         if (fcn) {
             fcn(result);

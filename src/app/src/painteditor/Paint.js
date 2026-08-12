@@ -7,7 +7,7 @@ import iOS from '../iPad/iOS';
 import IO from '../iPad/IO';
 import MediaLib from '../iPad/MediaLib';
 import Localization from '../utils/Localization';
-import Alert from '../editor/ui/Alert.js';
+import Alert from '../editor/ui/Alert';
 import PaintAction from './PaintAction.js';
 import ScratchAudio from '../utils/ScratchAudio';
 import Path from './Path.js';

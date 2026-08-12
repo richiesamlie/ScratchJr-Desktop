@@ -1,5 +1,5 @@
 import ScratchJr from '../ScratchJr.js';
-import Project from '../ui/Project.js';
+import Project from '../ui/Project';
 import Prims from './Prims';
 import Thread from './Thread';
 

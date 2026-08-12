@@ -1,19 +1,21 @@
 import ScratchJr from '../ScratchJr.js';
-import Project from '../ui/Project.js';
-import Thumbs from '../ui/Thumbs.js';
-import UI from '../ui/UI.js';
-import Undo from '../ui/Undo.js';
-import ScriptsPane from '../ui/ScriptsPane.js';
+import Project from '../ui/Project';
+import Thumbs from '../ui/Thumbs';
+import UI from '../ui/UI';
+import Undo from '../ui/Undo';
+import ScriptsPane from '../ui/ScriptsPane';
 import Rectangle from '../../geom/Rectangle';
 import Events from '../../utils/Events';
 import ScratchAudio from '../../utils/ScratchAudio';
 import Vector from '../../geom/Vector';
 import Page from './Page';
 import type Sprite from './Sprite';
-import type Scripts from '../ui/Scripts.js';
+import type Scripts from '../ui/Scripts';
 
 // Named-form access: document.forms.activetextbox etc.
-const namedForms = document.forms as HTMLCollectionOf<HTMLFormElement> & Record<string, HTMLFormElement>;
+const namedForms = document.forms as unknown as {
+    activetextbox: HTMLFormElement & { typing: HTMLInputElement };
+};
 import {newHTML, newDiv, gn,
     getIdFor, setProps,
     scaleMultiplier, setCanvasSize,
@@ -178,12 +180,12 @@ export default class Stage {
         Thumbs.overpage(thumb);
         var data = Project.encodeSprite(el.owner);
         if (gn(thumb.owner).owner == this.currentPage) {
-            data.xcoor += 10;
-            data.ycoor += 10;
+            data.xcoor = Number(data.xcoor) + 10;
+            data.ycoor = Number(data.ycoor) + 10;
             data.homex = data.xcoor;
             data.homey = data.ycoor;
         }
-        var a = data.id.split(' ');
+        var a = (data.id as string).split(' ');
         if (Number(a[a.length - 1]).toString() != 'NaN') {
             a.pop();
         }
@@ -219,9 +221,9 @@ export default class Stage {
         //  reserve a next id to be able to Undo deleting the first page
         ScratchJr.storyStart('Stage.prototype.deletePage'); // Record a change for sample projects in story-starter mode
         var pageid = getIdFor('page');
-        var sprAttr = UI.mascotData();
+        var sprAttr: Record<string, unknown> = UI.mascotData();
         var newp: Record<string, unknown> = {};
-        var catid = sprAttr.id;
+        var catid = sprAttr.id as string;
         newp.sprites = [catid];
         newp.num = 1;
         newp.lastSprite = catid;

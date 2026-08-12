@@ -5,15 +5,18 @@
 import ScratchJr from '../ScratchJr.js';
 import Block from '../blocks/Block';
 import BlockSpecs from '../blocks/BlockSpecs';
-import ScriptsPane from './ScriptsPane.js';
-import Undo from './Undo.js';
+import ScriptsPane from './ScriptsPane';
+import Undo from './Undo';
 import iOS from '../../iPad/iOS';
 import MediaLib from '../../iPad/MediaLib';
 import Events from '../../utils/Events';
+import type Scripts from '../ui/Scripts.js';
+import type Sprite from '../engine/Sprite';
+import type Page from '../engine/Page';
 import Rectangle from '../../geom/Rectangle';
 import DrawPath from '../../utils/DrawPath';
 import ScratchAudio from '../../utils/ScratchAudio';
-import Record from './Record.js';
+import Record from './Record';
 import {frame, gn, localx, newHTML, scaleMultiplier, isTouch, newDiv,
     setProps, globalx, localy, globaly, drawScaled, newCanvas,
     setCanvasSize, hitRect, writeText, getStringSize} from '../../utils/lib';
@@ -28,6 +31,8 @@ let helpballoon = undefined;
 let dxblocks = 10;
 
 export default class Palette {
+    static blockdx: number;
+
     static get numcat () {
         return numcat;
     }
@@ -98,18 +103,19 @@ export default class Palette {
 
     static isRecorded (ths) {
         var val = ths.owner.getArgValue();
-        var list = ScratchJr.getActiveScript().owner.spr.sounds;
+        const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
+        var list = activeScripts.spr.sounds;
         return list.indexOf(val) > 0;
     }
 
     static removeSound (ths) {
         ScratchAudio.sndFX('cut.wav');
         var indx = ths.owner.getArgValue();
-        var spr = ScratchJr.getSprite();
+        var spr = ScratchJr.getSprite() as Sprite;
         if (!spr) {
             return;
         }
-        var page = spr.div.parentNode.owner;
+        var page = spr.div.parentNode.owner as Page;
         var sounds = spr.sounds.concat();
         if (indx >= sounds.length) {
             return;
@@ -122,8 +128,8 @@ export default class Palette {
         while (div.childElementCount > 0) {
             div.removeChild(div.childNodes[0]);
         }
-        var sc = div.owner;
-        var list = sprdata.scripts;
+        var sc = div.owner as Scripts;
+        var list = sprdata.scripts as unknown[];
         for (var j = 0; j < list.length; j++) {
             sc.recreateStrip(list[j]);
         }
@@ -215,13 +221,17 @@ export default class Palette {
     }
 
     static hide () {
-        gn('blockspalette').childNodes[0].style.display = 'none';
-        gn('blockspalette').childNodes[1].style.display = 'none';
+        const blocksPaletteFirst = gn('blockspalette').childNodes[0] as HTMLElement;
+        const blocksPaletteSecond = gn('blockspalette').childNodes[1] as HTMLElement;
+        blocksPaletteFirst.style.display = 'none';
+        blocksPaletteSecond.style.display = 'none';
     }
 
     static show () {
-        gn('blockspalette').childNodes[0].style.display = 'inline-block';
-        gn('blockspalette').childNodes[1].style.display = 'inline-block';
+        const showFirst = gn('blockspalette').childNodes[0] as HTMLElement;
+        const showSecond = gn('blockspalette').childNodes[1] as HTMLElement;
+        showFirst.style.display = 'inline-block';
+        showSecond.style.display = 'inline-block';
     }
 
 
@@ -260,7 +270,7 @@ export default class Palette {
         if (!ScratchJr.runtime.inactive()) {
             ScratchJr.stopStrips();
         }
-        var sc = ScratchJr.getActiveScript().owner;
+        var sc = ScratchJr.getActiveScript().owner as Scripts;
         sc.flowCaret = null;
         var pt = Events.getTargetPoint(e);
         Events.dragmousex = pt.x;
@@ -274,7 +284,8 @@ export default class Palette {
         }
         var mx = Events.dragmousex - frame.offsetLeft - localx(Events.dragthumbnail, Events.dragmousex);
         var my = Events.dragmousey - frame.offsetTop - localy(Events.dragthumbnail, Events.dragmousey);
-        Events.dragcanvas = Events.dragthumbnail.owner.duplicateBlock(mx, my, sc.spr).div;
+        const dragOwner = Events.dragthumbnail.owner as Block;
+        Events.dragcanvas = dragOwner.duplicateBlock(mx, my, sc.spr).div;
         Events.dragcanvas.style.zIndex = ScratchJr.dragginLayer;
         Events.dragDiv.appendChild(Events.dragcanvas);
         // Events.dragcanvas.owner.lift();
@@ -285,7 +296,8 @@ export default class Palette {
     static getBlockNamed (str) {
         var pal = gn('palette');
         for (var i = 0; i < pal.childElementCount; i++) {
-            if (pal.childNodes[i].owner.blocktype == str) {
+            const owner = pal.childNodes[i].owner as Block;
+            if (owner.blocktype == str) {
                 return pal.childNodes[i];
             }
         }
@@ -324,8 +336,8 @@ export default class Palette {
     }
 
     static getPaletteSize () {
-        var first = gn('palette').childNodes[0];
-        var last = gn('palette').childNodes[gn('palette').childElementCount - 1];
+        var first = gn('palette').childNodes[0] as HTMLElement;
+        var last = gn('palette').childNodes[gn('palette').childElementCount - 1] as HTMLElement;
         return last.offsetLeft + last.offsetWidth - first.offsetLeft;
     }
 
@@ -347,12 +359,14 @@ export default class Palette {
         numcat = n;
         var currentSel = div.childNodes[n + 1];
         for (var i = 1; i < div.childElementCount; i++) {
-            var sel = div.childNodes[i];
-            sel.childNodes[0].style.visibility = (sel.index != n) ? 'visible' : 'hidden';
-            sel.childNodes[1].style.visibility = (sel.index == n) ? 'visible' : 'hidden';
+            var sel = div.childNodes[i] as HTMLElement;
+            const selFirst = sel.childNodes[0] as HTMLElement;
+            const selSecond = sel.childNodes[1] as HTMLElement;
+            selFirst.style.visibility = (sel.index != n) ? 'visible' : 'hidden';
+            selSecond.style.visibility = (sel.index == n) ? 'visible' : 'hidden';
         }
         var pal = gn('palette');
-        gn('blockspalette').style.background = currentSel.bkg;
+        gn('blockspalette').style.background = (currentSel as HTMLElement).bkg;
         while (pal.childElementCount > 0) {
             pal.removeChild(pal.childNodes[0]);
         }
@@ -375,7 +389,7 @@ export default class Palette {
         if ((n == (BlockSpecs.categories.length - 1)) && (ScratchJr.stage.pages.length > 1)) {
             Palette.addPagesBlocks(dx);
         }
-        if ((n == 3) && (ScratchJr.getSprite().sounds.length > 0)) {
+        if ((n == 3) && ((ScratchJr.getSprite() as Sprite).sounds.length > 0)) {
             Palette.addSoundsBlocks(dxblocks);
         }
     }
@@ -393,11 +407,15 @@ export default class Palette {
         var n = numcat;
         var div = gn('selectors');
         for (var i = 0; i < div.childElementCount; i++) {
-            var sel = div.childNodes[i];
-            sel.childNodes[0].style.visibility = (sel.index != n) && b ? 'visible' : 'hidden';
-            sel.childNodes[1].style.visibility = (sel.index == n) && b ? 'visible' : 'hidden';
-            sel.childNodes[2].style.visibility = (sel.index != n) && b ? 'visible' : 'hidden';
-            sel.childNodes[3].style.visibility = (sel.index == n) && b ? 'visible' : 'hidden';
+            var sel = div.childNodes[i] as HTMLElement;
+            const selFirst = sel.childNodes[0] as HTMLElement;
+            const selSecond = sel.childNodes[1] as HTMLElement;
+            const selThird = sel.childNodes[2] as HTMLElement;
+            const selFourth = sel.childNodes[3] as HTMLElement;
+            selFirst.style.visibility = (sel.index != n) && b ? 'visible' : 'hidden';
+            selSecond.style.visibility = (sel.index == n) && b ? 'visible' : 'hidden';
+            selThird.style.visibility = (sel.index != n) && b ? 'visible' : 'hidden';
+            selFourth.style.visibility = (sel.index == n) && b ? 'visible' : 'hidden';
         }
     }
 
@@ -417,7 +435,7 @@ export default class Palette {
 
     static addSoundsBlocks (dx) {
         var pal = gn('palette');
-        var spr = ScratchJr.getSprite();
+        var spr = ScratchJr.getSprite() as Sprite;
         var list = spr ? spr.sounds : [];
         var newb;
         
@@ -478,13 +496,13 @@ export default class Palette {
     static inStatesPalette () {
         var div = gn('selectors');
         var sel = div.childNodes[div.childElementCount - 1];
-        return sel.childNodes[0].style.visibility == 'hidden';
+        return (sel.childNodes[0] as HTMLElement).style.visibility == 'hidden';
     }
 
     // move to scratch jr app
-    static getLandingPlace (el, e, scale) {
+    static getLandingPlace (el, e, scale?) {
         scale = typeof scale !== 'undefined' ? scale : 1;
-        var sc = ScratchJr.getActiveScript().owner;
+        var sc = ScratchJr.getActiveScript().owner as Scripts;
         var pt = e ? Events.getTargetPoint(e) : null;
         if (pt && !pt.x) {
             pt = null;
@@ -537,7 +555,7 @@ export default class Palette {
         return null;
     }
 
-    static getHittedThumb (el, div, scale) {
+    static getHittedThumb (el, div, scale?) {
         scale = typeof scale !== 'undefined' ? scale : 1;
         var box1 = new Rectangle(el.left / scale, el.top / scale, el.offsetWidth / scale, el.offsetHeight / scale);
         var area = 0;
@@ -548,7 +566,7 @@ export default class Palette {
             if (node.nodeName == 'FORM') {
                 continue;
             }
-            var box2 = new Rectangle(globalx(node, node.offsetLeft), globaly(node, node.offsetTop) - dh, node.offsetWidth, node.offsetHeight);
+            var box2 = new Rectangle(globalx(node), globaly(node) - dh, node.offsetWidth, node.offsetHeight);
             var boxi = box1.intersection(box2);
             var a = boxi.width * boxi.height;
             if (a > area) {
@@ -583,19 +601,21 @@ export default class Palette {
             var dx = localx(sc, element.left);
             var dy = localy(sc, element.top);
             ScriptsPane.blockDropped(sc, dx, dy);
-            var spr = ScratchJr.getActiveScript().owner.spr;
+            const activeScripts = ScratchJr.getActiveScript().owner as Scripts;
+            var spr = activeScripts.spr;
+            const parentPage = spr.div.parentNode.owner as Page;
             Undo.record({
                 action: 'scripts',
-                where: spr.div.parentNode.owner.id,
+                where: parentPage.id,
                 who: spr.id
             });
             // Record a change for sample projects in story-starter mode
             ScratchJr.storyStart('Palette.dropBlockFromPalette');
             break;
         default:
-            ScratchJr.getActiveScript().owner.deleteBlocks();
+            (ScratchJr.getActiveScript().owner as Scripts).deleteBlocks();
             break;
         }
-        ScratchJr.getActiveScript().owner.dragList = [];
+        (ScratchJr.getActiveScript().owner as Scripts).dragList = [];
     }
 }
