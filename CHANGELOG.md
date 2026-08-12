@@ -3,6 +3,28 @@
 All notable changes to **ScratchJr Reborn**. The repo is developed on
 `master`; releases are tagged `vX.Y.Z` and built by CI.
 
+## [v1.5.2] — 2026-08-12
+
+**Fixes the character-flood bug.** Clicking the character picker could keep
+adding characters after the picker closed (a closed picker retained its
+selection and mouse handlers, and adds could re-enter while a sprite was
+still loading). Fixes:
+
+- Picker close now resets selection state and detaches mouse handlers; adds are
+  guarded against re-entry while a sprite is loading
+- Sprite registration in `page.sprites` is now idempotent — a sprite re-created
+  with the same id (reload, undo replay) can no longer accumulate duplicate
+  entries
+- Regression tests for both (102 → 103 tests)
+
+**Developer experience:**
+
+- `npm install` now builds the renderer bundle (fresh clones boot immediately)
+- Removed dead `UI.scrollContents`
+- New engine tests: Hop / Repeat / Say primitives, Undo page-order chain
+- CI boot-smokes the packaged Windows build before release (catches packaging
+  regressions like the missing-bundle one from v1.5.0/v1.5.1)
+
 ## [v1.5.1] — 2026-08-12
 
 **Fully strict, zero-`any` renderer.** `tsc --noEmit` is clean under
@@ -66,7 +88,8 @@ Full modernization (8 phases):
 for details): desktop mouse interaction, async IPC `event.returnValue`, save-on-close
 data loss, memory leaks, 5 SQL injection parameters, deprecated APIs, and more.
 
-[Unreleased]: https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/compare/v1.5.1...master
+[Unreleased]: https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/compare/v1.5.2...master
+[v1.5.2]: https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/releases/tag/v1.5.2
 [v1.5.1]: https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/releases/tag/v1.5.1
 [v1.5.0]: https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/releases/tag/v1.5.0
 [v1.4.0]: https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/releases/tag/v1.4.0
