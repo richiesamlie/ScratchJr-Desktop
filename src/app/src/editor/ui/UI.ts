@@ -162,7 +162,7 @@ export default class UI {
             if (ScriptsPane.scroll) {
                 ScriptsPane.resizeScripts(scriptsHeight);
                 if (ScratchJr.stage && ScratchJr.stage.currentPage) {
-                    ScriptsPane.scroll!.refresh();
+                    ScriptsPane.scroll!.update();
                 }
             }
         }

@@ -44,7 +44,6 @@ export default class ScriptsPane {
         setCanvasSize(div, width, height);
         setCanvasSize(scroll.contents, width, height);
         scroll.repositionArrows(height);
-        scroll.update();
     }
 
     static setActiveScript (sprname: string) {

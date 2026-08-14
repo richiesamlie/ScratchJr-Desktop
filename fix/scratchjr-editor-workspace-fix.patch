@@ -1,7 +1,7 @@
 diff --git a/src/app/src/editor/ui/ScriptsPane.ts b/src/app/src/editor/ui/ScriptsPane.ts
 --- a/src/app/src/editor/ui/ScriptsPane.ts
 +++ b/src/app/src/editor/ui/ScriptsPane.ts
-@@ -30,6 +30,18 @@ export default class ScriptsPane {
+@@ -30,6 +30,17 @@ export default class ScriptsPane {
          scroll = new Scroll(div, 'scriptscontainer', div.offsetWidth, h - div.offsetTop, ScratchJr.getActiveScript, ScratchJr.getBlocks);
      }
 
@@ -14,7 +14,6 @@ diff --git a/src/app/src/editor/ui/ScriptsPane.ts b/src/app/src/editor/ui/Script
 +        setCanvasSize(div, width, height);
 +        setCanvasSize(scroll.contents, width, height);
 +        scroll.repositionArrows(height);
-+        scroll.update();
 +    }
 +
      static setActiveScript (sprname: string) {
@@ -49,7 +48,7 @@ diff --git a/src/app/src/editor/ui/UI.ts b/src/app/src/editor/ui/UI.ts
 +                ScriptsPane.resizeScripts(scriptsHeight);
                  if (ScratchJr.stage && ScratchJr.stage.currentPage) {
 -                    ScriptsPane.scroll!.update();
-+                    ScriptsPane.scroll!.refresh();
++                    ScriptsPane.scroll!.update();
                  }
              }
          }
