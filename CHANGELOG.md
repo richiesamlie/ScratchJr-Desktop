@@ -3,6 +3,12 @@
 All notable changes to **ScratchJr Reborn**. The repo is developed on
 `master`; releases are tagged `vX.Y.Z` and built by CI.
 
+## [v1.5.5] — 2026-08-14
+
+**Stage visibility fix.** The responsive layout now reserves enough vertical
+space for the fixed-size stage canvas, preventing its lower edge from being
+covered by the block palette on shorter windows.
+
 ## [v1.5.4] — 2026-08-14
 
 **Startup hotfix.** Prevented the responsive scripts resize from updating the

@@ -141,10 +141,12 @@ export default class UI {
         // This is especially important on wide desktop windows where a fixed
         // minimum stage height can otherwise squeeze scripts into a tiny strip.
         var blockspalette = gn('blockspalette')!;
+        var minStageHeight = 434;
         var desiredScriptsHeight = Math.max(260, Math.round(docHeight * 0.30));
-        var maxTopHeight = docHeight - blockspalette.offsetHeight - desiredScriptsHeight;
+        var maxTopHeight = Math.max(minStageHeight,
+            docHeight - blockspalette.offsetHeight - desiredScriptsHeight);
         var targetTopHeight = Math.round(docHeight * 0.57);
-        targetTopHeight = Math.min(Math.max(420, targetTopHeight), maxTopHeight);
+        targetTopHeight = Math.min(Math.max(minStageHeight, targetTopHeight), maxTopHeight);
         if (topsection) { topsection.style.height = targetTopHeight + 'px'; }
         if (leftPanel) { leftPanel.style.height = targetTopHeight + 'px'; }
         var rightPanelTop = Math.round(12 * scaleMultiplier);
