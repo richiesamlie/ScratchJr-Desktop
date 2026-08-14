@@ -3,6 +3,13 @@
 All notable changes to **ScratchJr Reborn**. The repo is developed on
 `master`; releases are tagged `vX.Y.Z` and built by CI.
 
+## [v1.5.3] — 2026-08-14
+
+**Responsive editor workspace.** The stage and scripts area now adapt to the
+available window height, giving the coding workspace usable space on smaller
+desktop displays. Script canvases, scroll containers, and navigation arrows
+resize together when the layout changes.
+
 ## [v1.5.2] — 2026-08-12
 
 **Fixes the character-flood bug.** Clicking the character picker could keep

@@ -35,6 +35,18 @@ export default class ScriptsPane {
         scroll = new Scroll(div, 'scriptscontainer', div.offsetWidth, h - div.offsetTop, ScratchJr.getActiveScript, ScratchJr.getBlocks);
     }
 
+    static resizeScripts (height: number) {
+        var div = gn('scripts')!;
+        if (!div || !scroll) {
+            return;
+        }
+        var width = div.offsetWidth;
+        setCanvasSize(div, width, height);
+        setCanvasSize(scroll.contents, width, height);
+        scroll.repositionArrows(height);
+        scroll.update();
+    }
+
     static setActiveScript (sprname: string) {
         var currentsc = gn(sprname + '_scripts')!;
         if (!currentsc) {

@@ -137,8 +137,14 @@ export default class UI {
         }
 
         // --- Vertical balance ---
+        // Reserve enough room for the coding workspace before sizing the stage.
+        // This is especially important on wide desktop windows where a fixed
+        // minimum stage height can otherwise squeeze scripts into a tiny strip.
+        var blockspalette = gn('blockspalette')!;
+        var desiredScriptsHeight = Math.max(260, Math.round(docHeight * 0.30));
+        var maxTopHeight = docHeight - blockspalette.offsetHeight - desiredScriptsHeight;
         var targetTopHeight = Math.round(docHeight * 0.57);
-        targetTopHeight = Math.max(520, Math.min(targetTopHeight, Math.round(docHeight * 0.60)));
+        targetTopHeight = Math.min(Math.max(420, targetTopHeight), maxTopHeight);
         if (topsection) { topsection.style.height = targetTopHeight + 'px'; }
         if (leftPanel) { leftPanel.style.height = targetTopHeight + 'px'; }
         var rightPanelTop = Math.round(12 * scaleMultiplier);
@@ -153,11 +159,10 @@ export default class UI {
         }
         if (scripts) {
             var scriptsHeight = Math.max(220, docHeight - scripts.offsetTop);
-            scripts.style.height = scriptsHeight + 'px';
             if (ScriptsPane.scroll) {
-                ScriptsPane.scroll!.repositionArrows(scriptsHeight);
+                ScriptsPane.resizeScripts(scriptsHeight);
                 if (ScratchJr.stage && ScratchJr.stage.currentPage) {
-                    ScriptsPane.scroll!.update();
+                    ScriptsPane.scroll!.refresh();
                 }
             }
         }
