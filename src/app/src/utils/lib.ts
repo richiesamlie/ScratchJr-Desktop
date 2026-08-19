@@ -1,9 +1,6 @@
 import type {Point} from '../geom/Vector';
 
 export var frame: HTMLElement;  // eslint-disable-line import/no-mutable-exports
-// XXX: isTablet is legacy code that can be used to detect if we're running on a desktop browser
-// There are references to it throughout the codebase, should possibly be removed at some point
-export const isTablet = (typeof window.orientation !== 'undefined');
 export const isTouch = ('ontouchstart' in window || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0));
 export const DEGTOR = Math.PI / 180;
 //export const WINDOW_INNER_HEIGHT = window.innerHeight;
