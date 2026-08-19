@@ -120,7 +120,6 @@ git tag vX.Y.Z && git push origin vX.Y.Z  # CI builds all 6 targets + MSI + rele
 
 ## Known quirks & follow-ups
 
-- `UI.scrollContents` is dead code (no callers) — safe to remove or repurpose.
 - `src/types/globals.d.ts` expando declarations must stay mutually consistent
   (the `HTMLElement.next` vs `ChildNode.next` clash broke element assignability).
 - The character picker attaches both `tb.onmouseup` and `window.onmouseup` in
