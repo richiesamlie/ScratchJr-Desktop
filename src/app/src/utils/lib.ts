@@ -300,6 +300,14 @@ export function setCanvasSizeScaledToWindowDocumentHeight (c: HTMLElement & {wid
     c.style.zoom = String(scaleMultiplier / multiplier);
 }
 
+/** Build a webkitTransform string that translates to center, scales by 1/DPR, then translates back. */
+export function dprCenterTransform (w: number, h: number) {
+    var dpr = window.devicePixelRatio;
+    return 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
+        + 'scale(' + (1 / dpr) + ') '
+        + 'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px)';
+}
+
 export function localx (el: HTMLElement, gx: number) {
     var lx = gx;
     while (el && el.offsetTop != undefined) {
@@ -581,16 +589,13 @@ export function getUrlVars (): Record<string, string> {
         return {};
     }
     var args = window.location.href.slice(window.location.href.indexOf('?') + 1);
-    var vars = [] as unknown as Record<string, string> & string[], hash;
+    var vars: Record<string, string> = {};
     var hashes = args.split('&');
     for (var i = 0; i < hashes.length; i++) {
-        hash = hashes[i].split('=');
-        vars.push(hash[0]);
+        var hash = hashes[i].split('=');
         vars[hash[0]] = hash[1];
     }
-    // Legacy hybrid: the bag is an array with named query params attached;
-    // every caller reads the named properties.
-    return vars as unknown as Record<string, string>;
+    return vars;
 }
 
 export function getIdFor (name: string) {
@@ -746,12 +751,4 @@ export function css_vw (x: number) {
     return (x *  window.innerWidth / 100.0) + 'px';
 }
 
-Number.prototype.mod = function (this: Number, n: number): number {  // eslint-disable-line no-extend-native
-    return ((Number(this) % n) + n) % n;
-};
 
-declare global {
-    interface Number {
-        mod(n: number): number;
-    }
-}

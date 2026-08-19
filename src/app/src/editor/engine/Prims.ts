@@ -25,46 +25,47 @@ export default class Prims {
     }
 
     static init () {
-        Prims.table = {};
-        Prims.table.done = Prims.Done;
-        Prims.table.missing = Prims.Ignore;
-        Prims.table.onflag = Prims.Ignore;
-        Prims.table.onmessage = Prims.Ignore;
-        Prims.table.onclick = Prims.Ignore;
-        Prims.table.ontouch = Prims.OnTouch;
-        Prims.table.onchat = Prims.Ignore;
-        Prims.table.repeat = Prims.Repeat;
-        Prims.table.forward = Prims.Forward;
-        Prims.table.back = Prims.Back;
-        Prims.table.up = Prims.Up;
-        Prims.table.down = Prims.Down;
-        Prims.table.left = Prims.Left;
-        Prims.table.right = Prims.Right;
-        Prims.table.home = Prims.Home;
-        Prims.table.setspeed = Prims.SetSpeed;
-        Prims.table.message = Prims.Message;
-        Prims.table.setcolor = Prims.SetColor;
-        Prims.table.bigger = Prims.Bigger;
-        Prims.table.smaller = Prims.Smaller;
-        Prims.table.wait = Prims.Wait;
-        Prims.table.caretcmd = Prims.Ignore;
-        Prims.table.caretstart = Prims.Ignore;
-        Prims.table.caretend = Prims.Ignore;
-        Prims.table.caretrepeat = Prims.Ignore;
-        Prims.table.gotopage = Prims.GotoPage;
-        Prims.table.endstack = Prims.DoNextBlock;
-        Prims.table.stopall = Prims.StopAll;
-        Prims.table.stopmine = Prims.StopMine;
-        Prims.table.forever = Prims.Forever;
-        Prims.table.hop = Prims.Hop;
-        Prims.table.show = Prims.Show;
-        Prims.table.hide = Prims.Hide;
-        Prims.table.playsnd = Prims.playSound;
-        Prims.table.playusersnd = Prims.playSound;
-        Prims.table.grow = Prims.Grow;
-        Prims.table.shrink = Prims.Shrink;
-        Prims.table.same = Prims.Same;
-        Prims.table.say = Prims.Say;
+        Prims.table = {
+            done: Prims.Done,
+            missing: Prims.Ignore,
+            onflag: Prims.Ignore,
+            onmessage: Prims.Ignore,
+            onclick: Prims.Ignore,
+            ontouch: Prims.OnTouch,
+            onchat: Prims.Ignore,
+            repeat: Prims.Repeat,
+            forward: Prims.Forward,
+            back: Prims.Back,
+            up: Prims.Up,
+            down: Prims.Down,
+            left: Prims.Left,
+            right: Prims.Right,
+            home: Prims.Home,
+            setspeed: Prims.SetSpeed,
+            message: Prims.Message,
+            setcolor: Prims.SetColor,
+            bigger: Prims.Bigger,
+            smaller: Prims.Smaller,
+            wait: Prims.Wait,
+            caretcmd: Prims.Ignore,
+            caretstart: Prims.Ignore,
+            caretend: Prims.Ignore,
+            caretrepeat: Prims.Ignore,
+            gotopage: Prims.GotoPage,
+            endstack: Prims.DoNextBlock,
+            stopall: Prims.StopAll,
+            stopmine: Prims.StopMine,
+            forever: Prims.Forever,
+            hop: Prims.Hop,
+            show: Prims.Show,
+            hide: Prims.Hide,
+            playsnd: Prims.playSound,
+            playusersnd: Prims.playSound,
+            grow: Prims.Grow,
+            shrink: Prims.Shrink,
+            same: Prims.Same,
+            say: Prims.Say
+        };
     }
 
     static Done (strip: Thread) {
@@ -262,107 +263,46 @@ export default class Prims {
         }
     }
 
-    static Down (strip: Thread) {
-        var num = Number(strip.thisblock.getArgValue()) * 24;
-        var distance = Math.abs(num);
-        if (num == 0) {
-            strip.thisblock = strip.thisblock.next!;
-            strip.waitTimer = tinterval;
-            strip.distance = -1;
-            strip.vector = {
-                x: 0,
-                y: 0
-            };
-            return;
-        }
-        if (strip.distance < 0) {
-            strip.distance = distance;
-            strip.vector = {
-                x: 0,
-                y: 2
-            };
-            Prims.setTime(strip);
-        }
-        Prims.moveAtSpeed(strip);
-    }
-
-    static Up (strip: Thread) {
-        var num = Number(strip.thisblock.getArgValue()) * 24;
-        var distance = Math.abs(num);
-        if (num == 0) {
-            strip.thisblock = strip.thisblock.next!;
-            strip.waitTimer = tinterval;
-            strip.distance = -1;
-            strip.vector = {
-                x: 0,
-                y: 0
-            };
-            return;
-        } else if (strip.distance < 0) {
-            strip.distance = distance;
-            strip.vector = {
-                x: 0,
-                y: -2
-            };
-            Prims.setTime(strip);
-        }
-        Prims.moveAtSpeed(strip);
-    }
-
-    static Forward (strip: Thread) {
+    static moveInDirection (strip: Thread, vec: {x: number; y: number}, flip?: 'forward' | 'back') {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()) * 24;
         var distance = Math.abs(num);
-        if (s.flip) {
+        if (flip === 'forward' && s.flip) {
             s.flip = false;
             s.render();
-        }
-        if (num == 0) {
-            strip.thisblock = strip.thisblock.next!;
-            strip.waitTimer = tinterval * 2 ** (2 - Math.floor(s.speed / 2)); // eslint-disable-line no-restricted-properties
-            strip.vector = {
-                x: 0,
-                y: 0
-            };
-            strip.distance = -1;
-            return;
-        } else if (strip.distance < 0) {
-            strip.distance = distance;
-            strip.vector = {
-                x: 2,
-                y: 0
-            };
-            Prims.setTime(strip);
-        }
-        Prims.moveAtSpeed(strip);
-    }
-
-    static Back (strip: Thread) {
-        var s = strip.spr;
-        var num = Number(strip.thisblock.getArgValue()) * 24;
-        var distance = Math.abs(num);
-        if (!s.flip) {
+        } else if (flip === 'back' && !s.flip) {
             s.flip = true;
             s.render();
         }
         if (num == 0) {
             strip.thisblock = strip.thisblock.next!;
-            strip.vector = {
-                x: 0,
-                y: 0
-            };
-            strip.waitTimer = tinterval * 2 ** (2 - Math.floor(s.speed / 2));  // eslint-disable-line no-restricted-properties
+            strip.waitTimer = flip ? tinterval * 2 ** (2 - Math.floor(s.speed / 2)) : tinterval; // eslint-disable-line no-restricted-properties
+            strip.vector = { x: 0, y: 0 };
+            strip.distance = -1;
             return;
         }
         if (strip.distance < 0) {
             strip.distance = distance;
-            strip.vector = {
-                x: -2,
-                y: 0
-            };
+            strip.vector = vec;
             Prims.setTime(strip);
         }
         Prims.moveAtSpeed(strip);
+    }
+
+    static Down (strip: Thread) {
+        Prims.moveInDirection(strip, { x: 0, y: 2 });
+    }
+
+    static Up (strip: Thread) {
+        Prims.moveInDirection(strip, { x: 0, y: -2 });
+    }
+
+    static Forward (strip: Thread) {
+        Prims.moveInDirection(strip, { x: 2, y: 0 }, 'forward');
+    }
+
+    static Back (strip: Thread) {
+        Prims.moveInDirection(strip, { x: -2, y: 0 }, 'back');
     }
 
     static moveAtSpeed (strip: Thread) {
@@ -388,13 +328,13 @@ export default class Prims {
         }
     }
 
-    static Right (strip: Thread) {
+    static turn (strip: Thread, direction: number) {
         var s = strip.spr;
         var num = Number(strip.thisblock.getArgValue()) * 30;
         if (strip.count < 0) {
             strip.count = Math.floor(Math.abs(num) / s.speed * 0.25);
-            strip.angleStep = s.speed * 4 * Math.abs(num) / num;
-            strip.finalAngle = s.angle + num;
+            strip.angleStep = direction * s.speed * 4 * Math.abs(num) / num;
+            strip.finalAngle = s.angle + direction * num;
             strip.finalAngle = strip.finalAngle % 360;
             if (strip.finalAngle < 0) {
                 strip.finalAngle += 360;
@@ -407,23 +347,12 @@ export default class Prims {
         Prims.turning(strip);
     }
 
+    static Right (strip: Thread) {
+        Prims.turn(strip, 1);
+    }
+
     static Left (strip: Thread) {
-        var s = strip.spr;
-        var num = Number(strip.thisblock.getArgValue()) * 30;
-        if (strip.count < 0) {
-            strip.count = Math.floor(Math.abs(num) / s.speed * 0.25);
-            strip.angleStep = -s.speed * 4 * Math.abs(num) / num;
-            strip.finalAngle = s.angle - num;
-            strip.finalAngle = strip.finalAngle % 360;
-            if (strip.finalAngle < 0) {
-                strip.finalAngle += 360;
-            }
-            if (strip.finalAngle > 360) {
-                strip.finalAngle -= 360;
-            }
-            Prims.setTime(strip);
-        }
-        Prims.turning(strip);
+        Prims.turn(strip, -1);
     }
 
     static turning (strip: Thread) {
@@ -476,11 +405,11 @@ export default class Prims {
         }
     }
 
-    static Grow (strip: Thread) {
+    static resizeSprite (strip: Thread, direction: number) {
         var s = strip.spr;
         var n = Number(strip.thisblock.getArgValue());
         if (strip.count < 0) {
-            strip.distance = Number(s.scale) + (10 * n * s.defaultScale) / 100;
+            strip.distance = s.scale + direction * (10 * n * s.defaultScale) / 100;
             strip.distance = Math.round(strip.distance * 1000) / 1000;
             strip.count = Math.floor(5 * Math.abs(n) / s.speed);
             Prims.setTime(strip);
@@ -495,79 +424,50 @@ export default class Prims {
             Prims.showTime(strip);
             strip.thisblock = strip.thisblock.next!;
         } else {
-            s.changeSizeBy(s.defaultScale * 2 * s.speed * Math.abs(n) / n);
+            s.changeSizeBy(direction * s.defaultScale * 2 * s.speed * Math.abs(n) / n);
             strip.waitTimer = tinterval;
             strip.count = strip.count - 1;
         }
     }
 
+    static Grow (strip: Thread) {
+        Prims.resizeSprite(strip, 1);
+    }
+
     static Shrink (strip: Thread) {
+        Prims.resizeSprite(strip, -1);
+    }
+
+    static fadeSprite (strip: Thread, shown: boolean) {
         var s = strip.spr;
-        var n = Number(strip.thisblock.getArgValue());
+        s.shown = shown;
         if (strip.count < 0) {
-            strip.distance = s.scale - (10 * n * s.defaultScale) / 100;
-            strip.distance = Math.round(strip.distance * 1000) / 1000;
-            strip.count = Math.floor(5 * Math.abs(n) / s.speed);
+            strip.count = s.speed == 4 ? 0 : Math.floor(15 / s.speed);
             Prims.setTime(strip);
         }
         if (strip.count == 0) {
             strip.count = -1;
-            s.setScaleTo(strip.distance);
-            if (!strip.firstBlock.aStart) {
-                s.homescale = s.scale;
-            }
-            strip.distance = -1;
+            s.div.style.opacity = shown ? '1' : '0';
             Prims.showTime(strip);
             strip.thisblock = strip.thisblock.next!;
+            if (!strip.firstBlock.aStart) {
+                s.homeshown = shown;
+            }
         } else {
-            s.changeSizeBy(-s.defaultScale * 2 * s.speed * Math.abs(n) / n);
-            strip.waitTimer = tinterval;
+            var current = Number(s.div.style.opacity);
+            var delta = s.speed / 15;
+            s.div.style.opacity = String(shown ? Math.min(1, current + delta) : Math.max(0, current - delta));
+            strip.waitTimer = tinterval * 2;
             strip.count = strip.count - 1;
         }
     }
 
     static Show (strip: Thread) {
-        var s = strip.spr;
-        s.shown = true;
-        if (strip.count < 0) {
-            strip.count = s.speed == 4 ? 0 : Math.floor(15 / s.speed);
-            Prims.setTime(strip);
-        }
-        if (strip.count == 0) {
-            strip.count = -1;
-            s.div.style.opacity = '1';
-            Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next!;
-            if (!strip.firstBlock.aStart) {
-                s.homeshown = true;
-            }
-        } else {
-            s.div.style.opacity = String(Math.min(1, Number(s.div.style.opacity) + (s.speed / 15)));
-            strip.waitTimer = tinterval * 2;
-            strip.count = strip.count - 1;
-        }
+        Prims.fadeSprite(strip, true);
     }
 
-    static Hide (strip: Thread) { // same
-        var s = strip.spr;
-        s.shown = false;
-        if (strip.count < 0) {
-            strip.count = s.speed == 4 ? 0 : Math.floor(15 / s.speed);
-            Prims.setTime(strip);
-        }
-        if (strip.count == 0) {
-            strip.count = -1;
-            s.div.style.opacity = '0';
-            Prims.showTime(strip);
-            strip.thisblock = strip.thisblock.next!;
-            if (!strip.firstBlock.aStart) {
-                s.homeshown = false;
-            }
-        } else {
-            s.div.style.opacity = String(Math.max(0, Number(s.div.style.opacity) - (s.speed / 15)));
-            strip.waitTimer = tinterval * 2;
-            strip.count = strip.count - 1;
-        }
+    static Hide (strip: Thread) {
+        Prims.fadeSprite(strip, false);
     }
 
     static OnTouch (strip: Thread) {

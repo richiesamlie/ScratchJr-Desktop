@@ -53,69 +53,31 @@ export default class UI {
         UI.aspectRatioAdjustment();
     }
 
-    // Helps debug on Android 4.2 by enabling the user to type in a
-    // JavaScript expression and evaluate the output and render to console.log.
-    /*static addDebugControl () {
-        var div = newHTML('div', 'debug', document.body);
-        setProps(div.style, {
-            position: 'absolute',
-            left: '0px',
-            top: '0px',
-            width: '64px',
-            height: '64px',
-            background: 'red',
-            zIndex: 30000
-        });
-        div.onmousedown = function (e) {
-            console.log(eval(prompt('Enter Debug JavaScript')));
-        };
-    }*/
-
-    /** Tweak some elements depending on aspect ratio */
-    static aspectRatioAdjustment () {
-        var library = gn('library')!;
-        var pages = gn('pages')!;
-        var stage = gn('stage')!;
-        var topsection = gn('topsection')!;
-        var pagecc = gn('pagecc')!;
-        var scripts = gn('scripts')!;
-        if (!library || !pages || !stage) {
-            return;
-        }
-
-        var leftPanel = library.parentNode as HTMLElement;
-        var rightPanel = pages.parentNode as HTMLElement;
-        var stageframe = gn('stageframe')!;
-
-        // Clear previous adjustments
-        library.style.transform = '';
-        pages.style.transform = '';
+    /** Clear any previously applied aspect-ratio tweaks so they can be recalculated. */
+    static clearAspectRatioAdjustments () {
+        var library = gn('library');
+        var pages = gn('pages');
+        var topsection = gn('topsection');
+        var pagecc = gn('pagecc');
+        var scripts = gn('scripts');
+        var stageframe = gn('stageframe');
+        if (library) { library.style.transform = ''; }
+        if (pages) { pages.style.transform = ''; pages.style.width = ''; }
         if (topsection) { topsection.style.height = ''; }
+        if (pagecc) { pagecc.style.height = ''; pagecc.style.width = ''; }
+        if (scripts) { scripts.style.height = ''; }
+        var leftPanel = library?.parentNode as HTMLElement | null;
+        var rightPanel = pages?.parentNode as HTMLElement | null;
         if (leftPanel) { leftPanel.style.height = ''; }
         if (rightPanel) { rightPanel.style.height = ''; rightPanel.style.width = ''; rightPanel.style.top = ''; }
         if (stageframe) { stageframe.style.height = ''; }
-        if (pagecc) { pagecc.style.height = ''; pagecc.style.width = ''; }
-        if (pages) { pages.style.width = ''; }
-        if (scripts) { scripts.style.height = ''; }
+    }
 
-        var docWidth = getDocumentWidth();
-        var docHeight = getDocumentHeight();
-        var aspect = docWidth / docHeight;
-        if (aspect <= 1.45) {
-            return;
-        }
-
-        // Make storyboard wider but keep clear from stage controls.
-        var newRightWidth = Math.round(docHeight * 0.225);
-        if (rightPanel) {
-            rightPanel.style.width = newRightWidth + 'px';
-        }
-        pages.style.width = newRightWidth + 'px';
-        if (pagecc) {
-            pagecc.style.width = newRightWidth + 'px';
-        }
-
-        // --- Horizontal balancing ---
+    /** Shift the library and pages panels horizontally to balance gaps around the stage. */
+    static balanceHorizontal (docWidth: number) {
+        var library = gn('library')!;
+        var pages = gn('pages')!;
+        var stage = gn('stage')!;
         var stageBox = stage.getBoundingClientRect();
         var libraryBox = library.getBoundingClientRect();
         var pagesBox = pages.getBoundingClientRect();
@@ -123,11 +85,8 @@ export default class UI {
         var rightGap = pagesBox.left - (stageBox.left + stageBox.width);
         var desiredGap = Math.min(130, Math.round(docWidth * 0.07));
 
-        var libraryShift = Math.max(0, Math.round(leftGap - desiredGap));
-        var pagesShift = Math.max(0, Math.round(rightGap - desiredGap));
-
-        libraryShift = Math.min(libraryShift, Math.round(docWidth * 0.16));
-        pagesShift = Math.min(pagesShift, Math.round(docWidth * 0.10));
+        var libraryShift = Math.min(Math.max(0, Math.round(leftGap - desiredGap)), Math.round(docWidth * 0.16));
+        var pagesShift = Math.min(Math.max(0, Math.round(rightGap - desiredGap)), Math.round(docWidth * 0.10));
 
         if (libraryShift > 0) {
             library.style.transform = 'translateX(' + libraryShift + 'px)';
@@ -135,18 +94,28 @@ export default class UI {
         if (pagesShift > 0) {
             pages.style.transform = 'translateX(-' + pagesShift + 'px)';
         }
+    }
 
-        // --- Vertical balance ---
-        // Reserve enough room for the coding workspace before sizing the stage.
-        // This is especially important on wide desktop windows where a fixed
-        // minimum stage height can otherwise squeeze scripts into a tiny strip.
+    /** Size the stage, panels, and scripts area vertically. */
+    static balanceVertical (docWidth: number, docHeight: number) {
+        var topsection = gn('topsection')!;
+        var pagecc = gn('pagecc')!;
+        var scripts = gn('scripts')!;
+        var stageframe = gn('stageframe')!;
+        var pages = gn('pages')!;
+        var library = gn('library')!;
         var blockspalette = gn('blockspalette')!;
+        var leftPanel = library.parentNode as HTMLElement;
+        var rightPanel = pages.parentNode as HTMLElement;
+
         var minStageHeight = 434;
         var desiredScriptsHeight = Math.max(260, Math.round(docHeight * 0.30));
         var maxTopHeight = Math.max(minStageHeight,
             docHeight - blockspalette.offsetHeight - desiredScriptsHeight);
-        var targetTopHeight = Math.round(docHeight * 0.57);
-        targetTopHeight = Math.min(Math.max(minStageHeight, targetTopHeight), maxTopHeight);
+        var targetTopHeight = Math.min(
+            Math.max(minStageHeight, Math.round(docHeight * 0.57)),
+            maxTopHeight);
+
         if (topsection) { topsection.style.height = targetTopHeight + 'px'; }
         if (leftPanel) { leftPanel.style.height = targetTopHeight + 'px'; }
         var rightPanelTop = Math.round(12 * scaleMultiplier);
@@ -168,6 +137,35 @@ export default class UI {
                 }
             }
         }
+    }
+
+    /** Tweak some elements depending on aspect ratio */
+    static aspectRatioAdjustment () {
+        var library = gn('library')!;
+        var pages = gn('pages')!;
+        var stage = gn('stage')!;
+        if (!library || !pages || !stage) {
+            return;
+        }
+
+        UI.clearAspectRatioAdjustments();
+
+        var docWidth = getDocumentWidth();
+        var docHeight = getDocumentHeight();
+        if (docWidth / docHeight <= 1.45) {
+            return;
+        }
+
+        // Make storyboard wider but keep clear from stage controls.
+        var newRightWidth = Math.round(docHeight * 0.225);
+        var rightPanel = pages.parentNode as HTMLElement;
+        if (rightPanel) { rightPanel.style.width = newRightWidth + 'px'; }
+        pages.style.width = newRightWidth + 'px';
+        var pagecc = gn('pagecc');
+        if (pagecc) { pagecc.style.width = newRightWidth + 'px'; }
+
+        UI.balanceHorizontal(docWidth);
+        UI.balanceVertical(docWidth, docHeight);
     }
 
     static topSection () {
@@ -662,13 +660,8 @@ export default class UI {
         if (ScratchJr.onHold) {
             return;
         }
-        var t: HTMLElement | null = null;
         var pt = Events.getTargetPoint(e);
-        if (window.event) {
-            t = window.event.srcElement as HTMLElement;
-        } else {
-            t = e.target as HTMLElement;
-        }
+        var t = e.target as HTMLElement;
         //	if ((t.nodeName == "INPUT") || (t.nodeName == "FORM")) return;
         e.preventDefault();
         e.stopPropagation();
@@ -744,12 +737,7 @@ export default class UI {
     static spriteClicked (e: MouseEvent | TouchEvent, el: HTMLElement) {
         e.preventDefault();
         e.stopPropagation();
-        var t: HTMLElement | null = null;
-        if (window.event) {
-            t = window.event.srcElement as HTMLElement;
-        } else {
-            t = e.target as HTMLElement;
-        }
+        var t = e.target as HTMLElement;
         if (ScratchJr.isEditable() && ScratchJr.getSprite()
             && (((t.className == 'sname') && (el.owner == (ScratchJr.getSprite() as Sprite).id))
             || (t.className == 'brush'))) {
@@ -1122,12 +1110,7 @@ export default class UI {
         }
         e.preventDefault();
         e.stopPropagation();
-        let t: HTMLElement | null = null;
-        if (window.event) {
-            t = window.event.srcElement as HTMLElement;
-        } else {
-            t = e.target as HTMLElement;
-        }
+        let t: HTMLElement | null = e.target as HTMLElement;
         var b: boolean | HTMLElement | null = 'textcolorbucket' != t.className;
         while (b) {
             t = t!.parentNode as HTMLElement | null;
@@ -1174,12 +1157,7 @@ export default class UI {
     static setTextSize (e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
-        var t: (HTMLElement & { fs?: number }) | null = null;
-        if (window.event) {
-            t = window.event.srcElement as HTMLElement;
-        } else {
-            t = e.target as HTMLElement;
-        }
+        var t: (HTMLElement & { fs?: number }) | null = e.target as HTMLElement;
         if (t.nodeName == 'SPAN') {
             t = t.parentNode as HTMLElement | null;
         }

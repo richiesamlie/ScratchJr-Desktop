@@ -57,12 +57,7 @@ export default class Scripts {
         if (ScratchJr.onHold) {
             return;
         }
-        let target;
-        if (window.event) {
-            target = window.event.srcElement as HTMLElement;
-        } else {
-            target = e.target as HTMLElement;
-        }
+        var target = e.target as HTMLElement;
         if ((target.nodeName == 'H3') && (target.owner == ScratchJr.activeFocus)) {
             return;
         } // editing the current field

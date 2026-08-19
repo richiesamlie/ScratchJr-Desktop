@@ -13,8 +13,13 @@ const {
 } = require('./logging');
 const { normalizeAndValidateSqlPayload } = require('../lib/sql-validator.ts');
 
+// Parse --lang=xx from command line (e.g. ScratchJr --lang=fr)
+const cliLangArg = process.argv.find(a => a.startsWith('--lang='));
+const cliLang = cliLangArg ? cliLangArg.split('=')[1] : null;
+
 function register(getDataStore, getWindow) {
   ipcMain.handle('io_getIsDebug', () => DEBUG);
+  ipcMain.handle('io_getLang', () => cliLang);
 
   ipcMain.on('debugWriteLog', (event, args) => {
     debugLog(args);

@@ -102,7 +102,7 @@ export async function loadPage(page) {
 	// Start up sequence
 	// Load settings from JSON
 	loadSettings(root, () => {
-		// Load locale strings from JSON
+		// Load locale strings from JSON (--lang=xx CLI flag or localStorage or browser default)
 		Localization.includeLocales(root, () => {
 			// Load Media Lib from JSON
 			MediaLib.loadMediaLib(root, () => {

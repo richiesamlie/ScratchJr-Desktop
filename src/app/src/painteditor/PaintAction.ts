@@ -1110,15 +1110,10 @@ Path.maxDistance()); // check the start
     ///////////////////////////
 
     static getMouseTarget (evt: PaintEvt | null) {
-        var mt: Element | null = null;
         if (evt == null) {
             return null;
         }
-        if (window.event) {
-            mt = (window.event as MouseEvent).srcElement as Element;
-        } else {
-            mt = evt.target as Element;
-        }
+        var mt = evt.target as Element;
         if (!mt) {
             return null;
         }

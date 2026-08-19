@@ -21,6 +21,11 @@ let libFrame: HTMLElement | null = null;
 // Asset thumbnails carry a JSON-stringified pointer for drag-distance checks
 interface LibraryThumb extends HTMLElement {
     pt?: string;
+    w?: number;
+    h?: number;
+    scale?: number;
+    fieldname?: string;
+    byme?: number;
 }
 
 // Media-library asset bag (MediaLib.MediaItem or raw SQL rows); all-optional
@@ -210,29 +215,34 @@ export default class Library {
         }
     }
 
-    static addAssetThumbChoose (parent: HTMLElement, aa: Record<string, unknown>, w: number, h: number, fcn: (e: MouseEvent, tb: LibraryThumb) => void) {
-        var data = Library.parseAssetData(aa);
-        var tb = document.createElement('div');
+    /** Create a thumbnail div and populate metadata from a data bag. */
+    static createThumbElement (parent: HTMLElement, data: Record<string, unknown>): LibraryThumb {
+        var tb = document.createElement('div') as LibraryThumb;
         parent.appendChild(tb);
         tb.byme = nativeJr ? 1 : 0;
-        var md5 = data.md5 as string;
         tb.setAttribute('class', 'assetbox off');
-        tb.setAttribute('id', md5);
+        tb.setAttribute('id', data.md5 as string);
         tb.scale = (!data.scale) ? 0.5 : (data.scale as number);
         tb.fieldname = data.name as string;
         tb.w = Number(data.width);
         tb.h = Number(data.height);
-        var scale = Math.min(w / tb.w, h / tb.h);
+        return tb;
+    }
+
+    static addAssetThumbChoose (parent: HTMLElement, aa: Record<string, unknown>, w: number, h: number, fcn: (e: MouseEvent, tb: LibraryThumb) => void) {
+        var data = Library.parseAssetData(aa);
+        var tb = Library.createThumbElement(parent, data);
+        var tw = tb.w!; var th = tb.h!;
+        var scale = Math.min(w / tw, h / th);
         var img = newHTML('img', undefined, tb) as HTMLImageElement;
         img.style.left = (9 * scaleMultiplier) + 'px';
         img.style.top = (7 * scaleMultiplier) + 'px';
         img.style.position = 'relative';
         img.style.height = (Number(data.height) * scale) + 'px';
         if (data.altmd5) {
-            IO.getAsset(data.altmd5 as string, drawMe);
-        }
-        function drawMe (dataurl: string) {
-            img.src = dataurl;
+            IO.getAsset(data.altmd5 as string, function (dataurl: string) {
+                img.src = dataurl;
+            });
         }
         tb.onmousedown = function (evt) {
             fcn(evt, tb);
@@ -241,27 +251,19 @@ export default class Library {
     }
 
     static addLocalThumbChoose (parent: HTMLElement, data: LibraryMediaItem, w: number, h: number, fcn: (e: MouseEvent, tb: LibraryThumb) => void) {
-        var tb = newHTML('div', 'assetbox off', parent);
-        var md5 = data.md5 as string;
-        tb.byme = nativeJr ? 1 : 0;
-        tb.setAttribute('id', md5);
-        tb.scale = (!data.scale) ? 0.5 : (data.scale as number);
-        tb.fieldname = data.name as string;
-        tb.w = Number(data.width);
-        tb.h = Number(data.height);
-
+        var tb = Library.createThumbElement(parent, data as Record<string, unknown>);
+        var tw = tb.w!; var th = tb.h!;
         var img = newHTML('img', undefined, tb) as HTMLImageElement;
-        var scale = Math.min(w / tb.w, h / tb.h);
-        img.style.height = tb.h * scale + 'px';
-        img.style.width = tb.w * scale + 'px';
-
-        img.style.left = Math.floor(((w - (scale * tb.w)) / 2) + (9 * scaleMultiplier)) + 'px';
-        img.style.top = Math.floor(((h - (scale * tb.h)) / 2) + (9 * scaleMultiplier)) + 'px';
+        var scale = Math.min(w / tw, h / th);
+        img.style.height = th * scale + 'px';
+        img.style.width = tw * scale + 'px';
+        img.style.left = Math.floor(((w - (scale * tw)) / 2) + (9 * scaleMultiplier)) + 'px';
+        img.style.top = Math.floor(((h - (scale * th)) / 2) + (9 * scaleMultiplier)) + 'px';
         img.style.position = 'relative';
 
         // Cached downsized-thumbnails are in pnglibrary
         var pngPath = MediaLib.path.replace('svg', 'png');
-        img.src = pngPath + IO.getFilename(md5) + '.png';
+        img.src = pngPath + IO.getFilename(data.md5 as string) + '.png';
 
         tb.onmousedown = function (evt: MouseEvent) {
             fcn(evt, tb);

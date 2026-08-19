@@ -420,12 +420,7 @@ export default class Paint {
             return;
         }
         e.preventDefault();
-        var t: EventTarget | null;
-        if (window.event) {
-            t = window.event.srcElement;
-        } else {
-            t = e.target;
-        }
+        var t = e.target;
         if (t == null) {
             return;
         }
@@ -911,12 +906,7 @@ export default class Paint {
         if (Camera.active) {
             return;
         }
-        var t: HTMLElement | null;
-        if (window.event) {
-            t = window.event.srcElement as HTMLElement;
-        } else {
-            t = e.target as HTMLElement;
-        }
+        var t: HTMLElement | null = e.target as HTMLElement;
         var b = 'swatchbucket' != t!.className;
         while (b) {
             t = t!.parentNode as HTMLElement | null;

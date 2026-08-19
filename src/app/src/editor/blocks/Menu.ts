@@ -1,7 +1,8 @@
 import BlockSpecs from './BlockSpecs';
 import type Block from './Block';
 import {scaleMultiplier, setProps, setCanvasSize, newHTML, isTouch,
-    newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly} from '../../utils/lib';
+    newDiv, getDocumentHeight, drawThumbnail, frame, globalx, globaly,
+    dprCenterTransform} from '../../utils/lib';
 
 let openMenu: HTMLElement | null = null;
 
@@ -65,9 +66,7 @@ export default class Menu {
         var scaledIconSize = iconSize * window.devicePixelRatio;
         setCanvasSize(micon, scaledIconSize, scaledIconSize);
         setProps(micon.style, {
-            webkitTransform: 'translate(' + (-scaledIconSize / 2) + 'px, ' + (-scaledIconSize / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ', ' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (scaledIconSize / 2) + 'px, ' + (scaledIconSize / 2) + 'px)'
+            webkitTransform: dprCenterTransform(scaledIconSize, scaledIconSize)
         });
         if (!img.complete) {
             img.onload = function () {

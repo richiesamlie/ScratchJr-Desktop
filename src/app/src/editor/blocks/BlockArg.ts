@@ -4,7 +4,7 @@ import Menu from './Menu';
 import Undo from '../ui/Undo';
 import {setCanvasSize, setProps, writeText, scaleMultiplier,
     newHTML, newDiv, newCanvas, getStringSize, isTouch,
-    newP, globalx, globaly} from '../../utils/lib';
+    newP, globalx, globaly, dprCenterTransform} from '../../utils/lib';
 import Localization from '../../utils/Localization';
 import type Block from './Block';
 import type Sprite from '../engine/Sprite';
@@ -168,10 +168,7 @@ export default class BlockArg {
         });
         var cnv = newCanvas(div, 0, 0, w * window.devicePixelRatio, h * window.devicePixelRatio, {
             position: 'absolute',
-            webkitTransform: 'translate(' + (-w * window.devicePixelRatio / 2) + 'px, '
-                + (-h * window.devicePixelRatio / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (w * window.devicePixelRatio / 2) + 'px, ' + (h * window.devicePixelRatio / 2) + 'px)'
+            webkitTransform: dprCenterTransform(w * window.devicePixelRatio, h * window.devicePixelRatio)
         });
         ctx = cnv.getContext('2d')!;
         var font = (12 * window.devicePixelRatio) + 'px ' + window.Settings!.blockArgFont;

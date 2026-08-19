@@ -875,10 +875,6 @@ export default class ScratchJr {
         return Number(val);
     }
 
-    static revokeInput (val: string) {
-        return val;
-    }
-
     static numEditDelete () {
         var val = activeFocus!.input.textContent;
         if (val.length != 0) {
@@ -968,29 +964,6 @@ export default class ScratchJr {
             return name;
         }
         return str;
-    }
-
-    /////////////////
-    //Application on the background
-
-
-    // XXX: does this ever happen?
-    // I'm pretty sure this is dead code -TM
-    static saveProjectState () {
-        ScratchAudio.sndFX('tap.wav');
-        if (frame.style.display == 'none') {
-            Paint.saveEditState(ScratchJr.stopServer);
-        } else {
-            ScratchJr.unfocus();
-            ScratchJr.stopStrips();
-            if (ScratchJr.isEditable() && currentProject && !Project.error && changed) {
-                Project.save(currentProject, ScratchJr.stopServer);
-            }
-        }
-    }
-
-    static stopServer () {
-        iOS.stopserver(iOS.trace);
     }
 
     /**

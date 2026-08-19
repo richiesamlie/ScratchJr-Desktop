@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('scratchjr', {
     io_getsettings: () => ipcRenderer.invoke('io_getsettings', null),
     io_gettextresource: (filename) => ipcRenderer.invoke('io_gettextresource', filename),
     io_getIsDebug: () => ipcRenderer.invoke('io_getIsDebug'),
+    io_getLang: () => ipcRenderer.invoke('io_getLang'),
 
     // ---- File I/O ----
     io_setfile: (name, contents) => ipcRenderer.invoke('io_setfile', { name, contents }),

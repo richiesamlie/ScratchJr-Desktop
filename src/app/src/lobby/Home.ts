@@ -221,12 +221,7 @@ export default class Home {
             shown = actionChild.style.visibility == 'visible';
         }
         if (e && shown) {
-            var t;
-            if (window.event) {
-                t = window.event.srcElement;
-            } else {
-                t = e.target;
-            }
+            var t = e.target;
             if ((t as HTMLElement).getAttribute('class') == 'closex') {
                 return 'delete';
             }

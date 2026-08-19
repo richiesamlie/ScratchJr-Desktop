@@ -2,7 +2,15 @@ import BlockSpecs from './BlockSpecs';
 import BlockArg from './BlockArg';
 import ScratchJr from '../ScratchJr';
 import type Sprite from '../engine/Sprite';
-import {setProps, setCanvasSize, scaleMultiplier} from '../../utils/lib';
+import {setProps, setCanvasSize, scaleMultiplier, dprCenterTransform} from '../../utils/lib';
+
+// Block dimensions (in unscaled pixels)
+const BLOCK_WIDTH_REPEAT = 176;
+const BLOCK_WIDTH_GOTOPAGE = 86;
+const BLOCK_WIDTH_START_END = 84;
+const BLOCK_WIDTH_DEFAULT = 76;
+const BLOCK_HEIGHT_REPEAT = 82;
+const BLOCK_HEIGHT_DEFAULT = 66;
 
 export default class Block {
     // Instance state built by the constructor and shape-drawing helpers
@@ -56,10 +64,7 @@ export default class Block {
             position: 'absolute',
             left: '0px',
             top: '0px',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
-                + (-this.blockshape.height / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: dprCenterTransform(this.blockshape.width, this.blockshape.height),
             pointerEvents: 'all'
         });
         this.addHighlight();
@@ -74,22 +79,22 @@ export default class Block {
 
     getWidth () {
         if (this.blocktype == 'repeat') {
-            return 176;
+            return BLOCK_WIDTH_REPEAT;
         }
         if (this.blocktype == 'gotopage') {
-            return 86;
+            return BLOCK_WIDTH_GOTOPAGE;
         }
         if (this.aStart || this.anEnd) {
-            return 84;
+            return BLOCK_WIDTH_START_END;
         }
-        return 76;
+        return BLOCK_WIDTH_DEFAULT;
     }
 
     getHeight () {
         if (this.blocktype == 'repeat') {
-            return 82;
+            return BLOCK_HEIGHT_REPEAT;
         }
-        return 66;
+        return BLOCK_HEIGHT_DEFAULT;
     }
 
     setBlockshapeFromSpecs (spec: unknown[], isPalette?: boolean, scale?: number) {
@@ -133,10 +138,7 @@ export default class Block {
             top: '4px',
             opacity: this.inpalette ? window.Settings!.paletteBlockShadowOpacity : 1,
             visibility: 'hidden',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
-                + (-this.blockshape.height / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: dprCenterTransform(this.blockshape.width, this.blockshape.height),
             pointerEvents: 'all'
         });
         setCanvasSize(this.shadow, this.blockshape.width, this.blockshape.height);
@@ -177,10 +179,7 @@ export default class Block {
             left: '0px',
             top: '0px',
             visibility: 'hidden',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2)
-                + 'px, ' + (-this.blockshape.height / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: dprCenterTransform(this.blockshape.width, this.blockshape.height),
             pointerEvents: 'all'
         });
         var ctx = this.shine.getContext('2d')!;
@@ -219,10 +218,7 @@ export default class Block {
             position: 'absolute',
             left: '0px',
             top: '0px',
-            webkitTransform: 'translate(' + (-this.blockshape.width / 2) + 'px, '
-                + (-this.blockshape.height / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (this.blockshape.width / 2) + 'px, ' + (this.blockshape.height / 2) + 'px)',
+            webkitTransform: dprCenterTransform(this.blockshape.width, this.blockshape.height),
             pointerEvents: 'all'
         });
         const iconNode = this.icon;
@@ -274,9 +270,7 @@ export default class Block {
             dy = Math.round(this.scale * 14 * window.devicePixelRatio);
             setProps(this.blockicon.style, {
                 position: 'absolute',
-                webkitTransform: 'translate(' + (-w / 2) + 'px, ' + (-h / 2) + 'px) '
-                    + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                    + 'translate(' + (w / 2) + 'px, ' + (h / 2) + 'px)'
+                webkitTransform: dprCenterTransform(w, h)
             });
             break;
           default:
@@ -534,9 +528,7 @@ export default class Block {
             (92 + this.hrubberband + 84) * scaleAndRatio,
             (82 + this.vrubberband) * scaleAndRatio);
         setProps(cnv.style, {
-            webkitTransform: 'translate(' + (-cnv.width / 2) + 'px, ' + (-cnv.height / 2) + 'px) '
-                + 'scale(' + (1 / window.devicePixelRatio) + ') '
-                + 'translate(' + (cnv.width / 2) + 'px, ' + (cnv.height / 2) + 'px)'
+            webkitTransform: dprCenterTransform(cnv.width, cnv.height)
         });
         var ctx = cnv.getContext('2d')!;
         // top line

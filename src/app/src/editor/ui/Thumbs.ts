@@ -87,11 +87,7 @@ export default class Thumbs {
         }
         e.preventDefault();
         e.stopPropagation();
-        if (window.event) {
-            Thumbs.t = window.event.srcElement;
-        } else {
-            Thumbs.t = e.target;
-        }
+        Thumbs.t = e.target;
         var tb = Thumbs.getType(Thumbs.t as HTMLElement, 'pagethumb');
         if (ScratchJr.shaking && ((e.target as HTMLElement).className == 'deletethumb')) {
             ScratchJr.clearSelection();
@@ -631,11 +627,7 @@ export default class Thumbs {
     static click (e: MouseEvent | TouchEvent, el: HTMLElement) {
         e.preventDefault();
         e.stopPropagation();
-        if (window.event) {
-            Thumbs.t = window.event.srcElement;
-        } else {
-            Thumbs.t = e.target;
-        }
+        Thumbs.t = e.target;
         el.setAttribute('class', ScratchJr.isEditable() ? 'spritethumb on' : 'spritethumb noneditable');
         Thumbs.clickOnSprite(e, el);
     }

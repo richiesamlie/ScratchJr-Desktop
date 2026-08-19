@@ -50,14 +50,25 @@ export default class Localization {
 
     // Include locale support files and load the messages
     // Call this when the app is initialized
-    static includeLocales (localizationRoot: string, whenDone: () => void) {
-        var localizationCookie = Cookie.get('localization');
+    static async includeLocales (localizationRoot: string, whenDone: () => void) {
+        // 1. CLI override (--lang=fr)
+        var cliLang: string | null = null;
+        try {
+            cliLang = await (window.scratchjr as unknown as { io_getLang: () => Promise<string | null> }).io_getLang();
+        } catch (_) { /* preload bridge not available */ }
 
-        if (localizationCookie === null) {
-            currentLocale = this.determineLocaleFromBrowser();
+        if (cliLang) {
+            currentLocale = cliLang;
         } else {
-            currentLocale = localizationCookie;
+            // 2. localStorage cookie
+            var localizationCookie = Cookie.get('localization');
+            if (localizationCookie === null) {
+                currentLocale = this.determineLocaleFromBrowser();
+            } else {
+                currentLocale = localizationCookie;
+            }
         }
+
         var topLevel = currentLocale.split('-')[0];
         if (topLevel === 'zh') {
             // need to handle locale in addition to language code for Chinese,
