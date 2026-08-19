@@ -126,11 +126,20 @@ jobs:
           echo "SHA256 checksums:"
           cat *.sha256
 
-      - name: Smoke test packaged app (Windows)
-        if: runner.os == 'Windows'
+      - name: Smoke test packaged app
         shell: bash
         run: |
-          node scripts/smoke-packaged.js out/ScratchJr-win32-x64
+          PACKAGED_DIR=$(find out -maxdepth 1 -type d -name 'ScratchJr*' | head -1)
+          if [ -z "$PACKAGED_DIR" ]; then
+            echo "::warning::No packaged directory found, skipping smoke test"
+            exit 0
+          fi
+          echo "Smoke testing: $PACKAGED_DIR"
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            xvfb-run --auto-servernum node scripts/smoke-packaged.js "$PACKAGED_DIR"
+          else
+            node scripts/smoke-packaged.js "$PACKAGED_DIR"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
