@@ -43,35 +43,7 @@ Each release includes SHA256 checksums for integrity verification.
 
 ### 🌍 Locale & language
 
-- **`--lang` CLI flag** — set the language at launch, bypassing browser detection and user settings:
-
-  ```bash
-  ./ScratchJr --lang=fr    # French
-  ./ScratchJr --lang=de    # German
-  ./ScratchJr --lang=zh-cn # Simplified Chinese
-  ```
-
-  Locale resolution order:
-  1. `--lang=xx` flag (highest priority)
-  2. User's previous selection (localStorage)
-  3. System locale via `navigator.language`
-  4. Fallback to English
-
-  Ideal for **school fleet deployments** — create a `.desktop` file or wrapper script so students always start in the right language:
-
-  ```ini
-  [Desktop Entry]
-  Exec=/opt/ScratchJr/ScratchJr --lang=fr
-  ```
-
-### 🔧 Code quality
-
-- **Deduplicated runtime primitives** — extracted shared helpers for movement, turning, fading, and resizing, cutting ~100 lines of duplicated logic
-- **Declarative block registry** — replaced 30+ line imperative `Prims.init()` with an object literal
-- **Centralized DPR transform** — single `dprCenterTransform()` helper replaces repeated canvas boilerplate across 3 files
-- **Named constants** — block dimensions use named constants instead of magic numbers
-- **Dead code removed** — `saveProjectState`, `revokeInput`, `Number.prototype.mod` and other unused artifacts cleaned up
-- **Deprecated DOM patterns removed** — `window.event.srcElement` fallbacks replaced with standard `e.target` across 6 files
+- **`--lang` CLI flag** — set the language at launch (e.g. `./ScratchJr --lang=fr`), ideal for fleet deployments
 
 ### ⚡ Built on a codebase you can trust
 
