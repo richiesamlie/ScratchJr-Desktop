@@ -41,10 +41,42 @@ Each release includes SHA256 checksums for integrity verification.
 - **Content Security Policy** on every page, SQL injection guards, navigation locked to the app root
 - Upgraded **Electron 42** — modern Chromium, Node 22/26 compatible
 
+### 🌍 Locale & language
+
+- **`--lang` CLI flag** — set the language at launch, bypassing browser detection and user settings:
+
+  ```bash
+  ./ScratchJr --lang=fr    # French
+  ./ScratchJr --lang=de    # German
+  ./ScratchJr --lang=zh-cn # Simplified Chinese
+  ```
+
+  Locale resolution order:
+  1. `--lang=xx` flag (highest priority)
+  2. User's previous selection (localStorage)
+  3. System locale via `navigator.language`
+  4. Fallback to English
+
+  Ideal for **school fleet deployments** — create a `.desktop` file or wrapper script so students always start in the right language:
+
+  ```ini
+  [Desktop Entry]
+  Exec=/opt/ScratchJr/ScratchJr --lang=fr
+  ```
+
+### 🔧 Code quality
+
+- **Deduplicated runtime primitives** — extracted shared helpers for movement, turning, fading, and resizing, cutting ~100 lines of duplicated logic
+- **Declarative block registry** — replaced 30+ line imperative `Prims.init()` with an object literal
+- **Centralized DPR transform** — single `dprCenterTransform()` helper replaces repeated canvas boilerplate across 3 files
+- **Named constants** — block dimensions use named constants instead of magic numbers
+- **Dead code removed** — `saveProjectState`, `revokeInput`, `Number.prototype.mod` and other unused artifacts cleaned up
+- **Deprecated DOM patterns removed** — `window.event.srcElement` fallbacks replaced with standard `e.target` across 6 files
+
 ### ⚡ Built on a codebase you can trust
 
 - **All 56 renderer files** migrated to TypeScript — full `strict` mode, **zero errors, zero `any`**
-- **98 tests** — including a jsdom harness covering the project file format (save/load round-trips), runtime primitives, and editor math
+- **103 tests** — including a jsdom harness covering the project file format (save/load round-trips), runtime primitives, and editor math
 - **Reliable releases** — the renderer bundle is built before every package (a CI bug once shipped apps without it), all six platforms built natively with checksums
 
 Maintained through **Vibe Coding** — AI-assisted development where an agent does the analysis and implementation, a human sets the goals and reviews the results.
