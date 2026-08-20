@@ -10,8 +10,8 @@ function readSource(relPath) {
 }
 
 describe('startup layout bootstrap IPC contract', () => {
-    const preloadSource = readSource('src/preload.js');
-    const mainSource = readSource('src/main/ipc-handlers.js');
+    const preloadSource = readSource('src/preload.ts');
+    const mainSource = readSource('src/main/ipc-handlers.ts');
     const electronClientSource = readSource('src/electronClient.js');
     const libSource = readSource('src/app/src/utils/lib.ts');
     const appEntrySource = readSource('src/app/appEntry.js');
@@ -33,7 +33,7 @@ describe('startup layout bootstrap IPC contract', () => {
 
     it('makes preprocessAndLoad async and awaits IPC', () => {
         expect(libSource).toContain('export async function preprocessAndLoad');
-        expect(libSource).toContain('responseText = await window.tablet.io_gettextresource(url);');
+        expect(libSource).toMatch(/responseText = await .*window\.tablet.*\.io_gettextresource\(url\)/);
     });
 
     it('makes preprocessAndLoadCss async and awaits preprocessAndLoad', () => {

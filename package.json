@@ -1,9 +1,9 @@
 {
     "name": "ScratchJr",
     "productName": "ScratchJr",
-    "version": "1.5.6",
+    "version": "1.5.7",
     "description": "ScratchJr Desktop Edition",
-    "main": "src/main.js",
+    "main": "build/main.js",
     "scripts": {
         "start": "electron-forge start",
         "debugMain": "electron-forge start -i",
@@ -16,6 +16,7 @@
         "lint": "eslint src --color",
         "test": "vitest run",
         "typecheck": "tsc --noEmit",
+        "build:main": "tsc -p tsconfig.main.json",
         "build:renderer": "node scripts/build-renderer.js",
         "postinstall": "node scripts/patch-for-node26.js && node scripts/build-renderer.js"
     },
@@ -93,8 +94,8 @@
                         "tests/**",
                         "vitest.config.*",
                         "src/main/**",
-                        "src/main.js",
-                        "src/preload.js",
+                        "src/main.ts",
+                        "src/preload.ts",
                         "src/lib/**",
                         "src/app/**"
                     ]

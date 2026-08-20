@@ -11,7 +11,7 @@ const SQL_FORBIDDEN_KEYWORDS = [
     'replace', 'vacuum', 'begin', 'commit', 'rollback', 'union',
 ];
 
-function normalizeAndValidateSqlPayload(jsonPayload: string | Record<string, unknown>) {
+export function normalizeAndValidateSqlPayload(jsonPayload: string | Record<string, unknown>): { stmt: string; values: unknown[] } {
     const parsed = (typeof jsonPayload === 'string') ? JSON.parse(jsonPayload) : jsonPayload;
     if (!parsed || typeof parsed !== 'object') {
         throw new Error('invalid sql payload');
@@ -46,4 +46,4 @@ function normalizeAndValidateSqlPayload(jsonPayload: string | Record<string, unk
     };
 }
 
-module.exports = { normalizeAndValidateSqlPayload, SQL_ALLOWED_VERBS, SQL_FORBIDDEN_KEYWORDS };
+export { SQL_ALLOWED_VERBS, SQL_FORBIDDEN_KEYWORDS };

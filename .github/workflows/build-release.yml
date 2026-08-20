@@ -127,16 +127,17 @@ jobs:
           cat *.sha256
 
       - name: Smoke test packaged app
+        if: (runner.os == 'Windows' || runner.os == 'Linux') && !contains(matrix.release_suffix, 'arm64')
         shell: bash
         run: |
           PACKAGED_DIR=$(find out -maxdepth 1 -type d -name 'ScratchJr*' | head -1)
           if [ -z "$PACKAGED_DIR" ]; then
-            echo "::warning::No packaged directory found, skipping smoke test"
-            exit 0
+            echo "::error::No packaged directory found"
+            exit 1
           fi
           echo "Smoke testing: $PACKAGED_DIR"
           if [ "${{ runner.os }}" = "Linux" ]; then
-            xvfb-run --auto-servernum node scripts/smoke-packaged.js "$PACKAGED_DIR"
+            ELECTRON_DISABLE_SANDBOX=1 xvfb-run --auto-servernum node scripts/smoke-packaged.js "$PACKAGED_DIR"
           else
             node scripts/smoke-packaged.js "$PACKAGED_DIR"
           fi

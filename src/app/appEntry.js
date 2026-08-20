@@ -11,6 +11,7 @@ import {editorMain} from './src/entry/editor';
 import {gettingStartedMain} from './src/entry/gettingstarted';
 import {inappInterfaceGuide, inappAbout, inappBlocksGuide, inappPaintEditorGuide} from './src/entry/inapp';
 
+/** @param {string} settingsRoot @param {() => void} whenDone */
 function loadSettings (settingsRoot, whenDone) {
 	IO.requestFromServer(settingsRoot + 'settings.json', (result) => {
 		window.Settings = JSON.parse(result);
@@ -20,10 +21,11 @@ function loadSettings (settingsRoot, whenDone) {
 
 
 // App-wide entry-point
-window.onload = () => loadPage(document.body.dataset.scratchjrPage || window.scratchJrPage).catch((err) => console.error('loadPage failed:', err));
+window.onload = () => loadPage(document.body.dataset.scratchjrPage || window.scratchJrPage || '').catch((err) => console.error('loadPage failed:', err));
 
 
 
+/** @param {string} page */
 export async function loadPage(page) {
 	// Function to be called after settings, locale strings, and Media Lib
 	// are asynchronously loaded. This is overwritten per HTML page below.

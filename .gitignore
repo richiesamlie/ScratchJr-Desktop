@@ -1,5 +1,6 @@
 node_modules
 out
+build
 src/app/dist
 .DS_Store
 buglist.txt

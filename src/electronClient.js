@@ -2,7 +2,7 @@
 // It communicates with the main process through the preload bridge (window.scratchjr).
 // Direct require('electron') is no longer allowed — nodeIntegration is off.
 
-const bridge = window.scratchjr;
+const bridge = /** @type {ScratchJrBridge} */ (window.scratchjr);
 
 
 const DEBUG = false;
@@ -16,6 +16,7 @@ const DEBUG_AUDIO = DEBUG && true;           // audio interface
 const DEBUG_AUDIOMETER = DEBUG &&  false;  // volume feedback
 const DEBUG_WRITE_ERRLOG = DEBUG && true;
 
+/** @type {boolean | undefined} */
 let hasCapturedErrors;
 
 // Debugging the electron process:
@@ -23,6 +24,7 @@ let hasCapturedErrors;
 // ============================================================================
 // use one wrapper for debugging so we can turn it on and off at a
 // central place
+/** @param {...unknown} args */
 function debugLog(...args) {
     if (DEBUG) {
         console.log(...args); // eslint-disable-line no-console
@@ -57,13 +59,20 @@ class ElectronDesktopInterface {
 
 
     constructor () {
+        /** @type {Record<string, HTMLAudioElement>} */
         this.currentAudio = {};
+        /** @type {AudioCapture | null} */
+        this.audioCaptureElement = null;
+        /** @type {CameraPickerDialog | null} */
+        this.cameraPickerDialog = null;
     }
 
+    /** @param {string} json */
     async database_stmt(json) {
         return await bridge.database_stmt(json);
 
     }
+    /** @param {string} json */
     async database_query(json) {
         if (DEBUG_DATABASE) debugLog('beginning database_query', json);
         let res = await bridge.database_query(json);
@@ -81,6 +90,7 @@ class ElectronDesktopInterface {
 
     }
 
+    /** @param {string} file */
     async io_getmedia(file){
 
         if (DEBUG_FILEIO) debugLog('io_getmedia', file);
@@ -88,6 +98,7 @@ class ElectronDesktopInterface {
 
     }
 
+    /** @param {string} key @param {number} offset @param {number} length */
     async io_getmediadata(key, offset, length){
 
         if (DEBUG_FILEIO) debugLog('io_getmediadata', key, offset, length);
@@ -95,12 +106,14 @@ class ElectronDesktopInterface {
 
     }
 
+    /** @param {string} key */
     async io_getmediadone(key){
 
         if (DEBUG_FILEIO) debugLog('io_getmediadone', key);
         return await bridge.io_getmediadone(key);
 
     }
+    /** @param {string} file @param {string} key */
     async io_getmedialen(file, key){
 
         if (DEBUG_FILEIO) debugLog('io_getmedialen', file, key);
@@ -108,30 +121,35 @@ class ElectronDesktopInterface {
 
     }
 
+    /** @param {string} str @param {string} ext */
     async io_setmedia(str,  ext){
         if (DEBUG_FILEIO)  debugLog('io_setmedia', str, ext);
         return await bridge.io_setmedia(str, ext);
 
     }
 
+    /** @param {string} str @param {string} name @param {string} ext */
     async io_setmedianame(str, name, ext){
         if (DEBUG_FILEIO) debugLog('io_setmedianame', name, ext);
 
         return await bridge.io_setmedianame(str, name, ext);
     }
 
+    /** @param {string} str */
     async io_getmd5(str){
         if (DEBUG_FILEIO) debugLog('io_getmd5', str);
         return (str) ? await bridge.io_getmd5(str) : null;
     }
 
 
+    /** @param {string} str */
     async io_remove(str){
         if (DEBUG_NYI)  debugLog('io_remove - NYI', str);
         return await bridge.io_remove(str);
 
     }
 
+    /** @param {string} str */
     async io_cleanassets(str){
         if (DEBUG_NYI) {
             debugLog('io_cleanassets - NYI', str);
@@ -141,15 +159,17 @@ class ElectronDesktopInterface {
     }
 
 
+    /** @param {string} dir @param {string} name */
     async io_registersound(dir, name) {
         if (!this.currentAudio[name]) {
             let dataUri = await bridge.io_getAudioData(name);
-            this.loadSoundFromDataURI(name, dataUri);
+            this.loadSoundFromDataURI(name, dataUri || '');
 
         }
 
     }
 
+    /** @param {string} name @param {string} dataUri */
     loadSoundFromDataURI(name, dataUri) {
         if (dataUri && name) {
             let audio = new window.Audio(dataUri);
@@ -157,7 +177,7 @@ class ElectronDesktopInterface {
             audio.onended = function() {
                 // we need to tell ScratchJR the sound is done
                 // so that it will progress to the next block.
-                iOS.soundDone(name); // eslint-disable-line no-undef
+                /** @type {any} */ (window).iOS.soundDone(name); // eslint-disable-line no-undef
 
             };
             
@@ -165,6 +185,7 @@ class ElectronDesktopInterface {
         }
     }
 
+    /** @param {string} str */
     async io_getfile(str){
         if (DEBUG_FILEIO) debugLog('io_getfile', str);
 
@@ -173,6 +194,7 @@ class ElectronDesktopInterface {
 
     }
 
+    /** @param {string} filename */
     async io_gettextresource(filename){
         if (DEBUG_RESOURCEIO) debugLog('io_gettextresource', filename);
 
@@ -183,6 +205,7 @@ class ElectronDesktopInterface {
 
 
 
+    /** @param {string} name @param {string} btoa_str */
     async io_setfile(name, btoa_str){
         if (DEBUG_FILEIO)  debugLog('io_setfile', name, btoa_str);
 
@@ -197,13 +220,14 @@ class ElectronDesktopInterface {
             this.audioCaptureElement = new AudioCapture();
             // this is mainly used for debugging purposes
             // so we can test when there is no microphone.
-            this.audioCaptureElement.isRecordingPermitted = true;
+            /** @type {any} */ (this.audioCaptureElement).isRecordingPermitted = true;
              
         }
         return this.audioCaptureElement;
     }
 
     // sounds
+    /** @param {string} name */
     io_playsound(name){
         if (DEBUG_AUDIO) debugLog('io_playsound', name);
 
@@ -214,7 +238,7 @@ class ElectronDesktopInterface {
          	// tell scratch the empty sound has finished - otherwise
          	// the green blocks will not progress
          	setTimeout(function() {
-         		iOS.soundDone(name); // eslint-disable-line no-undef 
+         		/** @type {any} */ (window).iOS.soundDone(name); // eslint-disable-line no-undef 
          	}, 1);
          
             return;
@@ -243,6 +267,7 @@ class ElectronDesktopInterface {
     }
 
 
+    /** @param {string} name */
     io_stopsound(name){
         if (DEBUG_AUDIO) debugLog('io_stopsound', name);
 
@@ -275,7 +300,7 @@ class ElectronDesktopInterface {
 
     }
 
-    /** called when the tickmark is chosen in the record dialog*/
+    /** called when the tickmark is chosen in the record dialog @param {string} keep */
     recordsound_recordclose(keep) {
 
 		try {
@@ -292,8 +317,8 @@ class ElectronDesktopInterface {
 					let fileReader = new FileReader();
 					fileReader.onload = function () {
 						// saving new sound...  will save as a webm file.
-						electronDesktopInterface.io_setmedianame(fileReader.result, filename, 'webm');
-						electronDesktopInterface.loadSoundFromDataURI(filename + '.webm', fileReader.result);
+						electronDesktopInterface.io_setmedianame(/** @type {string} */ (fileReader.result), filename, 'webm');
+						electronDesktopInterface.loadSoundFromDataURI(filename + '.webm', /** @type {string} */ (fileReader.result));
 			
 					};
 					fileReader.readAsDataURL(blob);
@@ -334,6 +359,7 @@ class ElectronDesktopInterface {
         return 'desktop';
     }
 
+    /** @param {string} category @param {string} action @param {string} usageLabel @param {number} value */
     analyticsEvent(category, action, usageLabel, value) {
         if (DEBUG_NYI) debugLog('Analytics Event!', category, action, usageLabel, value);
     }
@@ -348,10 +374,12 @@ class ElectronDesktopInterface {
         }
 
     }
+    /** @param {string} mode */
     scratchjr_choosecamera(mode) {
         if (DEBUG_CAMERA) debugLog('scratchjr_choosecamera NYI', mode);
     }
 
+    /** @param {() => void} whenDone */
     scratchjr_captureimage(whenDone) {
         if (DEBUG_CAMERA) debugLog('scratchjr_captureimage NYI', whenDone);
 
@@ -361,7 +389,7 @@ class ElectronDesktopInterface {
            if (imgData) {
                 let base64resultNoDataPrefix = imgData.split(',')[1];
 
-                Camera.processimage(base64resultNoDataPrefix); // eslint-disable-line no-undef
+                /** @type {any} */ (window).Camera.processimage(base64resultNoDataPrefix); // eslint-disable-line no-undef
            }
 
 
@@ -369,11 +397,13 @@ class ElectronDesktopInterface {
 
     }
 
+    /** @param {...unknown} args */
     scratchjr_cameracheck(...args) {
         if (DEBUG_CAMERA || DEBUG_NYI) debugLog('scratchjr_cameracheck', args);
 
         return true;
     }
+    /** @param {string} str */
     scratchjr_startfeed(str) {
         if (DEBUG_CAMERA) debugLog('scratchjr_startfeed', str);
         let data = JSON.parse(str);
@@ -397,58 +427,26 @@ class ElectronDesktopInterface {
 
 
 
-/* =========================
-    wrappers around 'getUserMedia'
-================================*/
-
-(function() { // eslint-disable-line wrap-iife
-
-    let promisifiedOldGUM = function(constraints, successCallback, errorCallback) { // eslint-disable-line no-unused-vars
-
-        // First get ahold of getUserMedia, if present
-        let getUserMedia = (navigator.getUserMedia
-                || navigator.webkitGetUserMedia
-                || navigator.mozGetUserMedia
-                || navigator.msGetUserMedia);
-
-        // Some browsers just don't implement it - return a rejected promise with an error
-        // to keep a consistent interface
-        if (!getUserMedia) {
-            return Promise.reject(new Error('getUserMedia is not implemented in this browser')); // eslint-disable-line no-undef
-        }
-
-        // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-        return new Promise(function(successCallback, errorCallback) { // eslint-disable-line no-undef
-            getUserMedia.call(navigator, constraints, successCallback, errorCallback);
-        });
-
-    };
-
-    // Older browsers might not implement mediaDevices at all, so we set an empty object first
-    if (navigator.mediaDevices === undefined) {
-        navigator.mediaDevices = {};
-    }
-
-    // Some browsers partially implement mediaDevices. We can't just assign an object
-    // with getUserMedia as it would overwrite existing properties.
-    // Here, we will just add the getUserMedia property if it's missing.
-    if (navigator.mediaDevices.getUserMedia === undefined) {
-        navigator.mediaDevices.getUserMedia = promisifiedOldGUM;
-    }
-
-})();
-
-// let audioCaptureElement, videoCaptureElement;
 
 
 class AudioCapture {
     constructor  () {
         this.audioCtx = new (window.AudioContext || webkitAudioContext)(); // eslint-disable-line no-undef
         this.audioElement = new window.Audio();
-		this.audioPlaybackElement = null;
-		this.errorHandler = null;
+		this.audioPlaybackElement = /** @type {HTMLAudioElement | null} */ (null);
+		this.errorHandler = /** @type {((e: unknown) => void) | null} */ (null);
+        /** @type {boolean} */ this.isRecordingPermitted = false;
+        /** @type {boolean} */ this.isDisconnected = false;
+        /** @type {any} */ this.id = undefined;
+        /** @type {any} */ this.chunks = undefined;
+        /** @type {MediaStream | null} */ this.currentStream = null;
+        /** @type {MediaRecorder | null} */ this.mediaRecorder = null;
+        /** @type {Blob | null} */ this.savedBlob = null;
+        /** @type {any} */ this.audioProcessor = null;
+        /** @type {MediaStreamAudioSourceNode | null} */ this.mediaStreamSource = null;
     }
 
+    /** @param {boolean} [isNewRecording] */
     getId (isNewRecording) {
 
         if (isNewRecording || !this.id) {
@@ -461,6 +459,7 @@ class AudioCapture {
         }
         return this.id;
     }
+    /** @param {MediaStreamConstraints} [constraints] */
     startRecord(constraints) {
     	this.savedBlob = null;
     	
@@ -473,8 +472,9 @@ class AudioCapture {
         return this.getId(/*isNewRecording*/ true) + '.webm';
     }
 
+    /** @param {MediaStream} stream */
     beginStartRecord(stream) {
-    	if (!this.isRecordingPermitted) {
+    	if ((/** @type {any} */ (this)).isRecordingPermitted === false) {
     		throw (new Error('Recording audio is turned off'));
     	}
     	this.chunks = null;
@@ -485,6 +485,7 @@ class AudioCapture {
 
     }
 
+    /** @param {unknown} e */
     onError(e) {
         debugLog(e);
         if (this.errorHandler) {
@@ -493,6 +494,7 @@ class AudioCapture {
         
     }
 
+    /** @param {BlobEvent} e */
     onRecordData (e) {
         if (!this.chunks) {
             this.chunks = [];
@@ -565,18 +567,19 @@ class AudioCapture {
       
 		if (blob) {
 			let fileReader = new FileReader();
-			fileReader.onload = function () {
-				this.audioPlaybackElement = new Audio(fileReader.result);
-				this.audioPlaybackElement.volume = 0.8; // don't oversaturate speakers;
-				this.tryPlayAudio(this.audioPlaybackElement);
-			}.bind(this);
+			fileReader.onload = () => {
+				const capture = this;
+				capture.audioPlaybackElement = new Audio(/** @type {string} */ (fileReader.result));
+				capture.audioPlaybackElement.volume = 0.8; // don't oversaturate speakers;
+				capture.tryPlayAudio(capture.audioPlaybackElement);
+			};
 			fileReader.readAsDataURL(blob);
 		}
 
         
     }
-	/** calls play on an HTML audio element, takes care of promise */
-	tryPlayAudio(audioElement) {
+	/** calls play on an HTML audio element, takes care of promise */    /** @param {HTMLAudioElement} audioElement */
+    tryPlayAudio(audioElement) {
 		try {
             let playPromise = audioElement.play();
             if (playPromise !== undefined) {
@@ -590,7 +593,7 @@ class AudioCapture {
 
    		 // https://github.com/cwilso/volume-meter/blob/master/volume-meter.js
 
-        if (this.isDisconnected) return 0;
+        if (/** @type {any} */ (this).isDisconnected) return 0;
 
         if (!this.audioProcessor && this.currentStream) {
             this.startAudioMeter();
@@ -608,6 +611,7 @@ class AudioCapture {
     /** starts processing audio stream for mic volume
     https://github.com/cwilso/volume-meter/blob/master/volume-meter.js
     */
+    /** @param {number} [clipLevel] @param {number} [averaging] @param {number} [clipLag] */
     startAudioMeter(clipLevel, averaging, clipLag) {
 
         if (!this.currentStream) {
@@ -623,14 +627,14 @@ class AudioCapture {
            // "It is recommended for authors to not specify this buffer size and allow the implementation to pick a good
     	   // buffer size to balance between latency and audio quality."
            // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createScriptProcessor
-            let processor = audioContext.createScriptProcessor((typeof AudioContext != 'undefined' ? null : 512), 1, 1);
+            let processor = audioContext.createScriptProcessor((typeof AudioContext != 'undefined' ? undefined : 512), 1, 1);
             processor.onaudioprocess = this.processVolume.bind(this);
             processor.clipping = false;
-            processor.lastClip = 0;
-            processor.volume = 0;
-            processor.clipLevel = clipLevel || 0.98;
-            processor.averaging = averaging || 0.95;
-            processor.clipLag = clipLag || 750;
+            /** @type {any} */ (processor).lastClip = 0;
+            /** @type {any} */ (processor).volume = 0;
+            /** @type {any} */ (processor).clipLevel = clipLevel || 0.98;
+            /** @type {any} */ (processor).averaging = averaging || 0.95;
+            /** @type {any} */ (processor).clipLag = clipLag || 750;
 
             // this will have no effect, since we don't copy the input to the output,
             // but works around a current Chrome bug.
@@ -641,7 +645,7 @@ class AudioCapture {
                 if (!processor.clipping) {
                     return false;
                 }
-                if ((processor.lastClip + processor.clipLag) < window.performance.now()) {
+                if ((/** @type {any} */ (processor).lastClip + /** @type {any} */ (processor).clipLag) < window.performance.now()) {
                     processor.clipping = false;
                 }
                 return processor.clipping;
@@ -661,8 +665,8 @@ class AudioCapture {
     }
     stopAudioMeter() {
         if (this.audioProcessor) {
-            this.audioProcessor.shutdown();
-            this.mediaStreamSource.disconnect(this.audioProcessor);
+            if (this.audioProcessor.shutdown) this.audioProcessor.shutdown();
+            if (this.mediaStreamSource) this.mediaStreamSource.disconnect(this.audioProcessor);
             this.audioProcessor = null;
         }
 
@@ -674,6 +678,7 @@ class AudioCapture {
         @param {object} event from audioContext.createScriptProcessor.onaudioprocess
         @this {AudioProcessor} audioProcessor
     */
+    /** @param {AudioProcessingEvent} event */
     processVolume(event) {
 
         let buf = event.inputBuffer.getChannelData(0);
@@ -710,10 +715,11 @@ This class opens a video stream using the webcam.
 */
 
 class VideoCapture {
+    /** @param {HTMLVideoElement} [videoElement] */
     constructor (videoElement) {
         // https://www.html5rocks.com/en/tutorials/getusermedia/intro/
         this.videoElement = videoElement || document.createElement('video');
-		this.errorHandler = null;
+		this.errorHandler = /** @type {((e: unknown) => void) | null} */ (null);
     }
 
 
@@ -729,6 +735,7 @@ class VideoCapture {
         }
         return this.id;
     }
+    /** @param {MediaStreamConstraints} [constraints] */
     startRecord(constraints) {
         constraints = constraints || { video: true, audio: false };
         if (navigator.mediaDevices.getUserMedia) {
@@ -757,7 +764,7 @@ class VideoCapture {
                 }
                 this.videoElement.pause();
 
-                this.videoElement.src = null;
+                this.videoElement.src = /** @type {any} */ (null);
 
             }
         } catch (e) {
@@ -765,11 +772,12 @@ class VideoCapture {
         }
     }
 
+    /** @param {MediaStream} stream */
     beginStartRecord(stream) {
         this.videoElement.srcObject = stream;
         this.currentStream = stream;
 
-		if (!this.isRecordingPermitted) {
+		if ((/** @type {any} */ (this)).isRecordingPermitted === false) {
 			this.stopRecord();
 			throw new Error('Recording video is not permitted.');
 		}
@@ -777,6 +785,7 @@ class VideoCapture {
 		
     }
 
+    /** @param {unknown} e */
     onError(e) {
         debugLog(e);
         if (!this.inOnError) {
@@ -796,9 +805,10 @@ class VideoCapture {
 
 
     /** takes a picture of the current video feed and returns a data: url in png format */
+    /** @param {{x:number,y:number,width:number,height:number}} cameraRect @param {boolean} isMirrored */
     snapshot(cameraRect, isMirrored) {
 
-        if (!this.currentStream || !this.isRecordingPermitted) return null;
+        if (!this.currentStream ||     /** @type {any} */ (this).isRecordingPermitted === false) return null;
 
 
         // make a canvas to draw the current video frame to
@@ -817,16 +827,16 @@ class VideoCapture {
         // draw the video to the canvas, then convert to an image.
         let ctx = canvas.getContext('2d');
 
-        if (isMirrored) {
-            // mirror the context so that the image draws reversed too
-            ctx.translate(w, 0);
-            ctx.scale(-1, 1);
+        if (ctx) {
+            if (isMirrored) {
+                // mirror the context so that the image draws reversed too
+                ctx.translate(w, 0);
+                ctx.scale(-1, 1);
+            }
+
+            ctx.drawImage(this.videoElement, 0, 0, cameraRect.width, cameraRect.height);
         }
 
-        ctx.drawImage(this.videoElement, 0, 0, cameraRect.width, cameraRect.height);
-
-
-     
         let data =  canvas.toDataURL('image/png');
         return data;
 
@@ -836,6 +846,7 @@ class VideoCapture {
 
 class CameraPickerDialog {
 
+    /** @param {any} data */
     constructor(data) {
         this.shapeData = data;
         this.isMirrored = true;
@@ -872,7 +883,7 @@ class CameraPickerDialog {
             img.src = this.shapeData.image;
             this.cameraPickerDiv.appendChild(img);
 
-            document.getElementById('backdrop').appendChild(this.cameraPickerDiv);
+            /** @type {HTMLElement} */ (document.getElementById('backdrop')).appendChild(this.cameraPickerDiv);
 
             this.videoElement = document.getElementById('CameraPickerDialog-cameraFeed');
             this.maskImg = document.getElementById('CameraPickerDialog-maskImg');
@@ -880,18 +891,18 @@ class CameraPickerDialog {
 
             // Similar to ScratchJR.m openfeed
             // camera rect is just the small opening: x,y,width,height
-            this.layoutDiv(this.videoElement, this.shapeData.x, this.shapeData.y, this.shapeData.width, this.shapeData.height);
+            this.layoutDiv(/** @type {HTMLElement} */ (this.videoElement), this.shapeData.x, this.shapeData.y, this.shapeData.width, this.shapeData.height);
 
             // maskImg is a workspace sized image to display over the camera so you can see the rest
             // of the drawing.  e.g. if you're only filling in the cat's head, this image
             // is everything (graph paper, cat body) but the cat's head.
 
             // maskedImg rect is: mx,my,mw,mh
-            this.layoutDiv(this.maskImg, this.shapeData.mx, this.shapeData.my, this.shapeData.mw, this.shapeData.mh);
+            this.layoutDiv(/** @type {HTMLElement} */ (this.maskImg), this.shapeData.mx, this.shapeData.my, this.shapeData.mw, this.shapeData.mh);
 
 
-            this.videoCaptureElement = new VideoCapture(this.videoElement);
-            this.videoCaptureElement.isRecordingPermitted = true;
+            this.videoCaptureElement = new VideoCapture(/** @type {HTMLVideoElement} */ (this.videoElement));
+            /** @type {any} */ (this.videoCaptureElement).isRecordingPermitted = true;
             this.videoCaptureElement.startRecord({video: { width: this.shapeData.width, height: this.shapeData.height }});
 
 
@@ -900,6 +911,7 @@ class CameraPickerDialog {
 
     }
 
+    /** @param {HTMLElement} el @param {number} x @param {number} y @param {number} w @param {number} h */
     layoutDiv(el, x, y, w, h) {
         try {
             el.style.position = 'absolute';
@@ -936,7 +948,7 @@ class CameraPickerDialog {
             this.videoCaptureElement.stopRecord();
             this.videoCaptureElement = null;
 
-            this.cameraPickerDiv.remove();
+            /** @type {HTMLDivElement} */ (this.cameraPickerDiv).remove();
 
             this.cameraPickerDiv = null;
             this.videoElement = null;
@@ -974,4 +986,4 @@ bridge.onKeyboardShortcut(function(action) {
   }
 });
 
-window.tablet = new ElectronDesktopInterface();
+/** @type {any} */ (window).tablet = new ElectronDesktopInterface();

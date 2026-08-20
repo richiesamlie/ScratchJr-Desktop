@@ -27,12 +27,36 @@ const FATAL_PATTERNS = [
 ];
 
 const packagedDir = path.resolve(process.argv[2] || 'out/ScratchJr-win32-x64');
-const exeName = process.platform === 'win32' ? 'ScratchJr.exe' : 'ScratchJr';
-const exePath = path.join(packagedDir, exeName);
-if (!fs.existsSync(exePath)) {
-    console.error(`FAIL: packaged executable not found at ${exePath}`);
+
+function findExecutable(dir) {
+    // Windows: direct .exe
+    if (process.platform === 'win32') {
+        const winPath = path.join(dir, 'ScratchJr.exe');
+        if (fs.existsSync(winPath)) return winPath;
+    }
+
+    // macOS: .app bundle -> Contents/MacOS/ScratchJr
+    if (process.platform === 'darwin') {
+        const appPath = path.join(dir, 'ScratchJr.app', 'Contents', 'MacOS', 'ScratchJr');
+        if (fs.existsSync(appPath)) return appPath;
+    }
+
+    // Linux or fallback: bare executable
+    const barePath = path.join(dir, 'ScratchJr');
+    if (fs.existsSync(barePath)) return barePath;
+
+    return null;
+}
+
+const exePath = findExecutable(packagedDir);
+if (!exePath) {
+    console.error(`FAIL: packaged executable not found in ${packagedDir}`);
     process.exit(1);
 }
+
+// Linux CI: disable Chrome sandbox (no root/SUID available in CI)
+const isLinux = process.platform === 'linux';
+const spawnArgs = isLinux ? ['--no-sandbox'] : [];
 
 let bootSeen = false;
 let fatalHit = null;
@@ -40,7 +64,7 @@ const collected = [];
 let postBootTimer = null;
 let settled = false;
 
-const child = spawn(exePath, [], {
+const child = spawn(exePath, spawnArgs, {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, NODE_ENV: 'production' },
 });

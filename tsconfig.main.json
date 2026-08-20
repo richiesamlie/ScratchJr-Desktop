@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "outDir": "build",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "lib": ["ES2022"],
+    "declaration": false,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "allowJs": false
+  },
+  "include": [
+    "src/main.ts",
+    "src/main/**/*.ts",
+    "src/preload.ts",
+    "src/lib/sql-validator.ts"
+  ],
+  "exclude": [
+    "src/app/**",
+    "node_modules",
+    "tests/**"
+  ]
+}

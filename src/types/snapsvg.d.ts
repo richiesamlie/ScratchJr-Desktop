@@ -9,3 +9,13 @@ declare module 'snapsvg' {
     };
     export default Snap;
 }
+
+// eve is a bare event emitter used by snapsvg; no types shipped.
+declare module 'eve' {
+    const eve: Record<string, unknown>;
+    export default eve;
+}
+
+declare namespace globalThis {
+    let eve: Record<string, unknown>;
+}

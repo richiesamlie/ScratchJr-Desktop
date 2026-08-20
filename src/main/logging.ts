@@ -5,19 +5,19 @@
  * console.log/console.error to write to both file and stdout.
  */
 
-const path = require('path');
-const fs = require('fs');
-const util = require('util');
-const { app } = require('electron');
+import path from 'path';
+import fs from 'fs';
+import util from 'util';
+import { app } from 'electron';
 
-const isDev = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
+const isDev: boolean = !app.isPackaged || !!process.env.DEBUG_SCRATCHJR;
 
 // --- Structured log file (initialized early so crash handlers can use it) ---
 const logPath = path.join(app.getPath('userData'), 'debug.log');
 const logFile = fs.createWriteStream(logPath, { flags: 'a' });
 const logStdout = process.stdout;
 
-console.log = function (...args) {
+console.log = function (...args: unknown[]) {
   const msg = util.format(...args);
   logFile.write(msg + '\n');
   logStdout.write(msg + '\n');
@@ -33,13 +33,13 @@ const DEBUG_CLEANASSETS = DEBUG && false;
 const DEBUG_NYI = DEBUG && false;
 const DEBUG_LOAD_DEVTOOLS = DEBUG && true;
 
-function debugLog(...args) {
+function debugLog(...args: unknown[]): void {
   if (DEBUG) {
     console.log(args);
   }
 }
 
-module.exports = {
+export {
   isDev,
   DEBUG,
   DEBUG_DATABASE,

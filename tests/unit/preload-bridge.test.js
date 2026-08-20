@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('preload bridge contract', () => {
     const preloadSource = fs.readFileSync(
-        path.resolve(__dirname, '../../src/preload.js'), 'utf8'
+        path.resolve(__dirname, '../../src/preload.ts'), 'utf8'
     );
 
     // Every IPC channel the renderer uses must be exposed by the preload.

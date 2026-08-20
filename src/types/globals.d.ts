@@ -35,44 +35,73 @@ declare class WebKitCSSMatrix {
 }
 
 /**
- * The `window.tablet` bridge (ElectronDesktopInterface in electronClient.js).
+ * The `window.scratchjr` bridge (ElectronDesktopInterface in electronClient.js).
+ * Exposed via contextBridge.exposeInMainWorld in preload.js.
  * Async methods resolve with the JSON/text payload from the main process.
- * Signature refinements land as call sites convert to .ts.
  */
-interface TabletBridge {
+/** @deprecated Use ScratchJrBridge */
+type TabletBridge = ScratchJrBridge;
+
+interface ScratchJrBridge {
+    // ---- Database ----
     database_stmt(json: string): Promise<unknown>;
     database_query(json: string): Promise<unknown>;
+
+    // ---- Settings & Resources ----
     io_getsettings(): Promise<string>;
+    io_gettextresource(filename: string): Promise<string>;
+    io_getIsDebug(): Promise<boolean>;
+    io_getLang(): Promise<string | null>;
+
+    // ---- File I/O ----
+    io_setfile(name: string, contents: string): Promise<unknown>;
+    io_getfile(str: string): Promise<string>;
+    io_remove(str: string): Promise<unknown>;
+    io_cleanassets(str: string): Promise<unknown>;
+    io_getmd5(str: string): Promise<string | null>;
+
+    // ---- Media I/O ----
     io_getmedia(file: string): Promise<string>;
     io_getmediadata(key: string, offset: number, length: number): Promise<unknown>;
     io_getmediadone(key: string): Promise<unknown>;
     io_getmedialen(file: string, key: string): Promise<number>;
     io_setmedia(str: string, ext: string): Promise<unknown>;
     io_setmedianame(str: string, name: string, ext: string): Promise<unknown>;
-    io_getmd5(str: string): Promise<string | null>;
-    io_remove(str: string): Promise<unknown>;
-    io_cleanassets(str: string): Promise<unknown>;
+    io_getAudioData(name: string): Promise<string | null>;
+
+    // ---- Debug (fire-and-forget) ----
+    debugWriteLog(args: unknown): void;
+
+    // ---- Lifecycle (fire-and-forget) ----
+    sendAppClosedAcked(): void;
+
+    // ---- Event listeners (main → renderer push) ----
+    onDatabaseRestored(callback: () => void): void;
+    onKeyboardShortcut(callback: (action: string) => void): void;
+    onAppClose(callback: () => void): void;
+
+    // ---- Sound ----
     io_registersound(dir: string, name: string): Promise<void>;
-    io_getfile(str: string): Promise<string>;
-    io_gettextresource(filename: string): Promise<string>;
-    io_setfile(name: string, btoa_str: string): Promise<unknown>;
-    getAudioCaptureElement(): unknown;
     io_playsound(name: string): void;
     io_stopsound(name: string): void;
-    recordsound_recordstart(): void;
+
+    // ---- Recording ----
+    recordsound_recordstart(): string;
     recordsound_recordstop(): void;
     recordsound_volume(): number;
-    recordsound_recordclose(keep: boolean): void;
     recordsound_startplay(): void;
     recordsound_stopplay(): void;
-    askForPermission(): void;
-    hideSplash(): void;
+    recordsound_recordclose(keep: string | boolean): void;
+
+    // ---- Permission / Camera ----
+    askForPermission(): boolean;
+    hideSplash(): boolean;
     deviceName(): string;
     analyticsEvent(category: string, action: string, usageLabel: string, value: number): void;
     scratchjr_stopfeed(): void;
     scratchjr_choosecamera(mode: string): void;
     scratchjr_captureimage(whenDone: () => void): void;
-    scratchjr_cameracheck(...args: unknown[]): unknown;
+    scratchjr_cameracheck(...args: unknown[]): string | boolean;
     scratchjr_startfeed(str: string): void;
 }
 
@@ -204,11 +233,27 @@ interface HTMLFormElement {
     } | null;
 }
 
+/**
+ * ScriptProcessorNode is deprecated but still used for the volume meter
+ * in electronClient.js. The codebase attaches custom properties for
+ * audio processing state.
+ */
+interface ScriptProcessorNode {
+    clipping?: boolean;
+    lastClip?: number;
+    volume?: number;
+    clipLevel?: number;
+    averaging?: number;
+    clipLag?: number;
+    checkClipping?(): boolean;
+    shutdown?(): void;
+}
+
 interface Window {
     // Runtime-injected by appEntry.js from settings.json
     Settings?: ScratchJrSettings;
-    // Electron bridge set by electronClient.js (ElectronDesktopInterface)
-    tablet?: TabletBridge;
+    // Electron bridge set by preload.js via contextBridge
+    scratchjr?: ScratchJrBridge;
     // Legacy global assignment kept until Phase 8 teardown
     ScratchAudio?: ScratchAudioGlobal;
     // Set by iPad/iOS for tablet sharing callbacks
@@ -219,8 +264,23 @@ interface Window {
     xform?: { setTranslate(x: number, y: number): void; matrix?: unknown };
     selxform?: unknown;
     Camera?: unknown;
-    scratchjr?: {
-        onAppClose(callback: () => void): void;
-        sendAppClosedAcked(): void;
-    };
+    // Runtime-injected by appEntry.js for settings
+    scratchJrPage?: string;
+    // Legacy tablet bridge (ElectronDesktopInterface)
+    tablet?: ScratchJrBridge;
 }
+
+/** ScratchJr editor globals set at runtime */
+declare const ScratchJr: { saveProject(arg: unknown, cb: () => void): void };
+declare const Undo: { undo(): void; redo(): void };
+declare const Home: { createNewProject(): void };
+declare const iOS: { soundDone(name: string): void };
+declare const Camera: { processimage(data: string): void };
+
+/** Legacy webkit audio context (Electron/Chromium) */
+declare const webkitAudioContext: typeof AudioContext;
+
+// AudioCapture, VideoCapture, CameraPickerDialog are defined in electronClient.js
+// and loaded at runtime. They are not pre-declared here to avoid duplicate
+// identifier errors when checkJs is enabled. The classes are used directly
+// in electronClient.js where they are defined.

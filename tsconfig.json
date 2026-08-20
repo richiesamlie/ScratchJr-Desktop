@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -12,7 +12,7 @@
     "types": ["node"],
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "tests/**/*.js"],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     "src/app/src/snap/**",
     "src/app/dist/**",
