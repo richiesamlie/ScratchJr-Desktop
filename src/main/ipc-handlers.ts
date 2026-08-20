@@ -13,6 +13,7 @@ import {
 } from './logging';
 import { normalizeAndValidateSqlPayload } from '../lib/sql-validator';
 import type { ScratchJRDataStore } from './data-store';
+import { checkForUpdate, openExternalUrl } from './updater';
 
 // Parse --lang=xx from command line (e.g. ScratchJr --lang=fr)
 const cliLangArg = process.argv.find((a) => a.startsWith('--lang='));
@@ -236,5 +237,14 @@ export function register(getDataStore: () => ScratchJRDataStore, getWindow: () =
         saveWindowState();
         destroyWindow();
         app.exit();
+    });
+
+    // ---- Update checker ----
+    ipcMain.handle('update-check', async () => {
+        return checkForUpdate();
+    });
+
+    ipcMain.handle('update-open-url', (_event: any, url: string) => {
+        openExternalUrl(url);
     });
 }

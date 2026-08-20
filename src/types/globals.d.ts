@@ -72,6 +72,10 @@ interface ScratchJrBridge {
     // ---- Debug (fire-and-forget) ----
     debugWriteLog(args: unknown): void;
 
+    // ---- Update checker ----
+    updateCheck(): Promise<UpdateInfo>;
+    updateOpenUrl(url: string): Promise<void>;
+
     // ---- Lifecycle (fire-and-forget) ----
     sendAppClosedAcked(): void;
 
@@ -142,6 +146,15 @@ interface ScratchJrSettings {
     settingsPageDisabled: boolean;
     maxPages?: number;
     [key: string]: unknown;
+}
+
+interface UpdateInfo {
+    available: boolean;
+    currentVersion: string;
+    latestVersion: string;
+    downloadUrl: string;
+    releasePageUrl: string;
+    releaseNotes: string;
 }
 
 interface Document {

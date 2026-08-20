@@ -1,0 +1,103 @@
+/* Update notification dialog */
+.update-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.update-dialog {
+    background: white;
+    border-radius: 16px;
+    padding: 30px 36px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    font-family: Roboto, arial, sans-serif;
+    color: #4c4d4f;
+    text-align: center;
+}
+
+.update-dialog h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.6em;
+    color: #333;
+}
+
+.update-dialog .version-info {
+    font-size: 0.95em;
+    color: #777;
+    margin-bottom: 18px;
+}
+
+.update-dialog .release-notes {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    max-height: 140px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 0.9em;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #555;
+}
+
+.update-dialog .release-notes:empty {
+    display: none;
+}
+
+.update-dialog .buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.update-dialog .btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: Roboto, arial, sans-serif;
+    transition: background-color 0.15s;
+}
+
+.update-dialog .btn-primary {
+    background: #35A8E0;
+    color: white;
+}
+
+.update-dialog .btn-primary:hover {
+    background: #2a8dc0;
+}
+
+.update-dialog .btn-secondary {
+    background: #e8e8e8;
+    color: #555;
+}
+
+.update-dialog .btn-secondary:hover {
+    background: #d8d8d8;
+}
+
+.update-dialog .btn-dismiss {
+    background: transparent;
+    color: #999;
+    font-size: 0.9em;
+    padding: 6px 12px;
+    margin-top: 8px;
+}
+
+.update-dialog .btn-dismiss:hover {
+    color: #666;
+}

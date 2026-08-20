@@ -49,6 +49,10 @@ contextBridge.exposeInMainWorld('scratchjr', {
     // ---- Debug (fire-and-forget) ----
     debugWriteLog: (args: unknown) => ipcRenderer.send('debugWriteLog', args),
 
+    // ---- Update checker ----
+    updateCheck: () => ipcRenderer.invoke('update-check'),
+    updateOpenUrl: (url: string) => ipcRenderer.invoke('update-open-url', url),
+
     // ---- Lifecycle (fire-and-forget) ----
     sendAppClosedAcked: () => ipcRenderer.send('app-closed-acked'),
 
