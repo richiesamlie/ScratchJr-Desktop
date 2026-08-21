@@ -43,6 +43,9 @@ export class DatabaseManager {
     private _SQL: SqlJsStatic;
     /** Set by the caller after construction if it needs to know about auto-recovery */
     onAutoRecovery: (() => void) | null = null;
+    /** Debounced save timer — coalesces rapid successive writes */
+    private _saveTimer: ReturnType<typeof setTimeout> | null = null;
+    private _saveDelay = 100; // ms
 
     constructor(databaseFilename: string, databaseRestoreFilename: string | undefined, SQL: SqlJsStatic) {
         if (DEBUG_DATABASE) debugLog('DatabaseManager created');
@@ -196,6 +199,25 @@ export class DatabaseManager {
         }
     }
 
+    /** Schedule a save that coalesces rapid successive calls (debounced). */
+    savePending(): void {
+        if (!this.db) return;
+        if (this._saveTimer !== null) return; // already scheduled
+        this._saveTimer = setTimeout(() => {
+            this._saveTimer = null;
+            this.save();
+        }, this._saveDelay);
+    }
+
+    /** Flush any pending debounced save immediately (used on close/crash). */
+    flushPendingSave(): void {
+        if (this._saveTimer !== null) {
+            clearTimeout(this._saveTimer);
+            this._saveTimer = null;
+            this.save();
+        }
+    }
+
     cleanProjectFiles(fileType: string): void {
         if (fileType === 'wav') {
             fileType = 'webm';
@@ -250,7 +272,7 @@ export class DatabaseManager {
             if (DEBUG_CLEANASSETS) debugLog('...not in use, removing: ', currentFileToCheck);
             this.removeProjectFile(currentFileToCheck);
         }
-        this.save();
+        this.savePending();
     }
 
     removeProjectFile(fileMD5: string): void {
@@ -258,7 +280,6 @@ export class DatabaseManager {
         json.stmt = `delete from PROJECTFILES where MD5 = ?`;
         json.values = [fileMD5];
         this.stmt(json);
-        this.save();
     }
 
     readProjectFile(fileMD5: string): string | null {
@@ -285,7 +306,7 @@ export class DatabaseManager {
             return false;
         }
 
-        this.save();
+        this.savePending();
 
         return true;
     }

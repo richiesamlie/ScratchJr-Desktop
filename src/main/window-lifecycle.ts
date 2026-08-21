@@ -12,6 +12,7 @@ import { DEBUG_LOAD_DEVTOOLS, debugLog } from './logging';
 import type { ScratchJRDataStore } from './data-store';
 
 let win: BrowserWindow | null = null;
+let dataStoreRef: ScratchJRDataStore | null = null;
 
 const windowStateFile = path.join(app.getPath('userData'), 'window-state.json');
 
@@ -59,6 +60,7 @@ export function createWindow(dataStore: ScratchJRDataStore): BrowserWindow {
     });
 
     dataStore.electronBrowserWindow = win;
+    dataStoreRef = dataStore;
 
     win.loadURL('file://' + path.join(__dirname, '..', '..', 'src', 'app', 'index.html'));
 
@@ -125,12 +127,19 @@ export function createWindow(dataStore: ScratchJRDataStore): BrowserWindow {
         e.preventDefault();
         saveWindowState();
         win!.webContents.send('app-close');
-        // Fallback: force-quit after 5 seconds if renderer doesn't ack
+        // Fallback: force-quit after 10 seconds if renderer doesn't ack.
+        // Save the database synchronously before destroying to prevent data loss.
         setTimeout(() => {
             if (win && !win.isDestroyed()) {
+                try {
+                    if (dataStoreRef?.databaseManager) {
+                        dataStoreRef.databaseManager.flushPendingSave();
+                        dataStoreRef.databaseManager.save();
+                    }
+                } catch (_) { /* best-effort */ }
                 win.destroy();
             }
-        }, 5000);
+        }, 10000);
     });
 
     win.webContents.on('did-finish-load', () => {

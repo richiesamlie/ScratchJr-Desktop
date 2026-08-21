@@ -342,8 +342,11 @@ export default class ScratchJr {
             Record.recordError();
         }
 
-        // Re-enable autosaves
+        // Re-enable autosaves (clear any existing interval first to avoid duplicates)
         autoSaveEnabled = true;
+        if (autoSaveSetInterval !== null) {
+            window.clearInterval(autoSaveSetInterval);
+        }
         autoSaveSetInterval = window.setInterval(function () {
             const projectWithSaving = Project as unknown as { saving: boolean };
         if (autoSaveEnabled && !onHold && !projectWithSaving.saving && !UI.infoBoxOpen) {
@@ -356,7 +359,10 @@ export default class ScratchJr {
 
     static onPause () {
         autoSaveEnabled = false;
-        window.clearInterval(autoSaveSetInterval!);
+        if (autoSaveSetInterval !== null) {
+            window.clearInterval(autoSaveSetInterval);
+            autoSaveSetInterval = null;
+        }
     }
 
     static saveProject (e: Event | null, onDone: () => void) {

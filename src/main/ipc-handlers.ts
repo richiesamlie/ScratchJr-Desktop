@@ -204,6 +204,8 @@ export function register(getDataStore: () => ScratchJRDataStore, getWindow: () =
             const db = getDataStore().databaseManager!;
             const result = db.stmt(safeQuery);
             if (DEBUG_DATABASE) debugLog('database_stmt result:', result);
+            // Persist the change to disk (debounced — coalesces rapid writes)
+            db.savePending();
             return result;
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : String(e);
@@ -229,6 +231,7 @@ export function register(getDataStore: () => ScratchJRDataStore, getWindow: () =
     ipcMain.on('app-closed-acked', (_event: any) => {
         const dataStore = getDataStore();
         if (dataStore.databaseManager) {
+            dataStore.databaseManager.flushPendingSave();
             dataStore.databaseManager.save();
             dataStore.databaseManager.close();
         }
