@@ -386,13 +386,15 @@ export class DatabaseManager {
 
                 const result = this.db.exec('select last_insert_rowid();');
                 const lastRowId = result[0].values[0][0] as number;
-
+                if (stmtStr.trim().toLowerCase().startsWith('insert') && lastRowId === 0) {
+                    debugLog('WARNING: INSERT returned rowid 0 — the insert may have failed:', stmtStr, values);
+                }
                 return lastRowId;
             } finally {
                 statement.free();
             }
         } catch (e) {
-            if (DEBUG_DATABASE) debugLog('stmt failed', jsonStrOrJsonObj, e);
+            debugLog('stmt failed:', e instanceof Error ? e.message : e, jsonStrOrJsonObj);
             return -1;
         }
     }

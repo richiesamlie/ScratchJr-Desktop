@@ -178,6 +178,11 @@ export default class Home {
     }
 
     static gotoEditor (md5: unknown) {
+        if (!md5 || md5 === -1 || md5 === 0 || md5 === '0') {
+            // Project creation failed — stay on lobby
+            console.error('Project creation failed, md5:', md5); // eslint-disable-line no-console
+            return;
+        }
         iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
             doNext(md5);
         });
