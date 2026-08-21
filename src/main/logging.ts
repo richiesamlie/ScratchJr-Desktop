@@ -31,7 +31,7 @@ const DEBUG_FILEIO = DEBUG && false;
 const DEBUG_RESOURCEIO = DEBUG && false;
 const DEBUG_CLEANASSETS = DEBUG && false;
 const DEBUG_NYI = DEBUG && false;
-const DEBUG_LOAD_DEVTOOLS = DEBUG && true;
+const DEBUG_LOAD_DEVTOOLS = true; // always open devtools for debugging
 
 function debugLog(...args: unknown[]): void {
   if (DEBUG) {

@@ -178,10 +178,9 @@ export default class Home {
     }
 
     static gotoEditor (md5: unknown) {
+        // Log but don't block — the original code always navigated
         if (!md5 || md5 === -1 || md5 === 0 || md5 === '0') {
-            // Project creation failed — stay on lobby
-            console.error('Project creation failed, md5:', md5); // eslint-disable-line no-console
-            return;
+            console.warn('gotoEditor: md5 looks invalid:', md5, '— navigating anyway'); // eslint-disable-line no-console
         }
         iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
             doNext(md5);
@@ -246,7 +245,7 @@ export default class Home {
             var json: SqlPayload = {};
             json.cond = 'deleted = ? AND version = ? AND gallery IS NULL';
             json.items = ['name', 'thumbnail', 'id', 'isgift'];
-            json.values = ['NO', version];
+            json.values = ['NO', version || window.Settings!.scratchJrVersion];
             json.order = 'ctime desc';
             IO.query(iOS.database, json, Home.displayProjects);
         }
@@ -288,7 +287,7 @@ export default class Home {
         Home.insertThumbnail(mt, 192, 144, thumb);
         var label = newHTML('div', 'projecttitle', tb);
         var txt = newHTML('h4', undefined, label);
-        txt.textContent = data.name as string;
+        txt.textContent = (data.name && data.name !== 'undefined') ? data.name as string : 'Project';
 
         var bow = newHTML('div', 'share', tb);
         var ribbonHorizontal = newHTML('div', 'ribbonHorizontal', tb);
