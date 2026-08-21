@@ -125,6 +125,10 @@ export default class Project {
         ScratchJr.log('got project metadata', ScratchJr.getTime(), 'sec');
         var data = JSON.parse(str)[0];
         metadata = IO.parseProjectData(data);
+        // Ensure name is never undefined
+        if (!metadata.name || metadata.name === 'undefined') {
+            metadata.name = 'Project';
+        }
         mediaCount = -1;
         if (metadata!.json) {
             Project.loadData(metadata.json as Record<string, unknown>, doneProjectLoad);

@@ -170,9 +170,9 @@ export default class Home {
     static createNewProject () {
         iOS.analyticsEvent('lobby', 'project_created');
         var obj: Record<string, string> = {};
-        // XXX: for localization, the new project name should likely be refactored
-        obj.name = Home.getNextName(Localization.localize('NEW_PROJECT_PREFIX'));
-        obj.version = version;
+        var prefix = Localization.localize('NEW_PROJECT_PREFIX');
+        obj.name = Home.getNextName(prefix || 'Project');
+        obj.version = version || '1.0.0';
         obj.mtime = (new Date()).getTime().toString();
         IO.createProject(obj, Home.gotoEditor);
     }

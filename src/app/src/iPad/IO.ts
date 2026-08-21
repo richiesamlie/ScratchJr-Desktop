@@ -270,7 +270,7 @@ export default class IO {
         var values = '?,?,?,?,?';
         var mtime = (new Date()).getTime().toString();
         var isGift = obj.isgift ? obj.isgift : '0';
-        json.values = [obj.name!, obj.version!, 'NO', mtime, isGift];
+        json.values = [obj.name || 'Project', obj.version || '1.0.0', 'NO', mtime, isGift];
         if (obj.json) {
             addValue('json', JSON.stringify(obj.json));
         }
@@ -290,7 +290,7 @@ export default class IO {
         try {
             var json: SqlPayload = {};
             var keylist = ['version = ?', 'deleted = ?', 'name = ?', 'json = ?', 'thumbnail = ?', 'mtime = ?'];
-            json.values = [obj.version!, obj.deleted!, obj.name!, JSON.stringify(obj.json),
+            json.values = [obj.version || '1.0.0', obj.deleted || 'NO', obj.name || 'Project', JSON.stringify(obj.json),
                 JSON.stringify(obj.thumbnail), (new Date()).getTime().toString()];
             json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
             json.values.push(obj.id!);
