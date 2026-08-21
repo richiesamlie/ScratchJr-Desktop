@@ -473,8 +473,22 @@ export default class Project {
 
     static save (id: string, whenDone?: () => void) {
         saving = true;
+        var saved = false;
+        // Safety timeout: if the async chain breaks, always reset saving
+        var safetyTimer = window.setTimeout(function () {
+            if (!saved) {
+                saved = true;
+                saving = false;
+                if (whenDone) {
+                    whenDone();
+                }
+            }
+        }, 15000);
 
         function resetSaving () {
+            if (saved) return;
+            saved = true;
+            window.clearTimeout(safetyTimer);
             saving = false;
             if (whenDone) {
                 whenDone();

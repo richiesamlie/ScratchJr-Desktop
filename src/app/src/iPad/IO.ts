@@ -287,13 +287,19 @@ export default class IO {
     }
 
     static saveProject (obj: ProjectRecord, fcn?: (result: unknown) => void) {
-        var json: SqlPayload = {};
-        var keylist = ['version = ?', 'deleted = ?', 'name = ?', 'json = ?', 'thumbnail = ?', 'mtime = ?'];
-        json.values = [obj.version!, obj.deleted!, obj.name!, JSON.stringify(obj.json),
-            JSON.stringify(obj.thumbnail), (new Date()).getTime().toString()];
-        json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
-        json.values.push(obj.id!);
-        iOS.stmt(json, fcn);
+        try {
+            var json: SqlPayload = {};
+            var keylist = ['version = ?', 'deleted = ?', 'name = ?', 'json = ?', 'thumbnail = ?', 'mtime = ?'];
+            json.values = [obj.version!, obj.deleted!, obj.name!, JSON.stringify(obj.json),
+                JSON.stringify(obj.thumbnail), (new Date()).getTime().toString()];
+            json.stmt = 'update ' + database + ' set ' + keylist.toString() + ' where id = ?';
+            json.values.push(obj.id!);
+            iOS.stmt(json, fcn);
+        } catch (e) {
+            if (fcn) {
+                fcn(-1);
+            }
+        }
     }
 
     // Since saveProject is changing the modified time of the project,
