@@ -19,14 +19,31 @@
 
 ## Features & Improvements
 
-- **Expanded Canvas**: 8 pages by default (configurable), scrollable page strip, and always-visible add buttons.
-- **Robust Storage & Recovery**: Auto-recovery SQLite database management with atomic saves, auto-backups, and integrity checks.
-- **Security & Sandboxing**: Context-isolated renderer bridge, CSP policies, and strict input validation.
-- **Strict TypeScript**: 100% TypeScript across renderer and main process with comprehensive test coverage.
-- **Internationalization**: Full localization support with optional `--lang=<code>` CLI flag (e.g. `--lang=fr`).
-- **Native Update Checker**: Built-in update checker via `File` → `Check for Updates...`.
+### 🎨 Expanded Workspace & Desktop Ergonomics
+- **8 Pages per Project**: Increased from the original 4-page limit to 8 pages by default (configurable via `maxPages` in `settings.json`).
+- **Scrollable Page & Character Strips**: Native mouse-wheel scrolling and responsive layout keep pages and characters easily accessible.
+- **Always-Visible Action Buttons**: "+" add-page and add-character buttons stay pinned on screen at any window size.
+- **Responsive Layout**: Stage, scripts workspace, and block palette scale smoothly across varying desktop display heights.
 
-For complete architectural details and developer guides, visit the **[Wiki](https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/wiki)**.
+### 💾 Robust Storage & Data Integrity
+- **Atomic Database Writes**: Saves to a temporary file before renaming, preventing corruption if the app is abruptly closed.
+- **Automatic Backup & Recovery**: Creates rolling `.bak` snapshots on every save and runs `PRAGMA integrity_check` on launch, auto-recovering from backup if needed.
+- **Debounced Persistence**: Rapid changes are coalesced safely and flushed immediately during app shutdown to prevent data loss.
+
+### 🛡️ Security & Modern Architecture
+- **Sandboxed Renderer**: Built on **Electron 43** with strict `contextIsolation`, preventing direct Node.js execution in the browser process.
+- **Content Security Policy & Sanitization**: Restrictive CSP on all pages, SQL parameterization, and strict file path boundaries.
+
+### ⚡ Strict TypeScript & Testing
+- **100% Strict TypeScript**: Entire codebase migrated to TypeScript with strict type checking (`strict: true`, zero `any`).
+- **Comprehensive Test Suite**: 121 automated tests covering database persistence, project serialization, IPC contracts, and editor logic.
+
+### 🌍 Classroom & Fleet Deployment
+- **`--lang` CLI Flag**: Launch with explicit language overrides (e.g., `ScratchJr.exe --lang=fr`), ideal for school environments.
+- **Native Update Checker**: Check for new releases directly from `File` → `Check for Updates...`.
+- **Configurable MSI Installer**: Supports silent deployment and uninstallation options (`REMOVE_DATABASE=1`).
+
+For architecture diagrams, IPC documentation, and developer guides, visit the **[Wiki](https://github.com/richiesamlie/ScratchJr-Desktop-Reborn/wiki)**.
 
 ---
 
