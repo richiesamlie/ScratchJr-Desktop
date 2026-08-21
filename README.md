@@ -39,7 +39,7 @@ Each release includes SHA256 checksums for integrity verification.
 
 - **Sandboxed renderer** — no Node in the UI, only a narrow preload bridge
 - **Content Security Policy** on every page, SQL injection guards, navigation locked to the app root
-- Upgraded **Electron 42** — modern Chromium, Node 22/26 compatible
+- Upgraded **Electron 43** — modern Chromium, Node 22/26 compatible
 
 ### 🌍 Locale & language
 
@@ -49,6 +49,12 @@ Each release includes SHA256 checksums for integrity verification.
 
 - **All 56 renderer files** migrated to TypeScript — full `strict` mode, **zero errors, zero `any`**
 - **103 tests** — including a jsdom harness covering the project file format (save/load round-trips), runtime primitives, and editor math
+
+### 📋 v1.5.9
+
+- Removed dead `make32`/`makeAll` ia32 scripts (Electron 43.4.1 is the last ia32 series)
+- Fixed lint warnings in error handlers (appEntry.js, update-dialog.js)
+- npm audit: 0 vulnerabilities (resolved via lockfile cleanup)
 - **Reliable releases** — the renderer bundle is built before every package (a CI bug once shipped apps without it), all six platforms built natively with checksums
 
 Maintained through **Vibe Coding** — AI-assisted development where an agent does the analysis and implementation, a human sets the goals and reviews the results.
@@ -63,7 +69,7 @@ Maintained through **Vibe Coding** — AI-assisted development where an agent do
 npm install
 npm start          # run the app
 npm run make:zip   # package for your platform (builds the renderer first)
-npm test           # 98 tests
+npm test           # 103 tests
 npm run typecheck  # tsc --noEmit (strict)
 ```
 
