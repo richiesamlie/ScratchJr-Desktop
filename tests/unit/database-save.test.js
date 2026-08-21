@@ -199,6 +199,43 @@ describe('DatabaseManager stmt/query', () => {
         });
         expect(rows.length).toBe(1);
         expect(rows[0].NAME).toBe('TestProject');
+
+        const updateResult = mgr.stmt({
+            stmt: "UPDATE PROJECTS SET NAME = ? WHERE ID = ?",
+            values: ['UpdatedProject', rowId]
+        });
+        expect(updateResult).toBe(1);
+
+        const updatedRows = mgr.query({
+            stmt: 'SELECT NAME FROM PROJECTS WHERE ID = ?',
+            values: [rowId]
+        });
+        expect(updatedRows[0].NAME).toBe('UpdatedProject');
+        mgr.close();
+    });
+
+    it('ensures tables exist when opening an existing 0-byte file', () => {
+        fs.writeFileSync(dbPath, Buffer.alloc(0));
+        const mgr = new DatabaseManager(dbPath, undefined, sqlJs);
+        const rowId = mgr.stmt({
+            stmt: "INSERT INTO PROJECTS (NAME, VERSION, DELETED, MTIME) VALUES (?, ?, ?, ?)",
+            values: ['FromZeroByte', 'v1', 'NO', '12345']
+        });
+        expect(rowId).toBeGreaterThanOrEqual(0);
+        const rows = mgr.query({ stmt: 'SELECT NAME FROM PROJECTS WHERE ID = ?', values: [rowId] });
+        expect(rows.length).toBe(1);
+        expect(rows[0].NAME).toBe('FromZeroByte');
+        mgr.close();
+    });
+
+    it('freshDatabase creates all tables without error', () => {
+        const mgr = new DatabaseManager(dbPath, undefined, sqlJs);
+        mgr.freshDatabase(sqlJs);
+        const rowId = mgr.stmt({
+            stmt: "INSERT INTO PROJECTS (NAME, VERSION, DELETED, MTIME) VALUES (?, ?, ?, ?)",
+            values: ['FreshDBProject', 'v1', 'NO', '12345']
+        });
+        expect(rowId).toBeGreaterThanOrEqual(0);
         mgr.close();
     });
 });

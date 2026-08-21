@@ -123,11 +123,24 @@ export default class Project {
 
     static dataRecieved (str: string) {
         ScratchJr.log('got project metadata', ScratchJr.getTime(), 'sec');
-        var data = JSON.parse(str)[0];
-        metadata = IO.parseProjectData(data);
-        // Ensure name is never undefined
+        var rows = JSON.parse(str);
+        if (!rows || rows.length === 0) {
+            console.error('Project dataRecieved: project not found in database for id:', ScratchJr.currentProject);
+            metadata = {
+                id: ScratchJr.currentProject,
+                name: 'Project',
+                version: window.Settings?.scratchJrVersion || '1.0.0'
+            };
+        } else {
+            var data = rows[0];
+            metadata = IO.parseProjectData(data);
+        }
+        // Ensure name and version are never undefined
         if (!metadata.name || metadata.name === 'undefined') {
             metadata.name = 'Project';
+        }
+        if (!metadata.version) {
+            metadata.version = window.Settings?.scratchJrVersion || '1.0.0';
         }
         mediaCount = -1;
         if (metadata!.json) {

@@ -6,6 +6,7 @@ import Lobby from './Lobby.js';
 import iOS from '../iPad/iOS';
 import IO from '../iPad/IO';
 import Project from '../editor/ui/Project';
+import Alert from '../editor/ui/Alert';
 import Localization from '../utils/Localization';
 import ScratchAudio from '../utils/ScratchAudio';
 import Vector from '../geom/Vector';
@@ -172,15 +173,16 @@ export default class Home {
         var obj: Record<string, string> = {};
         var prefix = Localization.localize('NEW_PROJECT_PREFIX');
         obj.name = Home.getNextName(prefix || 'Project');
-        obj.version = version || '1.0.0';
+        obj.version = version || window.Settings?.scratchJrVersion || '1.0.0';
         obj.mtime = (new Date()).getTime().toString();
         IO.createProject(obj, Home.gotoEditor);
     }
 
     static gotoEditor (md5: unknown) {
-        // Log but don't block — the original code always navigated
-        if (!md5 || md5 === -1 || md5 === 0 || md5 === '0') {
-            console.warn('gotoEditor: md5 looks invalid:', md5, '— navigating anyway'); // eslint-disable-line no-console
+        if (!md5 || md5 === -1 || md5 === 0 || md5 === '0' || md5 === '-1') {
+            console.error('gotoEditor: Failed to create project in database, invalid id:', md5);
+            Alert.open(frame, gn('flip')!, 'Error creating project', '#D62222');
+            return;
         }
         iOS.setfile('homescroll.sjr', gn('wrapc')!.scrollTop, function () {
             doNext(md5);

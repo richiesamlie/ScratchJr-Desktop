@@ -201,7 +201,12 @@ export function register(getDataStore: () => ScratchJRDataStore, getWindow: () =
         try {
             const validated = normalizeAndValidateSqlPayload(json);
             const safeQuery = { stmt: validated.stmt, values: validated.values as Array<string | number | boolean | null> };
-            const db = getDataStore().databaseManager!;
+            const dataStore = getDataStore();
+            const db = dataStore?.databaseManager;
+            if (!db || !db.isOpen()) {
+                debugLog('database_stmt called but database is not open');
+                return -1;
+            }
             const result = db.stmt(safeQuery);
             if (DEBUG_DATABASE) debugLog('database_stmt result:', result);
             // Only persist to disk if the statement succeeded
@@ -221,7 +226,12 @@ export function register(getDataStore: () => ScratchJRDataStore, getWindow: () =
         try {
             const validated = normalizeAndValidateSqlPayload(json);
             const safeQuery = { stmt: validated.stmt, values: validated.values as Array<string | number | boolean | null> };
-            const db = getDataStore().databaseManager!;
+            const dataStore = getDataStore();
+            const db = dataStore?.databaseManager;
+            if (!db || !db.isOpen()) {
+                debugLog('database_query called but database is not open');
+                return '[]';
+            }
             return JSON.stringify(db.query(safeQuery));
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : String(e);

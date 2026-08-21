@@ -62,6 +62,7 @@ export class DatabaseManager {
             this.save();
         } else {
             this.open(SQL);
+            this.initTables(SQL);
             this.runMigrations();
             this.save();
         }
@@ -176,8 +177,7 @@ export class DatabaseManager {
 
     /** Create a brand-new empty database, discarding the corrupted one */
     freshDatabase(SQL: SqlJsStatic): void {
-        this.db = new SQL.Database();
-        this.db.handleError = this.handleError;
+        this.close();
         this.initTables(SQL);
         this.runMigrations();
         this.save();
@@ -338,10 +338,12 @@ export class DatabaseManager {
         return res.getAsObject();
     }
 
-    initTables(SQL: SqlJsStatic): void {
-        if (this.db) throw new Error('database already created');
-        this.db = new SQL.Database();
-        this.db.handleError = this.handleError;
+    initTables(SQL?: SqlJsStatic): void {
+        if (!this.db) {
+            if (!SQL) throw new Error('SQL instance required to create database');
+            this.db = new SQL.Database();
+            this.db.handleError = this.handleError;
+        }
 
         if (DEBUG_DATABASE) debugLog('making tables...');
 
@@ -384,12 +386,23 @@ export class DatabaseManager {
             try {
                 while (statement.step()) statement.get();
 
-                const result = this.db.exec('select last_insert_rowid();');
-                const lastRowId = result[0].values[0][0] as number;
-                if (stmtStr.trim().toLowerCase().startsWith('insert') && lastRowId === 0) {
-                    debugLog('WARNING: INSERT returned rowid 0 — the insert may have failed:', stmtStr, values);
+                const isInsert = stmtStr.trim().toLowerCase().startsWith('insert');
+                if (isInsert) {
+                    const result = this.db.exec('select last_insert_rowid();');
+                    const lastRowId = (result && result.length > 0 && result[0].values.length > 0)
+                        ? (result[0].values[0][0] as number)
+                        : 0;
+                    if (lastRowId === 0) {
+                        debugLog('WARNING: INSERT returned rowid 0 — the insert may have failed:', stmtStr, values);
+                    }
+                    return lastRowId;
+                } else {
+                    const result = this.db.exec('select changes();');
+                    const changes = (result && result.length > 0 && result[0].values.length > 0)
+                        ? (result[0].values[0][0] as number)
+                        : 0;
+                    return changes;
                 }
-                return lastRowId;
             } finally {
                 statement.free();
             }
