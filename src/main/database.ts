@@ -38,13 +38,19 @@ interface QueryJson {
 export class DatabaseManager {
     databaseFilename: string;
     databaseRestoreFilename: string | undefined;
+    databaseBackupFilename: string;
     db: SqlJsDatabase | null = null;
+    private _SQL: SqlJsStatic;
+    /** Set by the caller after construction if it needs to know about auto-recovery */
+    onAutoRecovery: (() => void) | null = null;
 
     constructor(databaseFilename: string, databaseRestoreFilename: string | undefined, SQL: SqlJsStatic) {
         if (DEBUG_DATABASE) debugLog('DatabaseManager created');
 
         this.databaseFilename = databaseFilename;
         this.databaseRestoreFilename = databaseRestoreFilename;
+        this.databaseBackupFilename = databaseFilename + '.bak';
+        this._SQL = SQL;
 
         const isFirstTimeRun = !fs.existsSync(this.databaseFilename);
         if (isFirstTimeRun) {
@@ -71,13 +77,88 @@ export class DatabaseManager {
         this.db = new SQL.Database(filebuffer);
         this.db.handleError = this.handleError;
 
+        // Check integrity after opening
+        if (!this.checkIntegrity()) {
+            debugLog('Database corruption detected on open — attempting auto-recovery');
+            this.close();
+            if (this.autoRecover()) {
+                debugLog('Auto-recovery succeeded');
+                // Re-open from the now-recovered file
+                const recoveredBuffer = fs.readFileSync(this.databaseFilename);
+                this.db = new SQL.Database(recoveredBuffer);
+                this.db.handleError = this.handleError;
+                if (this.onAutoRecovery) {
+                    this.onAutoRecovery();
+                }
+            } else {
+                debugLog('Auto-recovery failed — creating fresh database');
+                this.freshDatabase(SQL);
+            }
+        }
+
         if (this.databaseRestoreFilename) {
             this.save();
         }
     }
 
+    /** Run PRAGMA integrity_check and return true if the database is OK */
+    checkIntegrity(): boolean {
+        if (!this.db) return false;
+        try {
+            const result = this.db.exec('PRAGMA integrity_check;');
+            if (!result || result.length === 0) return false;
+            const rows = result[0].values;
+            if (rows.length === 0) return false;
+            const status = String(rows[0][0]);
+            const ok = status === 'ok';
+            if (!ok) {
+                debugLog('integrity_check returned:', status);
+            }
+            return ok;
+        } catch (e) {
+            debugLog('integrity_check failed:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Attempt to recover from a backup file.
+     * Returns true if recovery succeeded (the .bak file was valid and was
+     * copied over the corrupted main file).
+     */
+    autoRecover(): boolean {
+        if (fs.existsSync(this.databaseBackupFilename)) {
+            try {
+                // Verify the backup is itself valid before using it
+                const backupBuffer = fs.readFileSync(this.databaseBackupFilename);
+                const tempDb = new this._SQL.Database(backupBuffer);
+                const result = tempDb.exec('PRAGMA integrity_check;');
+                tempDb.close();
+                const ok = result && result.length > 0 && String(result[0].values[0][0]) === 'ok';
+                if (ok) {
+                    // Backup is good — copy it over the corrupted main file
+                    fs.copyFileSync(this.databaseBackupFilename, this.databaseFilename);
+                    return true;
+                }
+                debugLog('Backup file is also corrupted');
+            } catch (e) {
+                debugLog('Failed to read/verify backup:', e);
+            }
+        }
+        return false;
+    }
+
+    /** Create a brand-new empty database, discarding the corrupted one */
+    freshDatabase(SQL: SqlJsStatic): void {
+        this.db = new SQL.Database();
+        this.db.handleError = this.handleError;
+        this.initTables(SQL);
+        this.runMigrations();
+        this.save();
+    }
+
     handleError(e: Error): void {
-        if (DEBUG_DATABASE) debugLog(e);
+        debugLog('sql.js error:', e.message || e);
     }
 
     close(): void {
@@ -90,9 +171,29 @@ export class DatabaseManager {
     }
 
     save(): void {
-        const data = this.db!.export();
-        const buffer = Buffer.from(data);
-        fs.writeFileSync(this.databaseFilename, buffer);
+        if (!this.db) {
+            debugLog('save() called but database is not open');
+            return;
+        }
+        try {
+            const data = this.db.export();
+            const buffer = Buffer.from(data);
+            // Create a rolling backup before overwriting the main file
+            if (fs.existsSync(this.databaseFilename)) {
+                try {
+                    fs.copyFileSync(this.databaseFilename, this.databaseBackupFilename);
+                } catch (e) {
+                    debugLog('Failed to create backup:', e);
+                }
+            }
+            const tmpPath = this.databaseFilename + '.tmp';
+            fs.writeFileSync(tmpPath, buffer);
+            fs.renameSync(tmpPath, this.databaseFilename);
+        } catch (e) {
+            debugLog('save() failed:', e);
+            // Attempt to clean up the temp file if rename failed
+            try { fs.unlinkSync(this.databaseFilename + '.tmp'); } catch (_) { /* ignore */ }
+        }
     }
 
     cleanProjectFiles(fileType: string): void {
@@ -154,24 +255,16 @@ export class DatabaseManager {
 
     removeProjectFile(fileMD5: string): void {
         const json: QueryJson = {};
-        json.cond = 'MD5 = ?';
-        json.items = ['CONTENTS'];
+        json.stmt = `delete from PROJECTFILES where MD5 = ?`;
         json.values = [fileMD5];
-        const table = 'PROJECTFILES';
-
-        json.stmt = `delete from ${table} where ${json.cond}`;
-        this.query(json);
+        this.stmt(json);
         this.save();
     }
 
     readProjectFile(fileMD5: string): string | null {
         const json: QueryJson = {};
-        json.cond = 'MD5 = ?';
-        json.items = ['CONTENTS'];
+        json.stmt = 'select CONTENTS from PROJECTFILES where MD5 = ?';
         json.values = [fileMD5];
-        const table = 'PROJECTFILES';
-
-        json.stmt = `select ${json.items} from ${table} where ${json.cond}`;
 
         const rows = this.query(json);
 
@@ -183,15 +276,18 @@ export class DatabaseManager {
 
     saveToProjectFiles(fileMD5: string, content: string): boolean {
         const json: QueryJson = {};
-        const keylist = ['md5', 'contents'];
-        const values = '?,?';
         json.values = [fileMD5, content];
-        json.stmt = `insert or replace into projectfiles (${keylist.toString()}) values (${values})`;
+        json.stmt = 'insert or replace into PROJECTFILES (MD5, CONTENTS) values (?, ?)';
         const insertSQLResult = this.stmt(json);
+
+        if (insertSQLResult < 0) {
+            debugLog('saveToProjectFiles: stmt failed for', fileMD5);
+            return false;
+        }
 
         this.save();
 
-        return (insertSQLResult >= 0);
+        return true;
     }
 
     getRowData(res: SqlJsStatement): Record<string, unknown> {
@@ -212,20 +308,26 @@ export class DatabaseManager {
     }
 
     clearTables(): void {
-        this.db!.exec('DELETE FROM PROJECTS');
-        this.db!.exec('DELETE FROM USERSHAPES');
-        this.db!.exec('DELETE FROM USERBKGS');
+        if (!this.db) return;
+        this.db.exec('DELETE FROM PROJECTS');
+        this.db.exec('DELETE FROM USERSHAPES');
+        this.db.exec('DELETE FROM USERBKGS');
     }
 
     runMigrations(): void {
+        if (!this.db) return;
         try {
-            this.db!.exec('ALTER TABLE PROJECTS ADD COLUMN ISGIFT INTEGER DEFAULT 0');
+            this.db.exec('ALTER TABLE PROJECTS ADD COLUMN ISGIFT INTEGER DEFAULT 0');
         } catch (e) {
             debugLog('failed to migrate tables', e);
         }
     }
 
     stmt(jsonStrOrJsonObj: string | QueryJson): number {
+        if (!this.db) {
+            debugLog('stmt() called but database is not open');
+            return -1;
+        }
         try {
             const json: QueryJson = (typeof jsonStrOrJsonObj === 'string') ? JSON.parse(jsonStrOrJsonObj) : jsonStrOrJsonObj || {};
             const stmtStr = json.stmt!;
@@ -233,12 +335,12 @@ export class DatabaseManager {
 
             if (DEBUG_DATABASE) debugLog('DatabaseManager executing stmt', stmtStr, values);
 
-            const statement = this.db!.prepare(stmtStr, values);
+            const statement = this.db.prepare(stmtStr, values);
 
             try {
                 while (statement.step()) statement.get();
 
-                const result = this.db!.exec('select last_insert_rowid();');
+                const result = this.db.exec('select last_insert_rowid();');
                 const lastRowId = result[0].values[0][0] as number;
 
                 return lastRowId;
@@ -252,13 +354,17 @@ export class DatabaseManager {
     }
 
     query(jsonStrOrJsonObj: string | QueryJson): Record<string, unknown>[] {
+        if (!this.db) {
+            debugLog('query() called but database is not open');
+            return [];
+        }
         try {
             const json: QueryJson = (typeof jsonStrOrJsonObj === 'string') ? JSON.parse(jsonStrOrJsonObj) : jsonStrOrJsonObj || {};
 
             const stmtStr = json.stmt!;
             const values = json.values;
 
-            const statement = this.db!.prepare(stmtStr, values);
+            const statement = this.db.prepare(stmtStr, values);
 
             try {
                 const rows: Record<string, unknown>[] = [];

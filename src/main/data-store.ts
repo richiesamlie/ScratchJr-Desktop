@@ -36,6 +36,12 @@ export class ScratchJRDataStore {
                 this._dbInitPromise = DatabaseManager.initialize(scratchDBPath);
             }
             this.databaseManager = await this._dbInitPromise;
+            // Wire up auto-recovery notification to the renderer
+            this.databaseManager.onAutoRecovery = () => {
+                if (this.electronBrowserWindow && !this.electronBrowserWindow.isDestroyed()) {
+                    this.electronBrowserWindow.webContents.send('databaseRestored', {});
+                }
+            };
             if (DEBUG_DATABASE) debugLog('DatabaseManager created');
         }
         return this.databaseManager;

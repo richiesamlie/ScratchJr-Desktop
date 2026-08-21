@@ -473,47 +473,68 @@ export default class Project {
 
     static save (id: string, whenDone?: () => void) {
         saving = true;
-        var th = metadata!.thumbnail;
-        if (th && ScratchJr.editmode != 'storyStarter') { // Don't try to delete the thumbnail in a sample project
-            var thumb = (typeof th === 'string') ? JSON.parse(th) : th;
-            if (thumb && thumb.md5.indexOf('samples/') < 0) { // In case we've exited story-starter mode
-                Project.thumbnailUnique(thumb.md5, id, function (isUnique) {
-                    if (isUnique) {
-                        iOS.remove(thumb.md5, iOS.trace); // remove thumb;
-                    }
-                });
-            }
-        }
-        metadata!.id = id;
-        metadata!.json = Project.getProject(ScratchJr.stage.pages[0].id);
-        Project.getThumbnailPNG(ScratchJr.stage.pages[0], 192, 144, getMD5);
-        function getMD5 (dataurl: string) {
-            var pngBase64 = dataurl.split(',')[1];
-            iOS.getmd5(pngBase64, function (str: string | null) {
-                savePNG(str!, pngBase64);
-            });
-        }
 
-        function savePNG (md5: string, pngBase64: string) {
-            var filename = ScratchJr.currentProject + '_' + md5;
-            iOS.setmedianame(pngBase64, filename, 'png', doNext as (result: unknown) => void);
-        }
-
-        function doNext (md5: string) {
-            metadata!.thumbnail = {
-                'pagecount': ScratchJr.stage.pages.length,
-                'md5': md5
-            };
-            metadata!.mtime = (new Date()).getTime().toString();
-            // IO.saveProject's ProjectRecord bag is structurally compatible with our metadata
-            IO.saveProject(metadata as unknown as Parameters<typeof IO.saveProject>[0], saveDone);
-        }
-
-        function saveDone () {
+        function resetSaving () {
             saving = false;
             if (whenDone) {
                 whenDone();
             }
+        }
+
+        if (!metadata) {
+            resetSaving();
+            return;
+        }
+
+        try {
+            var th = metadata.thumbnail;
+            if (th && ScratchJr.editmode != 'storyStarter') { // Don't try to delete the thumbnail in a sample project
+                var thumb = (typeof th === 'string') ? JSON.parse(th) : th;
+                if (thumb && thumb.md5.indexOf('samples/') < 0) { // In case we've exited story-starter mode
+                    Project.thumbnailUnique(thumb.md5, id, function (isUnique) {
+                        if (isUnique) {
+                            iOS.remove(thumb.md5, iOS.trace); // remove thumb;
+                        }
+                    });
+                }
+            }
+            metadata.id = id;
+            metadata.json = Project.getProject(ScratchJr.stage.pages[0].id);
+            Project.getThumbnailPNG(ScratchJr.stage.pages[0], 192, 144, getMD5);
+        } catch (_e) {
+            resetSaving();
+        }
+
+        function getMD5 (dataurl: string) {
+            var parts = dataurl.split(',');
+            var pngBase64 = parts.length > 1 ? parts[1] : '';
+            iOS.getmd5(pngBase64, function (str: string | null) {
+                if (!str) {
+                    resetSaving();
+                    return;
+                }
+                savePNG(str, pngBase64);
+            });
+        }
+
+        function savePNG (md5: string, pngBase64: string) {
+            var projectName = ScratchJr.currentProject || 'unknown';
+            var filename = projectName + '_' + md5;
+            iOS.setmedianame(pngBase64, filename, 'png', doNext as (result: unknown) => void);
+        }
+
+        function doNext (md5: string) {
+            if (!metadata) {
+                resetSaving();
+                return;
+            }
+            metadata.thumbnail = {
+                'pagecount': ScratchJr.stage.pages.length,
+                'md5': md5
+            };
+            metadata.mtime = (new Date()).getTime().toString();
+            // IO.saveProject's ProjectRecord bag is structurally compatible with our metadata
+            IO.saveProject(metadata as unknown as Parameters<typeof IO.saveProject>[0], resetSaving);
         }
     }
 
