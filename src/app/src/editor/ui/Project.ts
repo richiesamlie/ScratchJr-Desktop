@@ -534,7 +534,11 @@ export default class Project {
             };
             metadata.mtime = (new Date()).getTime().toString();
             // IO.saveProject's ProjectRecord bag is structurally compatible with our metadata
-            IO.saveProject(metadata as unknown as Parameters<typeof IO.saveProject>[0], resetSaving);
+            try {
+                IO.saveProject(metadata as unknown as Parameters<typeof IO.saveProject>[0], resetSaving);
+            } catch (_e) {
+                resetSaving();
+            }
         }
     }
 

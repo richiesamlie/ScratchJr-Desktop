@@ -75,9 +75,15 @@ export default class iOS {
 
     // Database functions
     static async stmt(json: unknown, fcn?: (result: unknown) => void) {
-        var result = await tabletInterface!.database_stmt(JSON.stringify(json));
-        if (typeof (fcn) !== 'undefined') {
-            fcn(result);
+        try {
+            var result = await tabletInterface!.database_stmt(JSON.stringify(json));
+            if (typeof (fcn) !== 'undefined') {
+                fcn(result);
+            }
+        } catch (e) {
+            if (typeof (fcn) !== 'undefined') {
+                fcn(-1);
+            }
         }
     }
 

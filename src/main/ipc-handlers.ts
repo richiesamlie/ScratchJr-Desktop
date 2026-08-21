@@ -204,8 +204,10 @@ export function register(getDataStore: () => ScratchJRDataStore, getWindow: () =
             const db = getDataStore().databaseManager!;
             const result = db.stmt(safeQuery);
             if (DEBUG_DATABASE) debugLog('database_stmt result:', result);
-            // Persist the change to disk (debounced — coalesces rapid writes)
-            db.savePending();
+            // Only persist to disk if the statement succeeded
+            if (result >= 0) {
+                db.savePending();
+            }
             return result;
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : String(e);
