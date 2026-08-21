@@ -54,6 +54,7 @@ Each release includes SHA256 checksums for integrity verification.
 
 - **Check for Updates menu** — File → Check for Updates now works from the main process with native OS dialogs (no renderer dependency)
 - **Auto-check on launch** — update check runs 3 seconds after startup via the main process
+- **MSI installer: database retention option** — the MSI now supports `REMOVE_DATABASE=1` to delete `Documents/ScratchJR` on uninstall (`msiexec /i ScratchJr.msi REMOVE_DATABASE=1`). By default the database is kept.
 - **Architectural save fixes** — debounced `database_stmt` persistence, close handshake flushes pending save, autosave interval dedup
 - **16 new database tests** — debouncing, atomic writes, integrity checks, auto-recovery from backup
 

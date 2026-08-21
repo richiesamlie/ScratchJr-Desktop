@@ -1,0 +1,22 @@
+    <!-- Database cleanup on uninstall -->
+    <Property Id="REMOVE_DATABASE" Value="0" Secure="yes" />
+
+    <!-- VBScript: delete Documents/ScratchJR folder if REMOVE_DATABASE = 1 -->
+    <CustomAction Id="RemoveDatabaseVBScript" Script="vbscript">
+      <![CDATA[
+        Dim fso, wshShell, env, path
+        Set fso = CreateObject("Scripting.FileSystemObject")
+        Set wshShell = CreateObject("WScript.Shell")
+        Set env = wshShell.Environment("Process")
+        path = env("USERPROFILE") & "\Documents\ScratchJR"
+        If fso.FolderExists(path) Then
+          fso.DeleteFolder path, True
+        End If
+      ]]>
+    </CustomAction>
+
+    <InstallExecuteSequence>
+      <Custom Action="RemoveDatabaseVBScript" After="RemoveFiles">
+        <![CDATA[REMOVE_DATABASE = "1"]]>
+      </Custom>
+    </InstallExecuteSequence>
