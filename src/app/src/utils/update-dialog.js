@@ -72,7 +72,7 @@ export async function checkAndUpdate() {
         }
     } catch (err) {
         // Silently ignore — update check is non-critical
-        console.log('Update check failed:', err);
+        console.error('Update check failed:', err); // eslint-disable-line no-console
     }
 }
 

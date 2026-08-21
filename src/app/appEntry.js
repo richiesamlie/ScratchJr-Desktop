@@ -22,7 +22,7 @@ function loadSettings (settingsRoot, whenDone) {
 
 
 // App-wide entry-point
-window.onload = () => loadPage(document.body.dataset.scratchjrPage || window.scratchJrPage || '').catch((err) => console.error('loadPage failed:', err));
+window.onload = () => loadPage(document.body.dataset.scratchjrPage || window.scratchJrPage || '').catch((err) => console.error('loadPage failed:', err)); // eslint-disable-line no-console
 
 
 
