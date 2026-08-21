@@ -1,7 +1,7 @@
 {
     "name": "ScratchJr",
     "productName": "ScratchJr",
-    "version": "1.5.8",
+    "version": "1.5.9",
     "description": "ScratchJr Desktop Edition",
     "main": "build/main.js",
     "scripts": {
