@@ -72,10 +72,6 @@ interface ScratchJrBridge {
     // ---- Debug (fire-and-forget) ----
     debugWriteLog(args: unknown): void;
 
-    // ---- Update checker ----
-    updateCheck(): Promise<UpdateInfo>;
-    updateOpenUrl(url: string): Promise<void>;
-
     // ---- Lifecycle (fire-and-forget) ----
     sendAppClosedAcked(): void;
 

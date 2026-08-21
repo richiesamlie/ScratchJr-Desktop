@@ -50,6 +50,13 @@ Each release includes SHA256 checksums for integrity verification.
 - **All 56 renderer files** migrated to TypeScript — full `strict` mode, **zero errors, zero `any`**
 - **103 tests** — including a jsdom harness covering the project file format (save/load round-trips), runtime primitives, and editor math
 
+### 📋 v1.6.1
+
+- **Check for Updates menu** — File → Check for Updates now works from the main process with native OS dialogs (no renderer dependency)
+- **Auto-check on launch** — update check runs 3 seconds after startup via the main process
+- **Architectural save fixes** — debounced `database_stmt` persistence, close handshake flushes pending save, autosave interval dedup
+- **16 new database tests** — debouncing, atomic writes, integrity checks, auto-recovery from backup
+
 ### 📋 v1.6.0
 
 - **Database corruption recovery** — auto-backup on every save, PRAGMA integrity_check on open, automatic restore from `.bak` when corruption is detected

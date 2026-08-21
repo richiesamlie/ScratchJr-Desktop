@@ -76,12 +76,35 @@ export class DatabaseManager {
 
     open(SQL: SqlJsStatic): void {
         const fileToOpen = (this.databaseRestoreFilename) ? this.databaseRestoreFilename : this.databaseFilename;
-        const filebuffer = fs.readFileSync(fileToOpen);
-        this.db = new SQL.Database(filebuffer);
-        this.db.handleError = this.handleError;
+        let filebuffer: Buffer;
+        try {
+            filebuffer = fs.readFileSync(fileToOpen);
+        } catch (e) {
+            debugLog('Failed to read database file — attempting auto-recovery:', e);
+            this.db = null;
+            // Skip straight to recovery
+            if (this.autoRecover()) {
+                debugLog('Auto-recovery succeeded (file unreadable)');
+                const recoveredBuffer = fs.readFileSync(this.databaseFilename);
+                this.db = new SQL.Database(recoveredBuffer);
+                this.db.handleError = this.handleError;
+                if (this.onAutoRecovery) this.onAutoRecovery();
+            } else {
+                this.freshDatabase(SQL);
+            }
+            return;
+        }
 
-        // Check integrity after opening
-        if (!this.checkIntegrity()) {
+        try {
+            this.db = new SQL.Database(filebuffer);
+            this.db.handleError = this.handleError;
+        } catch (e) {
+            debugLog('Failed to open database file — attempting auto-recovery:', e);
+            this.db = null;
+        }
+
+        // Check integrity after opening (or recover if open failed)
+        if (!this.db || !this.checkIntegrity()) {
             debugLog('Database corruption detected on open — attempting auto-recovery');
             this.close();
             if (this.autoRecover()) {

@@ -1,5 +1,4 @@
 import {preprocessAndLoadCss} from './src/utils/lib';
-import {checkAndUpdate} from './src/utils/update-dialog';
 import Localization from './src/utils/Localization';
 import AppUsage from './src/utils/AppUsage';
 import iOS from './src/iPad/iOS';
@@ -110,8 +109,6 @@ export async function loadPage(page) {
 			// Load Media Lib from JSON
 			MediaLib.loadMediaLib(root, () => {
 				entryFunction();
-				// Check for updates after app is loaded
-				checkAndUpdate();
 			});
 		});
 		// Initialize currentUsage data
