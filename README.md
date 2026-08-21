@@ -50,6 +50,13 @@ Each release includes SHA256 checksums for integrity verification.
 - **All 56 renderer files** migrated to TypeScript — full `strict` mode, **zero errors, zero `any`**
 - **103 tests** — including a jsdom harness covering the project file format (save/load round-trips), runtime primitives, and editor math
 
+### 📋 v1.6.0
+
+- **Database corruption recovery** — auto-backup on every save, PRAGMA integrity_check on open, automatic restore from `.bak` when corruption is detected
+- **Atomic database writes** — writes to a temp file then renames, preventing partial-write corruption on crash
+- **Save chain hardened** — the `saving` flag now resets on every exit path (null metadata, null md5, async errors), so a failed save no longer permanently blocks all future saves
+- **Null-safety throughout** — guarded against undefined `currentProject`, null `md5` from `getmd5`, and null `db` references in all database methods
+
 ### 📋 v1.5.9
 
 - Removed dead `make32`/`makeAll` ia32 scripts (Electron 43.4.1 is the last ia32 series)
